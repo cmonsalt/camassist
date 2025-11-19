@@ -1,0 +1,9 @@
+{
+  "manifest_version": 3,
+  "name": "CamAssist",
+  "version": "1.0",
+  "content_scripts": [{
+    "matches": ["*://*.chaturbate.com/*"],
+    "js": ["content.js"]
+  }]
+}
