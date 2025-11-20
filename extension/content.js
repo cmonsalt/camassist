@@ -13,29 +13,35 @@ setInterval(() => {
       btn.className = 'ai-btn';
       btn.style.cssText = 'background:#4CAF50;color:white;border:none;padding:2px 6px;margin-left:5px;cursor:pointer;border-radius:3px';
 
-      btn.onclick = async () => {
-        btn.textContent = '...';
-
-        const response = await fetch('https://camassist.vercel.app/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, message: text })
-        });
-
-        const data = await response.json();
-
-        // Auto-llenar input
-        const input = document.querySelector('input[type="text"]');
-        if (input) {
-          input.value = data.suggestion;
-          input.focus();
-          // Opcional: auto-enviar con Enter
-          // input.dispatchEvent(new KeyboardEvent('keypress', {key: 'Enter'}));
-        }
-
-        btn.textContent = '✓';
-        setTimeout(() => btn.textContent = 'IA', 2000);
-      };
+   btn.onclick = async () => {
+  console.log('🔵 Click en IA');
+  btn.textContent = '...';
+  
+  try {
+    const response = await fetch('https://camassist.vercel.app/api/generate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, message: text})
+    });
+    
+    const data = await response.json();
+    console.log('🟢 Respuesta:', data.suggestion);
+    
+    // Buscar input
+    const input = document.querySelector('input[type="text"]');
+    console.log('🟡 Input encontrado?', !!input);
+    
+    if (input) {
+      input.value = data.suggestion;
+      input.focus();
+      btn.textContent = '✓';
+    } else {
+      alert('No encontré el input');
+    }
+  } catch(error) {
+    console.error('🔴 Error:', error);
+  }
+};
 
       msg.appendChild(btn);
     }
