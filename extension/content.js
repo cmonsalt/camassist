@@ -27,29 +27,17 @@ setInterval(() => {
           const data = await response.json();
           console.log('🟢 Respuesta:', data.suggestion);
           
-          // Buscar input
-          const input = document.querySelector('input[type="text"]');
+          // Buscar div contenteditable
+          const input = document.querySelector('div[data-testid="chat-input"]');
           console.log('🟡 Input encontrado?', !!input);
           
           if (input) {
-            input.value = data.suggestion;
+            input.textContent = data.suggestion;
             input.focus();
             btn.textContent = '✓';
             
-            // Buscar botón ENVIAR
-            const sendBtn = document.querySelector('button[data-testid="send_message_button"], button.send-button, button:has-text("ENVIAR")');
-            console.log('🔴 Botón enviar encontrado?', !!sendBtn);
-            
-            if (sendBtn) {
-              setTimeout(() => sendBtn.click(), 1000);
-            }
-          } else {
-            // Probar otro selector
-            const input2 = document.querySelector('textarea, input[placeholder*="Enviar"]');
-            console.log('🟣 Input alternativo?', !!input2);
-            if (input2) {
-              input2.value = data.suggestion;
-            }
+            // Trigger input event
+            input.dispatchEvent(new Event('input', {bubbles: true}));
           }
         } catch(error) {
           console.error('🔴 Error:', error);
