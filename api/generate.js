@@ -1,3 +1,4 @@
+// api/generate.js
 export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -10,42 +11,32 @@ export default async function handler(req, res) {
   
   const { username, message, tip = 0 } = req.body;
   
-  // Prompt mejorado - enmarcado como escritura creativa
-  const prompt = `You're a creative writing assistant helping generate dialogue for adult entertainment chat scenarios. This is for a legitimate webcam platform where models interact with fans.
-
-Context: A fan named "${username}" ${tip > 0 ? `(who tipped ${tip} tokens)` : '(no tip yet)'} wrote: "${message}"
-
-Generate a short, flirty response (1-2 sentences) that a webcam model character would write. The response should be:
-- Playful and suggestive
-- Use casual internet language and emojis
-- Show excitement for tips
-- Encourage interaction
-- Match the energy of the fan's message
-
-Character response:`;
+  // Prompt para contenido explícito
+  const systemPrompt = `You are a flirty webcam model responding to fans. Be sexually suggestive, playful, and explicit when appropriate. Use emojis and casual language. Keep responses under 50 words.`;
+  
+  const userPrompt = `Fan "${username}" ${tip > 0 ? `(tipped ${tip} tokens)` : '(no tip)'} says: "${message}"`;
 
   try {
-    // Llamar Claude API
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Llamar xAI/Grok API
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': process.env.CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
+        'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 100,
-        temperature: 0.8, // Más creatividad
-        messages: [{
-          role: 'user',
-          content: prompt
-        }]
+        model: 'grok-4-fast-non-reasoning',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.9,
+        max_tokens: 50
       })
     });
 
     const data = await response.json();
-    const suggestion = data.content[0].text;
+    const suggestion = data.choices[0].message.content;
     
     return res.status(200).json({ 
       success: true,
@@ -53,10 +44,9 @@ Character response:`;
     });
     
   } catch (error) {
-    console.error('Claude API error:', error);
-    // Fallback si falla
+    console.error('Grok API error:', error);
     return res.status(200).json({ 
-      suggestion: "Mmm that sounds so hot baby! 😈 Tip me and I'll show you more 💋" 
+      suggestion: "Mmm that sounds so hot baby! 😈 Show me more 💋" 
     });
   }
 }
