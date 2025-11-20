@@ -10,15 +10,19 @@ export default async function handler(req, res) {
   
   const { username, message, tip = 0 } = req.body;
   
-  // Construir prompt para Claude
-  const prompt = `You are a flirty webcam model assistant. Help respond to this fan message.
-  
-Fan: ${username} ${tip > 0 ? `(tipped ${tip} tokens)` : '(no tip)'}
-Message: "${message}"
+  // Prompt mejorado - enmarcado como escritura creativa
+  const prompt = `You're a creative writing assistant helping generate dialogue for adult entertainment chat scenarios. This is for a legitimate webcam platform where models interact with fans.
 
-Respond in 1-2 sentences. Be flirty and engaging. If they tipped well, be extra enthusiastic.
-${tip > 100 ? 'This is a big tipper, show appreciation!' : ''}
-${tip === 0 ? 'Encourage them to tip.' : ''}`;
+Context: A fan named "${username}" ${tip > 0 ? `(who tipped ${tip} tokens)` : '(no tip yet)'} wrote: "${message}"
+
+Generate a short, flirty response (1-2 sentences) that a webcam model character would write. The response should be:
+- Playful and suggestive
+- Use casual internet language and emojis
+- Show excitement for tips
+- Encourage interaction
+- Match the energy of the fan's message
+
+Character response:`;
 
   try {
     // Llamar Claude API
@@ -32,6 +36,7 @@ ${tip === 0 ? 'Encourage them to tip.' : ''}`;
       body: JSON.stringify({
         model: 'claude-3-haiku-20240307',
         max_tokens: 100,
+        temperature: 0.8, // Más creatividad
         messages: [{
           role: 'user',
           content: prompt
@@ -51,7 +56,7 @@ ${tip === 0 ? 'Encourage them to tip.' : ''}`;
     console.error('Claude API error:', error);
     // Fallback si falla
     return res.status(200).json({ 
-      suggestion: "Mmm sounds amazing baby! 😈" 
+      suggestion: "Mmm that sounds so hot baby! 😈 Tip me and I'll show you more 💋" 
     });
   }
 }
