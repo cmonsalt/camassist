@@ -80,37 +80,30 @@ setInterval(() => {
           const data = await response.json();
           console.log('🟢 Respuesta:', data.suggestion);
           
-          // INYECTAR SCRIPT PARA LLENAR INPUT
-          const script = document.createElement('script');
-          script.textContent = `
-            const input = document.querySelector('.chat-input-field[contenteditable="true"]');
-            if (input) {
-              input.focus();
-              input.click();
-              input.innerHTML = '';
-              input.textContent = "${data.suggestion}";
-              
-              input.dispatchEvent(new Event('focus'));
-              input.dispatchEvent(new InputEvent('input', {
-                bubbles: true,
-                cancelable: true,
-                inputType: 'insertText',
-                data: "${data.suggestion}"
-              }));
-              input.dispatchEvent(new Event('change'));
-              
-              console.log('✅ Input llenado:', input.textContent);
-            }
-          `;
-          document.body.appendChild(script);
-          script.remove();
+          // ACCESO DIRECTO AL INPUT (SIN SCRIPT)
+          const input = document.querySelector('.chat-input-field[contenteditable="true"]');
+          if (input) {
+            input.focus();
+            input.click();
+            input.innerHTML = data.suggestion;
+            input.textContent = data.suggestion;
+            
+            // Simular tecleo
+            const event = new InputEvent('input', {
+              bubbles: true,
+              cancelable: true,
+              data: data.suggestion
+            });
+            input.dispatchEvent(event);
+            
+            console.log('✅ Input llenado:', input.textContent);
+          }
           
           btn.textContent = '✓';
           setTimeout(() => btn.textContent = 'IA', 2000);
           
         } catch(error) {
           console.error('🔴 Error:', error);
-          btn.textContent = '!';
         }
       };
       
