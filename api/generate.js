@@ -1,8 +1,12 @@
-export default async function handler(req, res) {
-  const { message, tip, username } = req.body;
+export default function handler(req, res) {
+  // Permitir CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
   
-  // Por ahora mock response
-  res.json({ 
+  if (req.method !== 'POST') {
+    return res.status(200).json({ message: 'Use POST' });
+  }
+  
+  return res.status(200).json({ 
     suggestion: "Mmm yes baby, I love that idea 😈" 
   });
 }
