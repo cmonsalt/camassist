@@ -6,7 +6,9 @@ setInterval(() => {
   allMessages.forEach(msg => {
     if (!msg.querySelector('.ai-btn')) {
       const username = msg.dataset.nick;
-      const text = msg.textContent.replace('IA', '').trim();
+      // Obtener SOLO el texto del mensaje, no todo
+      const msgSpan = msg.querySelector('span:not(.ai-btn)');
+      const text = msgSpan ? msgSpan.textContent.trim() : msg.textContent.trim();
       
       const btn = document.createElement('button');
       btn.textContent = 'IA';
@@ -14,7 +16,7 @@ setInterval(() => {
       btn.style.cssText = 'background:#4CAF50;color:white;border:none;padding:2px 6px;margin-left:5px;cursor:pointer;border-radius:3px';
       
       btn.onclick = async () => {
-        console.log('🔵 Click en IA para:', username);
+        console.log('🔵 Click IA - Usuario:', username, 'Mensaje:', text);
         btn.textContent = '...';
         
         try {
@@ -27,23 +29,18 @@ setInterval(() => {
           const data = await response.json();
           console.log('🟢 Respuesta:', data.suggestion);
           
-          // Buscar el input contenteditable
+          // Buscar el input
           const input = document.querySelector('.chat-input-field[contenteditable="true"]');
           
           if (input) {
-            // Limpiar y llenar
-            input.innerHTML = '';
             input.textContent = data.suggestion;
+            input.focus();
             
-            // Forzar eventos para que Chaturbate lo reconozca
-            input.dispatchEvent(new Event('focus'));
-            input.dispatchEvent(new KeyboardEvent('keydown', {key: 'a'}));
+            // Simular escritura
             input.dispatchEvent(new Event('input', {bubbles: true}));
             
             btn.textContent = '✓';
             console.log('✅ Texto insertado');
-          } else {
-            console.log('❌ No encontré input');
           }
         } catch(error) {
           console.error('🔴 Error:', error);
