@@ -3,20 +3,20 @@ console.log("CamAssist loaded!");
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     mutation.addedNodes.forEach((node) => {
-      // Detectar mensajes de usuarios (no notices)
       if (node.classList?.contains('chat-message') && 
           !node.querySelector('.roomNotice')) {
         
-        const text = node.querySelector('.msg-text')?.textContent;
-        if (text) {
-          console.log('📩', text);
+        const msgText = node.querySelector('.msg-text');
+        if (msgText && !node.querySelector('.ai-btn')) {
+          // Crear contenedor para botón
+          const btnContainer = document.createElement('span');
+          btnContainer.className = 'ai-btn';
+          btnContainer.innerHTML = ' <button style="background:#4CAF50;color:white;border:none;padding:1px 4px;border-radius:3px;cursor:pointer;font-size:11px">IA</button>';
+          btnContainer.onclick = () => handleAI(msgText.textContent);
           
-          // Agregar botón IA
-          const btn = document.createElement('button');
-          btn.textContent = '✨';
-          btn.style.cssText = 'margin-left:5px;padding:2px 5px;cursor:pointer';
-          btn.onclick = () => handleAI(text);
-          node.querySelector('.msg-text')?.appendChild(btn);
+          // Insertar DESPUÉS del mensaje
+          msgText.parentNode.insertBefore(btnContainer, msgText.nextSibling);
+          console.log('✅ Botón agregado');
         }
       }
     });
@@ -32,6 +32,5 @@ setTimeout(() => {
 }, 3000);
 
 function handleAI(message) {
-  console.log('IA para:', message);
-  // Aquí llamaremos API
+  console.log('🤖 IA para:', message);
 }
