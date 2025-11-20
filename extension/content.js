@@ -1,36 +1,21 @@
 console.log("CamAssist loaded!");
 
-const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    mutation.addedNodes.forEach((node) => {
-      if (node.classList?.contains('chat-message') && 
-          !node.querySelector('.roomNotice')) {
-        
-        const msgText = node.querySelector('.msg-text');
-        if (msgText && !node.querySelector('.ai-btn')) {
-          // Crear contenedor para botón
-          const btnContainer = document.createElement('span');
-          btnContainer.className = 'ai-btn';
-          btnContainer.innerHTML = ' <button style="background:#4CAF50;color:white;border:none;padding:1px 4px;border-radius:3px;cursor:pointer;font-size:11px">IA</button>';
-          btnContainer.onclick = () => handleAI(msgText.textContent);
-          
-          // Insertar DESPUÉS del mensaje
-          msgText.parentNode.insertBefore(btnContainer, msgText.nextSibling);
-          console.log('✅ Botón agregado');
+// Esperar un poco más para que cargue el DOM
+setTimeout(() => {
+  // Buscar todos los mensajes existentes y futuros
+  setInterval(() => {
+    document.querySelectorAll('.chat-message').forEach(msg => {
+      if (!msg.querySelector('.ai-btn') && !msg.querySelector('.roomNotice')) {
+        const username = msg.querySelector('.username')?.textContent;
+        if (username && username !== '') {
+          const btn = document.createElement('button');
+          btn.className = 'ai-btn';
+          btn.textContent = 'IA';
+          btn.style.cssText = 'background:#4CAF50;color:white;border:none;padding:2px 5px;margin-left:5px;border-radius:3px;cursor:pointer;font-size:11px';
+          btn.onclick = () => console.log('IA click:', msg.textContent);
+          msg.appendChild(btn);
         }
       }
     });
-  });
-});
-
-setTimeout(() => {
-  const chat = document.querySelector('.chat-list');
-  if (chat) {
-    observer.observe(chat, { childList: true, subtree: true });
-    console.log('✅ Observando chat');
-  }
+  }, 1000);
 }, 3000);
-
-function handleAI(message) {
-  console.log('🤖 IA para:', message);
-}
