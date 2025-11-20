@@ -1,19 +1,19 @@
 console.log("CamAssist loaded!");
 
-// Cada 2 segundos buscar mensajes
+// Debug: ver TODA la estructura
 setInterval(() => {
-  // Buscar TODOS los elementos que tengan texto
-  document.querySelectorAll('.chat-list span').forEach(element => {
-    const text = element.textContent;
-    // Si tiene texto y NO tiene botón ya
-    if (text && text.includes('Wow que culote') && !element.querySelector('.ai-btn')) {
-      console.log('💚 ENCONTRADO:', text);
-      
-      const btn = document.createElement('button');
-      btn.className = 'ai-btn';
-      btn.textContent = 'IA';
-      btn.style.cssText = 'background:red;color:white;padding:2px 5px;margin:0 5px';
-      element.appendChild(btn);
-    }
-  });
+  const allMessages = document.querySelectorAll('div[data-nick]');
+  if (allMessages.length > 0) {
+    console.log('✅ Encontré mensajes:', allMessages.length);
+    
+    allMessages.forEach(msg => {
+      if (!msg.querySelector('.ai-btn')) {
+        const btn = document.createElement('button');
+        btn.textContent = 'IA';
+        btn.className = 'ai-btn';
+        btn.style.cssText = 'background:red;color:white;padding:2px 5px';
+        msg.appendChild(btn);
+      }
+    });
+  }
 }, 2000);
