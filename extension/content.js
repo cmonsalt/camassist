@@ -14,7 +14,7 @@ setInterval(() => {
       btn.style.cssText = 'background:#4CAF50;color:white;border:none;padding:2px 6px;margin-left:5px;cursor:pointer;border-radius:3px';
       
       btn.onclick = async () => {
-        console.log('🔵 Click en IA');
+        console.log('🔵 Click en IA para:', username);
         btn.textContent = '...';
         
         try {
@@ -27,17 +27,23 @@ setInterval(() => {
           const data = await response.json();
           console.log('🟢 Respuesta:', data.suggestion);
           
-          // Buscar div contenteditable
-          const input = document.querySelector('div[data-testid="chat-input"]');
-          console.log('🟡 Input encontrado?', !!input);
+          // Buscar el input contenteditable
+          const input = document.querySelector('.chat-input-field[contenteditable="true"]');
           
           if (input) {
+            // Limpiar y llenar
+            input.innerHTML = '';
             input.textContent = data.suggestion;
-            input.focus();
-            btn.textContent = '✓';
             
-            // Trigger input event
+            // Forzar eventos para que Chaturbate lo reconozca
+            input.dispatchEvent(new Event('focus'));
+            input.dispatchEvent(new KeyboardEvent('keydown', {key: 'a'}));
             input.dispatchEvent(new Event('input', {bubbles: true}));
+            
+            btn.textContent = '✓';
+            console.log('✅ Texto insertado');
+          } else {
+            console.log('❌ No encontré input');
           }
         } catch(error) {
           console.error('🔴 Error:', error);
