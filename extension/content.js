@@ -1,5 +1,30 @@
 console.log("CamAssist loaded!");
 
+// Función global para regenerar
+window.regenerateResponse = async function(username, message) {
+  const responseEl = document.getElementById('ai-response');
+  const btnEl = event.target;
+  
+  btnEl.disabled = true;
+  btnEl.textContent = '...';
+  
+  try {
+    const response = await fetch('https://camassist.vercel.app/api/generate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username, message})
+    });
+    
+    const data = await response.json();
+    responseEl.textContent = data.suggestion;
+  } catch(error) {
+    console.error('Error regenerando:', error);
+  }
+  
+  btnEl.disabled = false;
+  btnEl.textContent = '🔄 Regenerar';
+};
+
 setInterval(() => {
   const allMessages = document.querySelectorAll('div[data-nick]');
 
@@ -31,7 +56,6 @@ setInterval(() => {
         btn.textContent = '...';
 
         try {
-          // PRIMERO: Llamar API
           const response = await fetch('https://camassist.vercel.app/api/generate', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -41,7 +65,6 @@ setInterval(() => {
           const data = await response.json();
           console.log('🟢 Respuesta:', data.suggestion);
 
-          // DESPUÉS: Crear popup con la respuesta
           const popup = document.createElement('div');
           popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid green;z-index:9999;border-radius:5px;box-shadow:0 4px 6px rgba(0,0,0,0.1)';
           popup.innerHTML = `
@@ -53,21 +76,7 @@ setInterval(() => {
               setTimeout(() => this.parentElement.remove(), 500);
             " style="background:green;color:white;padding:5px 10px;border:none;cursor:pointer;border-radius:3px">📋 Copiar</button>
             
-            <button onclick="
-              this.disabled=true;
-              this.textContent='...';
-              fetch('https://camassist.vercel.app/api/generate', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username: '${username}', message: '${messageText}'})
-              })
-              .then(r => r.json())
-              .then(data => {
-                document.getElementById('ai-response').textContent = data.suggestion;
-                this.disabled=false;
-                this.textContent='🔄 Regenerar';
-              });
-            " style="margin-left:5px;padding:5px 10px;cursor:pointer;border-radius:3px">🔄 Regenerar</button>
+            <button onclick="regenerateResponse('${username}', '${messageText}')" style="margin-left:5px;padding:5px 10px;cursor:pointer;border-radius:3px">🔄 Regenerar</button>
             
             <button onclick="this.parentElement.remove()" style="margin-left:10px;padding:5px 10px;cursor:pointer">❌ Cerrar</button>
           `;
