@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CamAssist - Configuración</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-3">🤖</span>
+                    <h1 class="text-xl font-semibold text-gray-800">CamAssist</h1>
+                    <span class="ml-4 text-sm text-gray-500" id="studioName"></span>
+                </div>
+                <button onclick="logout()" class="text-gray-500 hover:text-gray-700">
+                    Salir
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto p-6">
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-6 flex items-center">
+                <span class="mr-2">⚙️</span> Configuración Global del Studio
+            </h2>
+
+            <!-- Modo Adaptativo -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                <label class="flex items-center justify-between">
+                    <div>
+                        <span class="font-medium text-gray-700">Modo Adaptativo</span>
+                        <p class="text-sm text-gray-500 mt-1">La IA detecta automáticamente lo que quiere cada fan</p>
+                    </div>
+                    <input type="checkbox" id="adaptiveMode" checked 
+                           class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500">
+                </label>
+            </div>
+
+            <!-- Nivel Explícito -->
+            <div class="mb-6">
+                <label class="block font-medium text-gray-700 mb-3">Nivel de Contenido</label>
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="setLevel('explicit', 1)" id="explicit-1" 
+                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
+                        😊 Suave
+                    </button>
+                    <button onclick="setLevel('explicit', 2)" id="explicit-2" 
+                            class="py-2 px-4 rounded-lg border-2 border-purple-500 bg-purple-50 transition">
+                        😈 Normal
+                    </button>
+                    <button onclick="setLevel('explicit', 3)" id="explicit-3" 
+                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
+                        🔥 Hardcore
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">Qué tan explícitas serán las respuestas</p>
+            </div>
+
+            <!-- Nivel de Emojis -->
+            <div class="mb-6">
+                <label class="block font-medium text-gray-700 mb-3">Cantidad de Emojis</label>
+                <div class="grid grid-cols-4 gap-3">
+                    <button onclick="setLevel('emoji', 0)" id="emoji-0" 
+                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
+                        Sin
+                    </button>
+                    <button onclick="setLevel('emoji', 1)" id="emoji-1" 
+                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
+                        Pocos
+                    </button>
+                    <button onclick="setLevel('emoji', 2)" id="emoji-2" 
+                            class="py-2 px-4 rounded-lg border-2 border-purple-500 bg-purple-50 transition">
+                        Normal
+                    </button>
+                    <button onclick="setLevel('emoji', 3)" id="emoji-3" 
+                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
+                        Muchos
+                    </button>
+                </div>
+            </div>
+
+            <!-- Guardar -->
+            <button onclick="saveSettings()" 
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg transform hover:scale-[1.01] transition-all duration-200">
+                💾 Guardar Configuración
+            </button>
+        </div>
+
+        <!-- Stats Box -->
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">📊 Estadísticas del Mes</h3>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="bg-purple-50 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-purple-600">0</div>
+                    <div class="text-sm text-gray-600">Respuestas IA</div>
+                </div>
+                <div class="bg-pink-50 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-pink-600">5</div>
+                    <div class="text-sm text-gray-600">Modelos Activas</div>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4">
+                    <div class="text-2xl font-bold text-green-600">$0</div>
+                    <div class="text-sm text-gray-600">Tips Generados</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check auth
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/dashboard/login.html';
+        }
+
+        // Load studio name
+        document.getElementById('studioName').textContent = localStorage.getItem('studioName') || '';
+
+        // Settings state
+        let settings = {
+            adaptiveMode: true,
+            explicitLevel: 2,
+            emojiLevel: 2
+        };
+
+        // Load settings on page load
+        loadSettings();
+
+        async function loadSettings() {
+            try {
+                const response = await fetch('https://camassist.vercel.app/api/settings', {
+                    headers: {'Authorization': token}
+                });
+                const data = await response.json();
+                if (data.settings) {
+                    settings = data.settings;
+                    updateUI();
+                }
+            } catch(error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('adaptiveMode').checked = settings.adaptiveMode;
+            setLevel('explicit', settings.explicitLevel, false);
+            setLevel('emoji', settings.emojiLevel, false);
+        }
+
+        function setLevel(type, level, updateSettings = true) {
+            // Update UI
+            for (let i = 0; i <= 3; i++) {
+                const btn = document.getElementById(`${type}-${i}`);
+                if (btn) {
+                    if (i === level) {
+                        btn.classList.add('border-purple-500', 'bg-purple-50');
+                        btn.classList.remove('border-gray-200');
+                    } else {
+                        btn.classList.remove('border-purple-500', 'bg-purple-50');
+                        btn.classList.add('border-gray-200');
+                    }
+                }
+            }
+            
+            // Update settings
+            if (updateSettings) {
+                if (type === 'explicit') settings.explicitLevel = level;
+                if (type === 'emoji') settings.emojiLevel = level;
+            }
+        }
+
+        async function saveSettings() {
+            settings.adaptiveMode = document.getElementById('adaptiveMode').checked;
+            
+            try {
+                const response = await fetch('https://camassist.vercel.app/api/settings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': token
+                    },
+                    body: JSON.stringify({settings})
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Configuración guardada');
+                }
+            } catch(error) {
+                alert('Error al guardar');
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/dashboard/login.html';
+        }
+    </script>
+</body>
+</html>
