@@ -4,143 +4,115 @@ console.log("CamAssist loaded!");
 let publicHistory = {};  // Por username en chat público
 let pmHistory = {};      // Por username en PM
 
+// Obtener username del broadcaster (tú)
+const broadcasterUsername = window.location.pathname.split('/b/')[1]?.split('/')[0] || '';
+console.log('👤 Broadcaster username:', broadcasterUsername);
+
 setInterval(() => {
   
   // ============================================
-  // 1. CHAT PÚBLICO
+  // 1. DETECTAR TODOS LOS MENSAJES (público + PM)
   // ============================================
-  const publicMessages = document.querySelectorAll('div[data-nick]');
+  const allMessages = document.querySelectorAll('[data-testid="chat-message"]');
   
-  publicMessages.forEach(msg => {
-    if (!msg.querySelector('.ai-btn') && !msg.dataset.processed) {
-      msg.dataset.processed = 'true';
+  allMessages.forEach(msg => {
+    const dataNick = msg.getAttribute('data-nick');
+    
+    // Ignorar mensajes sin data-nick (avisos del sistema)
+    if (!dataNick) return;
+    
+    // Determinar si es mensaje del broadcaster o fan
+    const isModelMessage = dataNick === broadcasterUsername;
+    const username = dataNick;
+    
+    // Determinar si es PM o público
+    const isPM = !!msg.closest('[data-testid="private-message-container"], .private-message, [class*="conversation"]');
+    
+    // Obtener texto del mensaje
+    let messageText = '';
+    const textElements = msg.querySelectorAll('.msg-text, [class*="message-text"]');
+    textElements.forEach(el => {
+      const text = el.textContent.trim();
+      if (text && text.length > messageText.length) {
+        messageText = text;
+      }
+    });
+    
+    // Si no encontró texto, intentar directamente
+    if (!messageText) {
+      messageText = msg.textContent.trim();
+      // Remover username del inicio
+      messageText = messageText.replace(new RegExp(`^${username}\\s*`, 'i'), '').trim();
+    }
+    
+    // Limpiar @mentions solo del inicio
+    messageText = messageText.replace(/^@\S+\s*/g, '').trim();
+    
+    // Detectar tips
+    const isTip = messageText.includes('tipped') || messageText.includes('tokens');
+    let tipAmount = 0;
+    if (isTip) {
+      const match = messageText.match(/(\d+)\s*(tokens?|tips?)/i);
+      if (match) tipAmount = parseInt(match[1]);
+    }
+    
+    // Ya procesado?
+    if (msg.dataset.processed) return;
+    msg.dataset.processed = 'true';
+    
+    // ============================================
+    // GUARDAR EN HISTORIAL CORRECTO
+    // ============================================
+    
+    if (!isTip && messageText) {
+      const history = isPM ? pmHistory : publicHistory;
       
-      const username = msg.dataset.nick;
-      const spans = msg.querySelectorAll('span');
-      let messageText = '';
+      // Inicializar historial del usuario
+      if (!history[username]) {
+        history[username] = [];
+      }
       
-      spans.forEach((span) => {
-        const content = span.textContent.trim();
-        if (content && content !== username && content.length > messageText.length) {
-          messageText = content;
-        }
+      // Guardar mensaje
+      history[username].push({
+        type: isModelMessage ? 'model' : 'fan',
+        message: messageText,
+        timestamp: Date.now()
       });
       
-      messageText = messageText.replace(/@\S+\s?/g, '').trim();
-      
-      // Detectar si es tip/token
-      const isTip = messageText.includes('tipped') || messageText.includes('tokens');
-      let tipAmount = 0;
-      if (isTip) {
-        const match = messageText.match(/(\d+)\s*(tokens?|tips?)/i);
-        if (match) tipAmount = parseInt(match[1]);
+      // Mantener últimos 20
+      if (history[username].length > 20) {
+        history[username].shift();
       }
       
-      if (messageText && !isTip) {
-        // Inicializar historial del usuario si no existe
-        if (!publicHistory[username]) {
-          publicHistory[username] = [];
-        }
-        
-        // Guardar mensaje del fan
-        publicHistory[username].push({
-          type: 'fan',
-          message: messageText,
-          timestamp: Date.now()
-        });
-        
-        // Mantener últimos 20 por usuario
-        if (publicHistory[username].length > 20) {
-          publicHistory[username].shift();
-        }
-        
-        addAIButton(msg, username, messageText, false, 'public', tipAmount);
-      }
-      
-      // Guardar tip sin agregar botón
-      if (isTip && tipAmount > 0) {
-        if (!publicHistory[username]) {
-          publicHistory[username] = [];
-        }
-        publicHistory[username].push({
-          type: 'tip',
-          amount: tipAmount,
-          timestamp: Date.now()
-        });
-      }
+      console.log(`💬 ${isPM ? 'PM' : 'Público'} - ${isModelMessage ? 'Modelo' : 'Fan'} (${username}): ${messageText}`);
     }
-  });
-  
-  // ============================================
-  // 2. PM - MENSAJES DEL FAN
-  // ============================================
-  const pmFanMessages = document.querySelectorAll('[data-testid="received-message"]');
-  
-  pmFanMessages.forEach(msg => {
-    if (!msg.querySelector('.ai-btn') && !msg.dataset.processed) {
-      msg.dataset.processed = 'true';
-      
-      const textElement = msg.querySelector('[data-testid="message-contents"]');
-      const messageText = textElement ? textElement.textContent.trim() : '';
-      
-      // Obtener username del PM (del título de la conversación)
-      const pmTitle = document.querySelector('.private-message-header, [class*="conversation"]');
-      const username = pmTitle ? pmTitle.textContent.match(/con\s+(\w+)/)?.[1] || 'fan_pm' : 'fan_pm';
-      
-      if (messageText && textElement) {
-        // Inicializar historial PM del usuario si no existe
-        if (!pmHistory[username]) {
-          pmHistory[username] = [];
-        }
-        
-        // Guardar mensaje del fan
-        pmHistory[username].push({
-          type: 'fan',
-          message: messageText,
-          timestamp: Date.now()
-        });
-        
-        // Mantener últimos 20
-        if (pmHistory[username].length > 20) {
-          pmHistory[username].shift();
-        }
-        
-        addAIButton(textElement, username, messageText, true, 'pm', 0);
-      }
+    
+    // ============================================
+    // AGREGAR BOTÓN IA SOLO EN MENSAJES DE FANS
+    // ============================================
+    
+    if (!isModelMessage && !isTip && messageText && !msg.querySelector('.ai-btn')) {
+      addAIButton(msg, username, messageText, isPM, isPM ? 'pm' : 'public', tipAmount);
     }
-  });
-  
-  // ============================================
-  // 3. PM - MENSAJES DE LA MODELO (guardar para contexto)
-  // ============================================
-  const pmModelMessages = document.querySelectorAll('[data-testid="sent-message"]');
-  
-  pmModelMessages.forEach(msg => {
-    if (!msg.dataset.processed) {
-      msg.dataset.processed = 'true';
+    
+    // ============================================
+    // GUARDAR TIP
+    // ============================================
+    
+    if (isTip && tipAmount > 0) {
+      const history = isPM ? pmHistory : publicHistory;
       
-      const textElement = msg.querySelector('[data-testid="message-contents"]');
-      const messageText = textElement ? textElement.textContent.trim() : '';
-      
-      // Obtener username del PM
-      const pmTitle = document.querySelector('.private-message-header, [class*="conversation"]');
-      const username = pmTitle ? pmTitle.textContent.match(/con\s+(\w+)/)?.[1] || 'fan_pm' : 'fan_pm';
-      
-      if (messageText) {
-        if (!pmHistory[username]) {
-          pmHistory[username] = [];
-        }
-        
-        pmHistory[username].push({
-          type: 'model',
-          message: messageText,
-          timestamp: Date.now()
-        });
-        
-        if (pmHistory[username].length > 20) {
-          pmHistory[username].shift();
-        }
+      if (!history[username]) {
+        history[username] = [];
       }
+      
+      history[username].push({
+        type: 'tip',
+        amount: tipAmount,
+        timestamp: Date.now()
+      });
+      
+      console.log(`💰 ${isPM ? 'PM' : 'Público'} - Tip de ${username}: ${tipAmount} tokens`);
     }
   });
   
@@ -161,7 +133,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     const userHistory = history[username] || [];
     
     console.log(`🔵 IA para ${isPM ? 'PM' : 'público'} - Usuario: ${username}`);
-    console.log('📚 Historial del usuario:', userHistory);
+    console.log('📚 Historial del usuario (últimos 10):', userHistory.slice(-10));
     
     btn.textContent = '...';
     
@@ -173,7 +145,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           token: localStorage.getItem('model_token') || 'demo_token',
           username,
           message: messageText,
-          context: userHistory, // Historial solo de este usuario
+          context: userHistory.slice(-10), // Solo últimos 10 del usuario
           isPM,
           tip: tipAmount
         })
@@ -185,18 +157,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
       
-      // GUARDAR RESPUESTA EN HISTORIAL
-      if (!history[username]) {
-        history[username] = [];
-      }
-      history[username].push({
-        type: 'model',
-        message: data.suggestion,
-        timestamp: Date.now()
-      });
-      if (history[username].length > 20) {
-        history[username].shift();
-      }
+      // ❌ NO GUARDAR AUTOMÁTICAMENTE - solo mostrar popup
       
       // Crear popup
       const popup = document.createElement('div');
@@ -205,7 +166,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       
       const title = document.createElement('h3');
       title.style.marginTop = '0';
-      title.textContent = `💬 ${isPM ? 'PM' : 'Público'} - ${username}`;
+      title.textContent = `💬 ${isPM ? 'PM' : 'Público'} - @${username}`;
       
       const responseText = document.createElement('p');
       responseText.id = 'ai-response';
@@ -230,11 +191,6 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         try {
           const newData = await getResponse();
           responseText.textContent = newData.suggestion;
-          
-          // Actualizar última respuesta en historial
-          if (history[username].length > 0 && history[username][history[username].length - 1].type === 'model') {
-            history[username][history[username].length - 1].message = newData.suggestion;
-          }
         } catch(error) {
           console.error('Error regenerando:', error);
         }
