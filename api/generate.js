@@ -54,7 +54,7 @@ export default async function handler(req, res) {
     console.error('ERROR COMPLETO:', error);
     // Este es el fallback que estás viendo
     return res.status(200).json({
-      suggestion: "Mmm that sounds so hot baby! 😈 Show me more 💋"
+      suggestion: "Error"
     });
   }
 }
