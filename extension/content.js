@@ -26,7 +26,7 @@ setInterval(() => {
     const username = dataNick;
     
     // Determinar si es PM o público
-    const isPM = !!msg.closest('[data-testid="private-message-container"], .private-message, [class*="conversation"]');
+    const isPM = msg.classList.contains('dm-adjust');
     
     // Obtener texto del mensaje
     let messageText = '';
