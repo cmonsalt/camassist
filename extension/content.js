@@ -1,12 +1,13 @@
 console.log("CamAssist loaded!");
 
-// Historial de chat (contexto para IA)
-let chatHistory = [];
+// HISTORIALES SEPARADOS
+let publicHistory = {};  // Por username en chat público
+let pmHistory = {};      // Por username en PM
 
 setInterval(() => {
   
   // ============================================
-  // 1. CHAT PÚBLICO (funciona para viewer y broadcaster)
+  // 1. CHAT PÚBLICO
   // ============================================
   const publicMessages = document.querySelectorAll('div[data-nick]');
   
@@ -18,7 +19,6 @@ setInterval(() => {
       const spans = msg.querySelectorAll('span');
       let messageText = '';
       
-      // Buscar el texto del mensaje
       spans.forEach((span) => {
         const content = span.textContent.trim();
         if (content && content !== username && content.length > messageText.length) {
@@ -26,28 +26,53 @@ setInterval(() => {
         }
       });
       
-      // Limpiar @mentions
       messageText = messageText.replace(/@\S+\s?/g, '').trim();
       
-      if (messageText) {
-        // Guardar en historial
-        chatHistory.push({
+      // Detectar si es tip/token
+      const isTip = messageText.includes('tipped') || messageText.includes('tokens');
+      let tipAmount = 0;
+      if (isTip) {
+        const match = messageText.match(/(\d+)\s*(tokens?|tips?)/i);
+        if (match) tipAmount = parseInt(match[1]);
+      }
+      
+      if (messageText && !isTip) {
+        // Inicializar historial del usuario si no existe
+        if (!publicHistory[username]) {
+          publicHistory[username] = [];
+        }
+        
+        // Guardar mensaje del fan
+        publicHistory[username].push({
           type: 'fan',
-          username,
           message: messageText,
           timestamp: Date.now()
         });
         
-        if (chatHistory.length > 20) chatHistory.shift();
+        // Mantener últimos 20 por usuario
+        if (publicHistory[username].length > 20) {
+          publicHistory[username].shift();
+        }
         
-        // Agregar botón IA
-        addAIButton(msg, username, messageText, false);
+        addAIButton(msg, username, messageText, false, 'public', tipAmount);
+      }
+      
+      // Guardar tip sin agregar botón
+      if (isTip && tipAmount > 0) {
+        if (!publicHistory[username]) {
+          publicHistory[username] = [];
+        }
+        publicHistory[username].push({
+          type: 'tip',
+          amount: tipAmount,
+          timestamp: Date.now()
+        });
       }
     }
   });
   
   // ============================================
-  // 2. PM - MENSAJES DEL FAN (broadcaster view)
+  // 2. PM - MENSAJES DEL FAN
   // ============================================
   const pmFanMessages = document.querySelectorAll('[data-testid="received-message"]');
   
@@ -58,25 +83,35 @@ setInterval(() => {
       const textElement = msg.querySelector('[data-testid="message-contents"]');
       const messageText = textElement ? textElement.textContent.trim() : '';
       
+      // Obtener username del PM (del título de la conversación)
+      const pmTitle = document.querySelector('.private-message-header, [class*="conversation"]');
+      const username = pmTitle ? pmTitle.textContent.match(/con\s+(\w+)/)?.[1] || 'fan_pm' : 'fan_pm';
+      
       if (messageText && textElement) {
-        // Guardar en historial
-        chatHistory.push({
+        // Inicializar historial PM del usuario si no existe
+        if (!pmHistory[username]) {
+          pmHistory[username] = [];
+        }
+        
+        // Guardar mensaje del fan
+        pmHistory[username].push({
           type: 'fan',
-          username: 'fan_pm',
           message: messageText,
           timestamp: Date.now()
         });
         
-        if (chatHistory.length > 20) chatHistory.shift();
+        // Mantener últimos 20
+        if (pmHistory[username].length > 20) {
+          pmHistory[username].shift();
+        }
         
-        // Agregar botón IA
-        addAIButton(textElement, 'fan_pm', messageText, true);
+        addAIButton(textElement, username, messageText, true, 'pm', 0);
       }
     }
   });
   
   // ============================================
-  // 3. PM - MENSAJES DE LA MODELO (solo guardar para contexto)
+  // 3. PM - MENSAJES DE LA MODELO (guardar para contexto)
   // ============================================
   const pmModelMessages = document.querySelectorAll('[data-testid="sent-message"]');
   
@@ -87,14 +122,24 @@ setInterval(() => {
       const textElement = msg.querySelector('[data-testid="message-contents"]');
       const messageText = textElement ? textElement.textContent.trim() : '';
       
+      // Obtener username del PM
+      const pmTitle = document.querySelector('.private-message-header, [class*="conversation"]');
+      const username = pmTitle ? pmTitle.textContent.match(/con\s+(\w+)/)?.[1] || 'fan_pm' : 'fan_pm';
+      
       if (messageText) {
-        chatHistory.push({
+        if (!pmHistory[username]) {
+          pmHistory[username] = [];
+        }
+        
+        pmHistory[username].push({
           type: 'model',
           message: messageText,
           timestamp: Date.now()
         });
         
-        if (chatHistory.length > 20) chatHistory.shift();
+        if (pmHistory[username].length > 20) {
+          pmHistory[username].shift();
+        }
       }
     }
   });
@@ -104,28 +149,33 @@ setInterval(() => {
 // ============================================
 // FUNCIÓN PARA AGREGAR BOTÓN IA
 // ============================================
-function addAIButton(container, username, messageText, isPM) {
+function addAIButton(container, username, messageText, isPM, context, tipAmount) {
   const btn = document.createElement('button');
   btn.textContent = 'IA';
   btn.className = 'ai-btn';
   btn.style.cssText = 'background:#4CAF50;color:white;border:none;padding:2px 6px;margin-left:5px;cursor:pointer;border-radius:3px;font-size:10px';
   
   btn.onclick = async () => {
-    console.log(`🔵 IA para ${isPM ? 'PM' : 'chat público'}:`, messageText);
-    console.log('📚 Contexto (últimos 10):', chatHistory.slice(-10));
+    // Obtener historial correcto según contexto
+    const history = context === 'pm' ? pmHistory : publicHistory;
+    const userHistory = history[username] || [];
+    
+    console.log(`🔵 IA para ${isPM ? 'PM' : 'público'} - Usuario: ${username}`);
+    console.log('📚 Historial del usuario:', userHistory);
+    
     btn.textContent = '...';
     
-    // Función para llamar API
     const getResponse = async () => {
       const response = await fetch('https://camassist.vercel.app/api/generate', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
-          token: localStorage.getItem('model_token') || 'demo_token', // ← AGREGADO
+          token: localStorage.getItem('model_token') || 'demo_token',
           username,
           message: messageText,
-          context: chatHistory.slice(-10),
-          isPM
+          context: userHistory, // Historial solo de este usuario
+          isPM,
+          tip: tipAmount
         })
       });
       return response.json();
@@ -135,6 +185,19 @@ function addAIButton(container, username, messageText, isPM) {
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
       
+      // GUARDAR RESPUESTA EN HISTORIAL
+      if (!history[username]) {
+        history[username] = [];
+      }
+      history[username].push({
+        type: 'model',
+        message: data.suggestion,
+        timestamp: Date.now()
+      });
+      if (history[username].length > 20) {
+        history[username].shift();
+      }
+      
       // Crear popup
       const popup = document.createElement('div');
       popup.id = 'ai-popup';
@@ -142,14 +205,13 @@ function addAIButton(container, username, messageText, isPM) {
       
       const title = document.createElement('h3');
       title.style.marginTop = '0';
-      title.textContent = isPM ? '💬 Respuesta IA (PM)' : '💬 Respuesta IA (Público)';
+      title.textContent = `💬 ${isPM ? 'PM' : 'Público'} - ${username}`;
       
       const responseText = document.createElement('p');
       responseText.id = 'ai-response';
       responseText.style.cssText = 'background:#f0f0f0;padding:10px;border-radius:3px;max-height:200px;overflow-y:auto;word-wrap:break-word';
       responseText.textContent = data.suggestion;
       
-      // Botón copiar
       const copyBtn = document.createElement('button');
       copyBtn.textContent = '📋 Copiar';
       copyBtn.style.cssText = 'background:green;color:white;padding:5px 10px;border:none;cursor:pointer;border-radius:3px;font-size:12px';
@@ -159,7 +221,6 @@ function addAIButton(container, username, messageText, isPM) {
         setTimeout(() => popup.remove(), 500);
       };
       
-      // Botón regenerar
       const regenBtn = document.createElement('button');
       regenBtn.textContent = '🔄 Regenerar';
       regenBtn.style.cssText = 'margin-left:5px;padding:5px 10px;cursor:pointer;border-radius:3px;font-size:12px';
@@ -169,6 +230,11 @@ function addAIButton(container, username, messageText, isPM) {
         try {
           const newData = await getResponse();
           responseText.textContent = newData.suggestion;
+          
+          // Actualizar última respuesta en historial
+          if (history[username].length > 0 && history[username][history[username].length - 1].type === 'model') {
+            history[username][history[username].length - 1].message = newData.suggestion;
+          }
         } catch(error) {
           console.error('Error regenerando:', error);
         }
@@ -176,20 +242,17 @@ function addAIButton(container, username, messageText, isPM) {
         regenBtn.textContent = '🔄 Regenerar';
       };
       
-      // Botón cerrar
       const closeBtn = document.createElement('button');
       closeBtn.textContent = '❌ Cerrar';
       closeBtn.style.cssText = 'margin-left:10px;padding:5px 10px;cursor:pointer;font-size:12px';
       closeBtn.onclick = () => popup.remove();
       
-      // Agregar todo al popup
       popup.appendChild(title);
       popup.appendChild(responseText);
       popup.appendChild(copyBtn);
       popup.appendChild(regenBtn);
       popup.appendChild(closeBtn);
       
-      // Remover popup anterior si existe
       const oldPopup = document.getElementById('ai-popup');
       if (oldPopup) oldPopup.remove();
       
