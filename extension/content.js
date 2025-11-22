@@ -121,10 +121,11 @@ function addAIButton(container, username, messageText, isPM) {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
+          token: localStorage.getItem('model_token') || 'demo_token', // ← AGREGADO
           username,
           message: messageText,
-          context: chatHistory.slice(-10), // Últimos 10 mensajes
-          isPM // true si es PM, false si es público
+          context: chatHistory.slice(-10),
+          isPM
         })
       });
       return response.json();
