@@ -1,7 +1,11 @@
 {
   "name": "camassist-backend",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vercel dev"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
   }
 }
