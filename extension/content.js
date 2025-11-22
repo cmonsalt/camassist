@@ -11,7 +11,13 @@ console.log('👤 Broadcaster username:', broadcasterUsername);
 setInterval(() => {
   
   // ============================================
-  // 1. DETECTAR TODOS LOS MENSAJES (público + PM)
+  // DETECTAR QUÉ PESTAÑA ESTÁ ACTIVA
+  // ============================================
+  const pmTab = document.querySelector('[data-testid="pm-tab-default"], [id*="pm-tab"]');
+  const isPMTabActive = pmTab && (pmTab.classList.contains('active') || pmTab.classList.contains('chat-tab-handle'));
+  
+  // ============================================
+  // 1. DETECTAR TODOS LOS MENSAJES
   // ============================================
   const allMessages = document.querySelectorAll('[data-testid="chat-message"]');
   
@@ -25,8 +31,8 @@ setInterval(() => {
     const isModelMessage = dataNick === broadcasterUsername;
     const username = dataNick;
     
-    // Determinar si es PM o público
-    const isPM = msg.classList.contains('dm-adjust');
+    // Determinar si es PM o público SEGÚN LA PESTAÑA ACTIVA
+    const isPM = isPMTabActive;
     
     // Obtener texto del mensaje
     let messageText = '';
@@ -156,8 +162,6 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     try {
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
-      
-      // ❌ NO GUARDAR AUTOMÁTICAMENTE - solo mostrar popup
       
       // Crear popup
       const popup = document.createElement('div');
