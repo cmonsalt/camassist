@@ -252,6 +252,10 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     btn.textContent = '...';
 
     const getResponse = async () => {
+      // Detectar si el fan tiene tokens (hasTokens class)
+      const usernameLabel = container.querySelector('[data-testid="username-label"]');
+      const hasTokens = usernameLabel?.classList.contains('hasTokens') || false;
+
       const response = await fetch('https://camassist.vercel.app/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -259,15 +263,15 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           token: localStorage.getItem('model_token') || 'demo_token',
           username,
           message: messageText,
-          context: userHistory.slice(-10), // Solo últimos 10 del usuario
+          context: userHistory.slice(-10),
           isPM,
           tip: tipAmount,
-          tipMenuText: localStorage.getItem('detected_tip_menu') || ''
+          tipMenuText: localStorage.getItem('detected_tip_menu') || '',
+          hasTokens: hasTokens  // NUEVO
         })
       });
       return response.json();
     };
-
     try {
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
