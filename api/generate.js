@@ -17,13 +17,13 @@ export default async function handler(req, res) {
   }
 
   // RECIBIR TODOS LOS PARÁMETROS
-  const { 
-    token, 
-    username, 
-    message, 
-    tip = 0, 
-    context = [], 
-    isPM = false 
+  const {
+    token,
+    username,
+    message,
+    tip = 0,
+    context = [],
+    isPM = false
   } = req.body;
 
   console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length });
@@ -40,13 +40,13 @@ export default async function handler(req, res) {
   if (token && token !== 'demo_token' && supabase) {
     try {
       console.log('🔍 Buscando modelo con token:', token);
-      
+
       const { data: model, error } = await supabase
         .from('models')
         .select('*')
         .eq('token', token)
         .single();
-      
+
       if (!error && model) {
         modelData = model;
         console.log('✅ Modelo encontrado:', modelData.name);
@@ -62,8 +62,8 @@ export default async function handler(req, res) {
   // CONSTRUIR CONTEXTO PARA PROMPT
   let contextText = '';
   if (context.length > 0) {
-    contextText = '\n\nRecent conversation:\n' + 
-      context.slice(-10).map(c => 
+    contextText = '\n\nRecent conversation:\n' +
+      context.slice(-10).map(c =>
         `${c.type === 'fan' ? 'Fan' : 'You'}: ${c.message}`
       ).join('\n');
   }
@@ -82,6 +82,7 @@ Rules:
 ${modelData.restrictions && modelData.restrictions.length > 0 ? `- Things you don't do: ${modelData.restrictions.join(', ')} (suggest alternatives)` : ''}
 ${isPM ? '- This is a PRIVATE MESSAGE, be more conversational and intimate' : '- This is PUBLIC CHAT, keep it shorter and flirty'}
 ${req.body.tipMenuText ? `\n\nTip Menu:\n${req.body.tipMenuText}\n` : ''}
+${modelData.has_lovense ? '- You have Lovense connected - mention it vibrates when fans tip you' : ''}
 - Use ${modelData.emoji_level === 0 ? 'NO emojis' : modelData.emoji_level === 1 ? 'few emojis (1-2)' : modelData.emoji_level === 3 ? 'LOTS of emojis (4-6)' : 'normal emojis (2-3)'}
 - Keep response under ${isPM ? '80' : '50'} words${contextText}`;
 
@@ -92,7 +93,7 @@ Respond naturally as ${modelData.name}.`;
   // LLAMAR GROK
   try {
     console.log('🤖 Llamando Grok...');
-    
+
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -128,12 +129,12 @@ Respond naturally as ${modelData.name}.`;
 
   } catch (error) {
     console.error('❌ ERROR:', error);
-    
+
     // FALLBACK seguro
     return res.status(200).json({
       success: false,
-      suggestion: isPM 
-        ? "Hey handsome! 😘 What do you have in mind for us today? Tell me your fantasies..." 
+      suggestion: isPM
+        ? "Hey handsome! 😘 What do you have in mind for us today? Tell me your fantasies..."
         : "Mmm hey baby! 😈 What brings you here today?",
       error: error.message
     });
