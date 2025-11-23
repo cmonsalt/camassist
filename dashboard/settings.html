@@ -10,116 +10,152 @@
         body { font-family: 'Inter', sans-serif; }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <!-- Header -->
-    <nav class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <span class="text-2xl mr-3">🤖</span>
-                    <h1 class="text-xl font-semibold text-gray-800">CamAssist Settings</h1>
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gradient-to-b from-purple-600 to-pink-600 text-white flex flex-col">
+            <div class="p-6">
+                <div class="flex items-center mb-8">
+                    <span class="text-3xl mr-3">🤖</span>
+                    <h1 class="text-xl font-bold">CamAssist</h1>
                 </div>
-                <button onclick="logout()" class="text-gray-500 hover:text-gray-700">
-                    Salir
+                
+                <nav class="space-y-2">
+                    <a href="/dashboard/index.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                        <span class="mr-3">📊</span> Dashboard
+                    </a>
+                    <a href="/dashboard/modelos.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                        <span class="mr-3">👥</span> Modelos
+                    </a>
+                    <a href="/dashboard/settings.html" class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
+                        <span class="mr-3">⚙️</span> Configuración
+                    </a>
+                </nav>
+            </div>
+
+            <div class="mt-auto p-6 border-t border-white/10">
+                <div class="text-sm mb-4">
+                    <div class="text-white/60">Studio</div>
+                    <div class="font-semibold" id="studioName">Emma's Studio</div>
+                </div>
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-2">🚪</span> Salir
                 </button>
             </div>
-        </div>
-    </nav>
+        </aside>
 
-    <!-- Main Content -->
-    <div class="max-w-4xl mx-auto p-6">
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-                <span class="mr-2">⚙️</span> Configuración de la Modelo
-            </h2>
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <div class="p-8">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800">Configuración</h1>
+                    <p class="text-gray-600">Personaliza la configuración de la modelo</p>
+                </div>
 
-            <!-- Nombre de la Modelo -->
-            <div class="mb-6">
-                <label class="block font-medium text-gray-700 mb-2">Nombre de la Modelo</label>
-                <input type="text" id="modelName" placeholder="Valentina" 
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-            </div>
+                <!-- Settings Form -->
+                <div class="bg-white rounded-xl shadow-sm p-6 max-w-3xl">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-6 flex items-center">
+                        <span class="mr-2">⚙️</span> Configuración de la Modelo
+                    </h2>
 
-            <!-- Bio -->
-            <div class="mb-6">
-                <label class="block font-medium text-gray-700 mb-2">Bio / Descripción</label>
-                <textarea id="bio" rows="3" placeholder="Soy Valentina, me encanta bailar y divertirme..." 
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
-                <p class="text-sm text-gray-500 mt-1">Descripción de la modelo que la IA usará para personalizar respuestas</p>
-            </div>
-
-            <!-- Lovense -->
-            <div class="mb-6 p-4 bg-pink-50 rounded-lg">
-                <label class="flex items-center justify-between">
-                    <div>
-                        <span class="font-medium text-gray-700">🔥 Lovense Conectado</span>
-                        <p class="text-sm text-gray-500 mt-1">La IA mencionará que vibra cuando recibe tokens</p>
+                    <!-- Nombre de la Modelo -->
+                    <div class="mb-6">
+                        <label class="block font-medium text-gray-700 mb-2">Nombre de la Modelo</label>
+                        <input type="text" id="modelName" placeholder="Valentina" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                     </div>
-                    <input type="checkbox" id="hasLovense" 
-                           class="w-5 h-5 text-pink-600 rounded focus:ring-pink-500">
-                </label>
-            </div>
 
-            <!-- Tip Menu -->
-            <div class="mb-6">
-                <label class="block font-medium text-gray-700 mb-2">💰 Tip Menu</label>
-                <textarea id="tipMenu" rows="6" placeholder="10 - Flash boobs
-25 - Topless
-50 - Spank ass
-100 - Naked
-500 - Private 10min" 
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono text-sm"></textarea>
-                <p class="text-sm text-gray-500 mt-1">Una acción por línea: cantidad - descripción</p>
-            </div>
+                    <!-- Bio -->
+                    <div class="mb-6">
+                        <label class="block font-medium text-gray-700 mb-2">Bio / Descripción</label>
+                        <textarea id="bio" rows="3" placeholder="Soy Valentina, me encanta bailar y divertirme..." 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                        <p class="text-sm text-gray-500 mt-1">Descripción de la modelo que la IA usará para personalizar respuestas</p>
+                    </div>
 
-            <!-- Nivel Explícito -->
-            <div class="mb-6">
-                <label class="block font-medium text-gray-700 mb-3">Nivel de Contenido</label>
-                <div class="grid grid-cols-3 gap-3">
-                    <button onclick="setLevel('explicit', 1)" id="explicit-1" 
-                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
-                        😊 Suave
-                    </button>
-                    <button onclick="setLevel('explicit', 2)" id="explicit-2" 
-                            class="py-2 px-4 rounded-lg border-2 border-purple-500 bg-purple-50 transition">
-                        😈 Normal
-                    </button>
-                    <button onclick="setLevel('explicit', 3)" id="explicit-3" 
-                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
-                        🔥 Hardcore
+                    <!-- Lo que NO hace -->
+                    <div class="mb-6">
+                        <label class="block font-medium text-gray-700 mb-2">❌ Lo que NO hace</label>
+                        <textarea id="restrictions" rows="3" placeholder="No hace anal
+No hace squirt
+No muestra cara
+No hace shows con parejas" 
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                        <p class="text-sm text-gray-500 mt-1">Una restricción por línea - la IA sugerirá alternativas</p>
+                    </div>
+
+                    <!-- Lovense -->
+                    <div class="mb-6 p-4 bg-pink-50 rounded-lg">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <div>
+                                <span class="font-medium text-gray-700">🔥 Lovense Conectado</span>
+                                <p class="text-sm text-gray-500 mt-1">La IA mencionará que vibra cuando recibe tokens</p>
+                            </div>
+                            <input type="checkbox" id="hasLovense" 
+                                   class="w-5 h-5 text-pink-600 rounded focus:ring-pink-500">
+                        </label>
+                    </div>
+
+                    <!-- Tip Menu (Auto-detectado) -->
+                    <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                        <div class="flex items-center mb-2">
+                            <span class="font-medium text-gray-700">💰 Tip Menu</span>
+                            <span class="ml-2 px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">Auto-detectado</span>
+                        </div>
+                        <p class="text-sm text-gray-500">El tip menu se detecta automáticamente del chat de Chaturbate</p>
+                    </div>
+
+                    <!-- Nivel Explícito -->
+                    <div class="mb-6">
+                        <label class="block font-medium text-gray-700 mb-3">Nivel de Contenido</label>
+                        <div class="grid grid-cols-3 gap-3">
+                            <button onclick="setLevel('explicit', 1)" id="explicit-1" 
+                                    class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
+                                😊 Suave
+                            </button>
+                            <button onclick="setLevel('explicit', 2)" id="explicit-2" 
+                                    class="py-2 px-4 rounded-lg border-2 border-purple-500 bg-purple-50 transition">
+                                😈 Normal
+                            </button>
+                            <button onclick="setLevel('explicit', 3)" id="explicit-3" 
+                                    class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
+                                🔥 Hardcore
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Nivel de Emojis -->
+                    <div class="mb-6">
+                        <label class="block font-medium text-gray-700 mb-3">Cantidad de Emojis</label>
+                        <div class="grid grid-cols-4 gap-3">
+                            <button onclick="setLevel('emoji', 0)" id="emoji-0" 
+                                    class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
+                                Sin
+                            </button>
+                            <button onclick="setLevel('emoji', 1)" id="emoji-1" 
+                                    class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
+                                Pocos
+                            </button>
+                            <button onclick="setLevel('emoji', 2)" id="emoji-2" 
+                                    class="py-2 px-4 rounded-lg border-2 border-purple-500 bg-purple-50 transition text-sm">
+                                Normal
+                            </button>
+                            <button onclick="setLevel('emoji', 3)" id="emoji-3" 
+                                    class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
+                                Muchos
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Guardar -->
+                    <button onclick="saveSettings()" 
+                            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg transform hover:scale-[1.01] transition-all duration-200">
+                        💾 Guardar Configuración
                     </button>
                 </div>
             </div>
-
-            <!-- Nivel de Emojis -->
-            <div class="mb-6">
-                <label class="block font-medium text-gray-700 mb-3">Cantidad de Emojis</label>
-                <div class="grid grid-cols-4 gap-3">
-                    <button onclick="setLevel('emoji', 0)" id="emoji-0" 
-                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
-                        Sin
-                    </button>
-                    <button onclick="setLevel('emoji', 1)" id="emoji-1" 
-                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
-                        Pocos
-                    </button>
-                    <button onclick="setLevel('emoji', 2)" id="emoji-2" 
-                            class="py-2 px-4 rounded-lg border-2 border-purple-500 bg-purple-50 transition">
-                        Normal
-                    </button>
-                    <button onclick="setLevel('emoji', 3)" id="emoji-3" 
-                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition">
-                        Muchos
-                    </button>
-                </div>
-            </div>
-
-            <!-- Guardar -->
-            <button onclick="saveSettings()" 
-                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg transform hover:scale-[1.01] transition-all duration-200">
-                💾 Guardar Configuración
-            </button>
-        </div>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -134,8 +170,8 @@
         let settings = {
             modelName: '',
             bio: '',
+            restrictions: '',
             hasLovense: false,
-            tipMenu: '',
             explicitLevel: 2,
             emojiLevel: 2
         };
@@ -143,18 +179,18 @@
         // Check auth
         const token = localStorage.getItem('model_token');
         if (!token) {
-            alert('No estás autenticado. Por favor inicia sesión primero.');
-            // Redirigir o manejar
+            alert('No estás autenticado');
+            window.location.href = '/dashboard/login.html';
         }
 
-        // Load settings on page load
+        // Load settings
         loadSettings();
 
         async function loadSettings() {
             try {
                 const { data, error } = await supabase
                     .from('models')
-                    .select('name, bio, has_lovense, tip_menu, settings')
+                    .select('name, bio, has_lovense, restrictions, settings')
                     .eq('token', token)
                     .single();
 
@@ -164,9 +200,8 @@
                     settings.modelName = data.name || '';
                     settings.bio = data.bio || '';
                     settings.hasLovense = data.has_lovense || false;
-                    settings.tipMenu = data.tip_menu || '';
+                    settings.restrictions = Array.isArray(data.restrictions) ? data.restrictions.join('\n') : '';
                     
-                    // Si hay settings JSON, cargar de ahí
                     if (data.settings) {
                         settings.explicitLevel = data.settings.explicitLevel || 2;
                         settings.emojiLevel = data.settings.emojiLevel || 2;
@@ -182,14 +217,13 @@
         function updateUI() {
             document.getElementById('modelName').value = settings.modelName;
             document.getElementById('bio').value = settings.bio;
+            document.getElementById('restrictions').value = settings.restrictions;
             document.getElementById('hasLovense').checked = settings.hasLovense;
-            document.getElementById('tipMenu').value = settings.tipMenu;
             setLevel('explicit', settings.explicitLevel, false);
             setLevel('emoji', settings.emojiLevel, false);
         }
 
         function setLevel(type, level, updateSettings = true) {
-            // Update UI
             for (let i = 0; i <= 3; i++) {
                 const btn = document.getElementById(`${type}-${i}`);
                 if (btn) {
@@ -203,7 +237,6 @@
                 }
             }
             
-            // Update settings
             if (updateSettings) {
                 if (type === 'explicit') settings.explicitLevel = level;
                 if (type === 'emoji') settings.emojiLevel = level;
@@ -211,11 +244,13 @@
         }
 
         async function saveSettings() {
-            // Recoger valores del form
             settings.modelName = document.getElementById('modelName').value;
             settings.bio = document.getElementById('bio').value;
+            settings.restrictions = document.getElementById('restrictions').value;
             settings.hasLovense = document.getElementById('hasLovense').checked;
-            settings.tipMenu = document.getElementById('tipMenu').value;
+            
+            // Convert restrictions to array
+            const restrictionsArray = settings.restrictions.split('\n').filter(r => r.trim());
             
             try {
                 const { data, error } = await supabase
@@ -223,8 +258,8 @@
                     .update({
                         name: settings.modelName,
                         bio: settings.bio,
+                        restrictions: restrictionsArray,
                         has_lovense: settings.hasLovense,
-                        tip_menu: settings.tipMenu,
                         settings: {
                             explicitLevel: settings.explicitLevel,
                             emojiLevel: settings.emojiLevel
@@ -243,7 +278,7 @@
 
         function logout() {
             localStorage.clear();
-            window.location.href = '/';
+            window.location.href = '/dashboard/login.html';
         }
     </script>
 </body>
