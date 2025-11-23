@@ -99,6 +99,21 @@ setInterval(() => {
         }
       }
 
+      // EN PM: guardar mensajes de modelo en historial del fan
+      if (isModelMessage && isPM) {
+        // Encontrar el fan activo en PM
+        const pmTitleElement = document.querySelector('[data-testid="pm-title"]');
+        if (pmTitleElement) {
+          const pmTitle = pmTitleElement.textContent.trim();
+          // Extraer username del título
+          const pmMatch = pmTitle.match(/with\s+(\w+)|@(\w+)|(\w+)$/i);
+          if (pmMatch) {
+            targetUsername = pmMatch[1] || pmMatch[2] || pmMatch[3];
+            console.log(`🎯 PM con: ${targetUsername}`);
+          }
+        }
+      }
+
       // Inicializar historial del usuario
       if (!history[targetUsername]) {
         history[targetUsername] = [];
