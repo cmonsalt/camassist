@@ -161,13 +161,25 @@ setInterval(() => {
         history[username] = [];
       }
 
-      history[username].push({
-        type: 'tip',
-        amount: tipAmount,
-        timestamp: Date.now()
+      // Verificar si ya existe un tip duplicado (mismo usuario, cantidad y tiempo)
+      const now = Date.now();
+      const isDuplicate = history[username].some(item => {
+        return item.type === 'tip' &&
+          item.amount === tipAmount &&
+          Math.abs(item.timestamp - now) < 2000; // Menos de 2 segundos
       });
 
-      console.log(`💰 ${isPM ? 'PM' : 'Público'} - Tip de ${username}: ${tipAmount} tokens`);
+      if (!isDuplicate) {
+        history[username].push({
+          type: 'tip',
+          amount: tipAmount,
+          timestamp: now
+        });
+
+        console.log(`💰 ${isPM ? 'PM' : 'Público'} - Tip de ${username}: ${tipAmount} tokens`);
+      } else {
+        console.log(`⚠️ Tip duplicado ignorado - ${username}: ${tipAmount} tokens`);
+      }
     }
   });
 
