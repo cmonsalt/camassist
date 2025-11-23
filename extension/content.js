@@ -8,6 +8,10 @@ let pmHistory = {};      // Por username en PM
 const broadcasterUsername = window.location.pathname.split('/b/')[1]?.split('/')[0] || '';
 console.log('👤 Broadcaster username:', broadcasterUsername);
 
+const extensionStartTime = Date.now();
+console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
+
+
 setInterval(() => {
 
   // ============================================
@@ -65,19 +69,27 @@ setInterval(() => {
 
     // Ya procesado?
     if (msg.dataset.processed) return;
+
+    // Ignorar mensajes anteriores a cuando se cargó la extensión
+    const messageTime = parseInt(msg.getAttribute('data-ts') || '0');
+    if (messageTime > 0 && messageTime < extensionStartTime) {
+      msg.dataset.processed = 'true'; // Marcar como procesado pero no guardar
+      return;
+    }
+
     msg.dataset.processed = 'true';
 
     // ============================================
- // ============================================
+    // ============================================
     // GUARDAR EN HISTORIAL CORRECTO
     // ============================================
-    
+
     if (!isTip && messageText) {
       const history = isPM ? pmHistory : publicHistory;
-      
+
       // Si la modelo responde con @mention, guardar en historial del fan mencionado
       let targetUsername = username;
-      
+
       if (isModelMessage && !isPM) {
         // Buscar @mention en el mensaje original (antes de limpiar)
         const mentionMatch = msg.textContent.match(/@(\w+)/);
@@ -86,24 +98,24 @@ setInterval(() => {
           console.log(`🎯 Modelo menciona a: ${targetUsername}`);
         }
       }
-      
+
       // Inicializar historial del usuario
       if (!history[targetUsername]) {
         history[targetUsername] = [];
       }
-      
+
       // Guardar mensaje
       history[targetUsername].push({
         type: isModelMessage ? 'model' : 'fan',
         message: messageText,
         timestamp: Date.now()
       });
-      
+
       // Mantener últimos 20
       if (history[targetUsername].length > 20) {
         history[targetUsername].shift();
       }
-      
+
       console.log(`💬 ${isPM ? 'PM' : 'Público'} - ${isModelMessage ? 'Modelo' : 'Fan'} (guardado en historial de: ${targetUsername}): ${messageText}`);
     }
 
