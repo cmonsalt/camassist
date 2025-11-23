@@ -250,7 +250,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           message: messageText,
           context: userHistory.slice(-10), // Solo últimos 10 del usuario
           isPM,
-          tip: tipAmount
+          tip: tipAmount,
+          tipMenuText: localStorage.getItem('detected_tip_menu') || ''
         })
       });
       return response.json();
