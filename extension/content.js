@@ -68,30 +68,43 @@ setInterval(() => {
     msg.dataset.processed = 'true';
 
     // ============================================
+ // ============================================
     // GUARDAR EN HISTORIAL CORRECTO
     // ============================================
-
+    
     if (!isTip && messageText) {
       const history = isPM ? pmHistory : publicHistory;
-
-      // Inicializar historial del usuario
-      if (!history[username]) {
-        history[username] = [];
+      
+      // Si la modelo responde con @mention, guardar en historial del fan mencionado
+      let targetUsername = username;
+      
+      if (isModelMessage && !isPM) {
+        // Buscar @mention en el mensaje original (antes de limpiar)
+        const mentionMatch = msg.textContent.match(/@(\w+)/);
+        if (mentionMatch) {
+          targetUsername = mentionMatch[1]; // El username mencionado
+          console.log(`🎯 Modelo menciona a: ${targetUsername}`);
+        }
       }
-
+      
+      // Inicializar historial del usuario
+      if (!history[targetUsername]) {
+        history[targetUsername] = [];
+      }
+      
       // Guardar mensaje
-      history[username].push({
+      history[targetUsername].push({
         type: isModelMessage ? 'model' : 'fan',
         message: messageText,
         timestamp: Date.now()
       });
-
+      
       // Mantener últimos 20
-      if (history[username].length > 20) {
-        history[username].shift();
+      if (history[targetUsername].length > 20) {
+        history[targetUsername].shift();
       }
-
-      console.log(`💬 ${isPM ? 'PM' : 'Público'} - ${isModelMessage ? 'Modelo' : 'Fan'} (${username}): ${messageText}`);
+      
+      console.log(`💬 ${isPM ? 'PM' : 'Público'} - ${isModelMessage ? 'Modelo' : 'Fan'} (guardado en historial de: ${targetUsername}): ${messageText}`);
     }
 
     // ============================================
