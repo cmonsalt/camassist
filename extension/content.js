@@ -101,16 +101,17 @@ setInterval(() => {
 
       // EN PM: guardar mensajes de modelo en historial del fan
       if (isModelMessage && isPM) {
-        // Encontrar el fan activo en PM
-        const pmTitleElement = document.querySelector('[data-testid="pm-title"]');
-        if (pmTitleElement) {
-          const pmTitle = pmTitleElement.textContent.trim();
-          // Extraer username del título
-          const pmMatch = pmTitle.match(/with\s+(\w+)|@(\w+)|(\w+)$/i);
-          if (pmMatch) {
-            targetUsername = pmMatch[1] || pmMatch[2] || pmMatch[3];
-            console.log(`🎯 PM con: ${targetUsername}`);
-          }
+        // Buscar el último mensaje de un fan (que no sea la modelo)
+        const fanMessages = Array.from(allMessages).filter(m => {
+          const nick = m.getAttribute('data-nick');
+          return nick && nick !== broadcasterUsername;
+        });
+
+        if (fanMessages.length > 0) {
+          // Tomar el data-nick del último mensaje de fan
+          const lastFanMessage = fanMessages[fanMessages.length - 1];
+          targetUsername = lastFanMessage.getAttribute('data-nick');
+          console.log(`🎯 PM con: ${targetUsername}`);
         }
       }
 
