@@ -123,8 +123,15 @@ setInterval(() => {
     // AGREGAR BOTÓN IA SOLO EN MENSAJES DE FANS
     // ============================================
 
-    if (!isModelMessage && !isTip && messageText && !msg.querySelector('.ai-btn')) {
-      addAIButton(msg, username, messageText, isPM, isPM ? 'pm' : 'public', tipAmount);
+    // Agregar botón IA:
+    // - En mensajes normales del fan
+    // - En tips que tienen mensaje personalizado
+    const hasTipMessage = isTip && messageText && !messageText.match(/^tipped \d+ tokens?$/i);
+
+    if (!isModelMessage && messageText && !msg.querySelector('.ai-btn')) {
+      if (!isTip || hasTipMessage) {
+        addAIButton(msg, username, messageText, isPM, isPM ? 'pm' : 'public', tipAmount);
+      }
     }
 
     // ============================================
@@ -166,12 +173,12 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
 
     console.log(`🔵 IA para ${isPM ? 'PM' : 'público'} - Usuario: ${username}`);
     console.log('📚 Historial del usuario (últimos 10):');
-  console.table(userHistory.slice(-10).map((item, index) => ({
-  '#': index,
-  'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
-  'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : (item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '')),
-  'Timestamp': new Date(item.timestamp).toLocaleTimeString()
-})));
+    console.table(userHistory.slice(-10).map((item, index) => ({
+      '#': index,
+      'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
+      'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : (item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '')),
+      'Timestamp': new Date(item.timestamp).toLocaleTimeString()
+    })));
 
     btn.textContent = '...';
 
