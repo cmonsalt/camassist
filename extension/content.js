@@ -16,26 +16,37 @@ let tipMenuText = '';
 
 function detectTipMenu() {
   const notices = document.querySelectorAll('[data-testid="room-notice"]');
-  
+
+  let tipMenuContent = [];
+  let capturing = false;
+
   notices.forEach(notice => {
     const text = notice.textContent.trim();
-    
+
+    // Empezar a capturar cuando encontramos "Tip Menu"
     if (text.includes('Tip Menu')) {
-      // Encontrar el contenedor padre que tiene todo el tip menu
-      const container = notice.closest('[class*="Notice"]') || notice.parentElement;
-      
-      if (container) {
-        // Extraer TODO el texto del contenedor
-        tipMenuText = container.textContent.trim();
-        
-        console.log('🎯 Tip Menu detectado:');
-        console.log(tipMenuText);
-        
-        // Guardar tal cual
-        localStorage.setItem('detected_tip_menu', tipMenuText);
+      capturing = true;
+      tipMenuContent = [text]; // Agregar el título
+      console.log('🎯 Tip Menu detectado, capturando contenido...');
+    }
+    // Si estamos capturando, agregar las líneas
+    else if (capturing) {
+      // Parar si encontramos instrucciones del sistema
+      if (text.includes('#nomenu') || text.includes('Type menu.help')) {
+        capturing = false;
+      } else if (text.startsWith('Notice:')) {
+        // Es una acción del menu
+        tipMenuContent.push(text);
       }
     }
   });
+
+  if (tipMenuContent.length > 0) {
+    tipMenuText = tipMenuContent.join('\n');
+    localStorage.setItem('detected_tip_menu', tipMenuText);
+    console.log('✅ Tip Menu guardado:');
+    console.log(tipMenuText);
+  }
 }
 
 // Ejecutar al cargar
