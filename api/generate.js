@@ -81,6 +81,7 @@ Rules:
 - Build sexual tension gradually
 ${modelData.restrictions && modelData.restrictions.length > 0 ? `- Things you don't do: ${modelData.restrictions.join(', ')} (suggest alternatives)` : ''}
 ${isPM ? '- This is a PRIVATE MESSAGE, be more conversational and intimate' : '- This is PUBLIC CHAT, keep it shorter and flirty'}
+${req.body.tipMenuText ? `\n\nTip Menu:\n${req.body.tipMenuText}\n` : ''}
 - Use ${modelData.emoji_level === 0 ? 'NO emojis' : modelData.emoji_level === 1 ? 'few emojis (1-2)' : modelData.emoji_level === 3 ? 'LOTS of emojis (4-6)' : 'normal emojis (2-3)'}
 - Keep response under ${isPM ? '80' : '50'} words${contextText}`;
 
