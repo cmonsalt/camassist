@@ -27,9 +27,6 @@
                     <a href="/dashboard/modelos.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">👥</span> Modelos
                     </a>
-                    <a href="/dashboard/settings.html" class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
-                        <span class="mr-3">⚙️</span> Configuración
-                    </a>
                 </nav>
             </div>
 
@@ -50,7 +47,7 @@
                 <!-- Header -->
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold text-gray-800">Configuración</h1>
-                    <p class="text-gray-600">Personaliza la configuración de la modelo</p>
+                    <p class="text-gray-600">Personaliza la configuración de <span id="currentModelName" class="font-semibold text-purple-600">la modelo</span></p>
                 </div>
 
                 <!-- Settings Form -->
@@ -165,6 +162,13 @@ No hace shows con parejas"
             'https://lgzubppvsobqkstqwuea.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenVicHB2c29icWtzdHF3dWVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcyNDg3NDAsImV4cCI6MjA1MjgyNDc0MH0.iz9wpR5CMTK_OfhcJXDKl-zy_bTEaI87DRCjVjsF1v4'
         );
+
+        // Get model from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentModel = urlParams.get('model') || 'valentina';
+        
+        // Update header with model name
+        document.getElementById('currentModelName').textContent = currentModel.charAt(0).toUpperCase() + currentModel.slice(1);
 
         // Settings state
         let settings = {
