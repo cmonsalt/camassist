@@ -11,6 +11,36 @@ console.log('👤 Broadcaster username:', broadcasterUsername);
 const extensionStartTime = Date.now();
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
 
+// Detectar tip menu (versión simple)
+let tipMenuText = '';
+
+function detectTipMenu() {
+  const notices = document.querySelectorAll('[data-testid="room-notice"]');
+  
+  notices.forEach(notice => {
+    const text = notice.textContent.trim();
+    
+    if (text.includes('Tip Menu')) {
+      // Encontrar el contenedor padre que tiene todo el tip menu
+      const container = notice.closest('[class*="Notice"]') || notice.parentElement;
+      
+      if (container) {
+        // Extraer TODO el texto del contenedor
+        tipMenuText = container.textContent.trim();
+        
+        console.log('🎯 Tip Menu detectado:');
+        console.log(tipMenuText);
+        
+        // Guardar tal cual
+        localStorage.setItem('detected_tip_menu', tipMenuText);
+      }
+    }
+  });
+}
+
+// Ejecutar al cargar
+detectTipMenu();
+setInterval(detectTipMenu, 30000);
 
 setInterval(() => {
 
