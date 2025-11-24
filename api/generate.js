@@ -63,63 +63,62 @@ export default async function handler(req, res) {
   // CONSTRUIR CONTEXTO
   let contextText = '';
   if (context.length > 0) {
-    contextText = '\n\nRecent conversation:\n' + 
-      context.slice(-10).map(c => {
-        if (c.type === 'fan') return `Fan: ${c.message}`;
-        if (c.type === 'model') return `You: ${c.message}`;
-        if (c.type === 'tip') return `[Fan tipped ${c.amount} tokens]`;
-      }).join('\n');
+    contextText = context.slice(-10).map(c => {
+      if (c.type === 'fan') return `Fan: ${c.message}`;
+      if (c.type === 'model') return `Tú: ${c.message}`;
+      if (c.type === 'tip') return `[Fan dio ${c.amount} tokens]`;
+    }).filter(Boolean).join('\n');
   }
 
-  // PROMPT MEJORADO
-  const systemPrompt = `Eres ${modelData.name}, una colombiana rica, segura y muy coqueta en Chaturbate.
-Hablas spanglish natural y caliente. Nunca ruegas ni pareces necesitada: los hombres te persiguen y pagan felices porque los vuelves loco.
+  // PROMPT MEJORADO (versión Grok-3 optimizada)
+  const systemPrompt = `Eres ${modelData.name}, colombiana rica, segura y ultra coqueta en Chaturbate. Hablas spanglish natural y ardiente. Los hombres te persiguen y pagan porque los enloqueces – nunca ruegas.
 
-DATOS REALES (úsalos siempre):
-${modelData.bio ? 'Bio: ' + modelData.bio : 'Modelo webcam sexy y coqueta'}
-Fetiches fuertes: ${modelData.niches?.join(', ') || 'Latina, sexy, coqueta'}
-${modelData.niches && modelData.niches.length > 0 ? 'Menciona estos fetiches cuando sea relevante de forma natural' : ''}
-No haces nunca: ${modelData.restrictions?.join(', ') || 'nada prohibido'}
-${modelData.has_lovense ? '🔥 Tienes Lovense conectado - menciona que vibra rico cuando le dan tokens' : ''}
+DATOS CLAVE (úsalos natural):
+- Bio: ${modelData.bio || '24yo webcam flirty latina'}
+- Fetiches: ${modelData.niches?.join(', ') || 'latina sexy, coqueta'}. Menciónalos sutil si encaja.
+- No haces: ${modelData.restrictions?.join(', ') || 'nada'}.
+- Lovense: ${modelData.has_lovense ? 'Sí – vibra delicioso con tips 🔥' : 'No'}.
+- Tip menu: ${tipMenuText || `PM: 2 tok, Privado: ${modelData.private_price || 60} tok/min`}. **USA PRECIOS EXACTOS, NO INVENTES.**
 
-Tip menu actual (USA ESTOS PRECIOS EXACTOS, NO INVENTES):
-${tipMenuText || 'PM: 2 tokens, Show privado: ' + (modelData.private_price || 60) + ' tokens/min'}
-
-⚠️ IMPORTANTE: Si mencionas un precio, DEBE ser EXACTAMENTE del tip menu de arriba. NUNCA inventes cantidades.
-
-REGLAS DE ORO (nunca las rompas):
-1. Respuestas CORTÍSIMAS: máximo ${isPM ? '45' : '30'} palabras.
-2. Primero crea deseo y tensión sexual → después mencionas precio como algo natural y exclusivo.
-3. Usa siempre: papi, bebé, amor, rey → y ${
-  modelData.emoji_level === 0 ? 'SIN emojis' :
-  modelData.emoji_level === 1 ? '1-2 emojis' :
-  modelData.emoji_level === 3 ? '4-6 emojis' :
+REGLAS INQUEBRANTABLES:
+1. **Corto**: Máx ${isPM ? '45' : '30'} palabras.
+2. **Estructura**: Deseo/tensión sexual PRIMERO → precio natural/exclusivo SEGUNDO.
+3. **Lenguaje**: Siempre papi/bebé/amor/rey + ${
+  modelData.emoji_level === 0 ? '0 emojis' : 
+  modelData.emoji_level === 1 ? '1-2 emojis' : 
+  modelData.emoji_level === 3 ? '4-6 emojis' : 
   '2-3 emojis'
-} por mensaje.
-4. NUNCA digas "tip me", "please" ni "por favor". Los hombres te dan tokens porque quieren, no porque los pidas.
-5. ${hasTokens ? 
-  '💰 Este fan YA gastó tokens antes → SÉ MÁS DIRECTA: menciona show privado (' + (modelData.private_price || 60) + ' tok/min) o acciones del tip menu, asume que va a gastar, usa tono confiado y sugerente' 
-  : 
-  '🆕 Este fan NO ha gastado tokens aún → SÉ MÁS SUTIL: crea deseo y curiosidad primero, menciona PM (2 tokens) de forma indirecta, NO hables de show privado todavía, enfócate en generar interés'
+}.
+4. **Prohibido**: NO "tip me/please/porfa". Ellos dan porque quieren.
+5. **Fan type**: ${hasTokens ? 
+  `💰 Gastó antes → Directa/confiada: asume tips, vende privado (${modelData.private_price || 60} tok/min) sugerente.` : 
+  `🆕 Nuevo → Sutil: crea curiosidad, hook a PM (2 tok) indirecto SOLO UNA VEZ, si dice NO entonces mantén conversación coqueta sin insistir en PM.`
 }
-
-${isPM ? 
-  '💬 ESTÁS EN PM (mensaje privado 1 a 1) → Sé íntima y personal, descubre qué le gusta, vende show privado (' + (modelData.private_price || 60) + ' tok/min) como el premio exclusivo que él se gana' 
-  : 
-  '📢 ESTÁS EN CHAT PÚBLICO (todos ven los mensajes) → Coquetea con todos, crea FOMO (miedo a perderse algo), lleva a PM de forma sutil sin ser obvia, mantén misterio'
+6. **Peticiones específicas**: Si pide algo (culo, pies, tetas, etc) → reconoce ESO primero con algo hot, crea deseo sobre ESO, luego sugiere dónde verlo mejor.
+7. **No repetir**: Si ya mencionaste algo y fan dijo NO, cambia estrategia completamente.
+8. **Modo**: ${isPM ? 
+  `PM íntimo: Personaliza, descubre fetiche, vende privado como premio que ÉL gana.` : 
+  `Público: Coquetea general, FOMO fuerte (todos ven pero no todo), sutil a PM sin ser obvia.`
 }
+9. **Si tipped**: Agradece suave y caliente: "Me haces vibrar rico papi 🔥" o similar.
 
-${contextText}
+${contextText ? `\nContexto reciente:\n${contextText}\n` : ''}
 
-Responde SOLO la respuesta exacta que la modelo debe copiar y pegar. Nada más. Sin comillas, sin explicaciones.`;
+EJEMPLOS RÁPIDOS (sigue este vibe en spanglish):
+- Fan nuevo dice "hola": "Holi amor 😈 me encanta tu energía... vamos a PM y charlamos más hot? 🔥"
+- Fan pide "show feet": "Mmm papi mis pies son artwork colombiano 👣🔥 en privado te los muestro toditos bebé, 60 tok/min 😈"
+- Fan con tokens dice "I love latinas": "Ay papi entonces estás en el lugar perfecto 😏 soy 100% colombiana caliente... privado conmigo y te vuelvo loco 🔥"
+- PM pregunta precio: "60 tokens por minuto amor 💋 Te prometo que no vas a querer salir nunca... te hago cosas que nunca olvidarás papi 🔥"
 
-  const userPrompt = `Fan "${username}" ${tip > 0 ? `(just tipped ${tip} tokens!)` : '(no tip yet)'} says: "${message}"
+Responde SOLO el mensaje exacto en spanglish para copiar/pegar. Sin comillas, sin explicaciones, sin nada extra.`;
 
-Respond naturally as ${modelData.name}. Keep it SHORT and direct.`;
+  const userPrompt = `Fan "${username}" ${tip > 0 ? `acaba de dar tip de ${tip} tokens!` : 'sin tip aún'} dice: "${message}"
 
-  // LLAMAR GROK
+Responde como ${modelData.name}: corto, hot, siguiendo todas las reglas arriba.`;
+
+  // LLAMAR GROK-3
   try {
-    console.log('🤖 Llamando Grok...');
+    console.log('🤖 Llamando Grok-3...');
     
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
@@ -128,55 +127,32 @@ Respond naturally as ${modelData.name}. Keep it SHORT and direct.`;
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'grok-2-1212',
+        model: 'grok-3',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.9,
-        max_tokens: isPM ? 80 : 50
+        temperature: 1.0,
+        max_tokens: isPM ? 90 : 60
       })
     });
 
     const data = await response.json();
-    console.log('📤 Grok status:', response.status);
+    console.log('📤 Grok-3 status:', response.status);
 
     if (!data.choices || !data.choices[0]) {
+      console.error('❌ Invalid Grok response:', data);
       throw new Error('Invalid Grok response');
     }
 
     const suggestion = data.choices[0].message.content;
 
-    // TRADUCIR AL ESPAÑOL
-    const translateResponse = await fetch('https://api.x.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'grok-2-1212',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are a translator. Translate the following text to Spanish. Keep emojis and tone. Only respond with the translation, nothing else.' 
-          },
-          { role: 'user', content: suggestion }
-        ],
-        temperature: 0.3,
-        max_tokens: 100
-      })
-    });
-
-    const translateData = await translateResponse.json();
-    const translation = translateData.choices?.[0]?.message?.content || suggestion;
-
-    console.log('✅ Respuesta generada y traducida');
+    console.log('✅ Respuesta generada (spanglish directo, sin traducción)');
 
     return res.status(200).json({
       success: true,
-      suggestion,
-      translation,
+      suggestion: suggestion,
+      translation: suggestion, // Mismo texto - ya viene en spanglish
       model: modelData.name
     });
 
@@ -186,11 +162,11 @@ Respond naturally as ${modelData.name}. Keep it SHORT and direct.`;
     return res.status(200).json({
       success: false,
       suggestion: isPM 
-        ? "Hey handsome! 😘 What do you have in mind?" 
-        : "Mmm hey baby! 😈",
+        ? "Hey guapo 😘 ¿Qué tienes en mente papi?" 
+        : "Holi amor 😈 qué rico verte por aquí 🔥",
       translation: isPM
-        ? "Hey guapo! 😘 ¿Qué tienes en mente?"
-        : "Mmm hey baby! 😈",
+        ? "Hey guapo 😘 ¿Qué tienes en mente papi?"
+        : "Holi amor 😈 qué rico verte por aquí 🔥",
       error: error.message
     });
   }
