@@ -122,7 +122,7 @@ Respond naturally as ${modelData.name}. Keep it SHORT and direct.`;
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'grok-beta',
+        model: 'grok-2-1212',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
