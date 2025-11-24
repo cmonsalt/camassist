@@ -22,10 +22,11 @@ export default async function handler(req, res) {
     context = [], 
     isPM = false,
     tipMenuText = '',
-    hasTokens = false
+    hasTokens = false,
+    roomInfo = ''
   } = req.body;
 
-  console.log('📥 Request:', { token, username, message, isPM, hasTokens, contextLength: context.length });
+  console.log('📥 Request:', { token, username, message, isPM, hasTokens, roomInfo: roomInfo ? 'detected' : 'none', contextLength: context.length });
 
   // DEFAULTS
   let modelData = {
@@ -79,6 +80,16 @@ DATOS CLAVE (úsalos natural):
 - No haces: ${modelData.restrictions?.join(', ') || 'nada'}.
 - Lovense: ${modelData.has_lovense ? 'Sí – vibra delicioso con tips 🔥' : 'No'}.
 - Tip menu: ${tipMenuText || `PM: 2 tok, Privado: ${modelData.private_price || 60} tok/min`}. **USA PRECIOS EXACTOS, NO INVENTES.**
+
+${roomInfo ? `
+ROOM INFO ACTUAL:
+${roomInfo}
+
+Usa esta info para:
+- Mencionar goals y cuánto falta si hay ("¡Faltan solo X tokens pa' el goal papi!")
+- Mencionar precios de Lovense/vibraciones si preguntan ("Dame 44 tokens y me haces vibrar rico 💦")
+- Crear urgencia sobre goals ("Casi llegamos bebé, ayúdame")
+` : ''}
 
 REGLAS INQUEBRANTABLES:
 1. **Corto**: Máx ${isPM ? '45' : '30'} palabras.

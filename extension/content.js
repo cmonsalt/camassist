@@ -49,6 +49,27 @@ function detectTipMenu() {
   }
 }
 
+// NUEVO: Detectar Room Info (goals, lovense, etc)
+function detectRoomInfo() {
+  const roomSubjectEl = document.querySelector('[data-testid="room-subject"]');
+  
+  if (!roomSubjectEl) {
+    console.log('⚠️ No se encontró room subject');
+    return '';
+  }
+  
+  const fullText = roomSubjectEl.innerText || roomSubjectEl.textContent || '';
+  
+  // Quitar hashtags para limpiar (todo después del primer #)
+  const withoutHashtags = fullText.split('#')[0].trim();
+  
+  if (withoutHashtags) {
+    console.log('📝 Room info capturado:', withoutHashtags);
+  }
+  
+  return withoutHashtags;
+}
+
 // Ejecutar al cargar
 detectTipMenu();
 setInterval(detectTipMenu, 30000);
@@ -256,6 +277,9 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       const usernameLabel = container.querySelector('[data-testid="username-label"]');
       const hasTokens = usernameLabel?.classList.contains('hasTokens') || false;
 
+      // NUEVO: Capturar room info al momento de generar
+      const roomInfo = detectRoomInfo();
+
       const response = await fetch('https://camassist.vercel.app/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -267,7 +291,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           isPM,
           tip: tipAmount,
           tipMenuText: localStorage.getItem('detected_tip_menu') || '',
-          hasTokens: hasTokens  // NUEVO
+          hasTokens: hasTokens,
+          roomInfo: roomInfo  // NUEVO
         })
       });
       return response.json();
