@@ -160,15 +160,25 @@ Respond as ${modelData.name}.`;
       console.error('❌ Invalid Grok response:', data);
       throw new Error('Invalid Grok response');
     }
-
     let responseText = data.choices[0].message.content.trim();
 
     // Limpiar markdown si aparece
     responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
 
-    const parsed = JSON.parse(responseText);
-    let suggestion = parsed.response;
-    let translation = parsed.translation_es;
+    // LOG para debug
+    console.log('📥 RAW RESPONSE:', responseText);
+
+    let suggestion, translation;
+
+    try {
+      const parsed = JSON.parse(responseText);
+      suggestion = parsed.response;
+      translation = parsed.translation_es;
+    } catch (parseError) {
+      // Si falla JSON, mostrar error
+      console.log('⚠️ JSON parse falló');
+      throw new Error('JSON parse failed');
+    }
 
     // Agregar @username solo en público
     if (!isPM) {
@@ -190,12 +200,8 @@ Respond as ${modelData.name}.`;
 
     return res.status(200).json({
       success: false,
-      suggestion: isPM
-        ? "Hey love 😘 what's on your mind?"
-        : "Hey babe 😏 how are you?",
-      translation: isPM
-        ? "Hey amor 😘 ¿qué tienes en mente?"
-        : "Hey papi 😏 ¿cómo estás?",
+      suggestion: "⚠️ Error - Contacta soporte",
+      translation: "⚠️ Error - Contacta soporte",
       error: error.message
     });
   }
