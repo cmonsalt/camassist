@@ -31,11 +31,23 @@ export default async function handler(req, res) {
   // DEFAULTS (si no encuentra en BD)
   let modelData = {
     name: 'Model',
-    bio: '24 year old webcam model, flirty and playful',
-    restrictions: [],
-    niches: [],
+    age: 24,
+    location: 'Colombia',
+    personality: 'extrovert_playful',
+    conversation_topics: '',
+    body_type: 'curvy',
+    main_niche: 'Latina',
+    best_features: 'latina body',
+    public_shows: 'dance, tease',
+    private_shows: 'full nude, toys',
+    hard_limits: '',
+    partial_conditions: '',
     has_lovense: false,
     private_price: 60,
+    when_mention_private: 'only_if_ask',
+    sales_style: 'mysterious',
+    relationship_status: 'single',
+    extra_context: '',
     emoji_level: 2
   };
 
@@ -51,7 +63,7 @@ export default async function handler(req, res) {
         .single();
 
       if (!error && model) {
-        modelData = model;
+        modelData = { ...modelData, ...model };
         console.log('✅ Modelo encontrado:', modelData.name);
       } else {
         console.log('⚠️ No se encontró modelo, usando defaults');
@@ -64,43 +76,58 @@ export default async function handler(req, res) {
   // CONSTRUIR CONTEXTO
   let contextText = '';
   if (context.length > 0) {
-    contextText = context.slice(-10).map(c => {
+    const maxContext = isPM ? 7 : 3;
+    contextText = context.slice(-maxContext).map(c => {
       if (c.type === 'fan') return `Fan: ${c.message}`;
       if (c.type === 'model') return `You: ${c.message}`;
       if (c.type === 'tip') return `[Fan tipped ${c.amount} tokens]`;
     }).filter(Boolean).join('\n');
   }
 
-  // PROMPT - Grok detecta idioma automáticamente
-  const systemPrompt = `You are ${modelData.name}, a confident, sexy Colombian camgirl on Chaturbate.
+  // PROMPT COMPACTO CON TODOS LOS CAMPOS
+  const systemPrompt = `You are ${modelData.name}, ${modelData.age || 24}yo from ${modelData.location || 'Colombia'}. ${modelData.personality || 'Extrovert and playful'}.
 
-Bio: ${modelData.bio || '24yo hot Latina, flirty and playful'}
-Fetishes: ${modelData.niches?.join(', ') || 'latina, big ass, teasing'}
-Never do: ${modelData.restrictions?.join(', ') || 'nothing'}
-Lovense: ${modelData.has_lovense ? 'Yes 🔥' : 'No'}
-Private: ${modelData.private_price || 60} tk/min
+Body: ${modelData.body_type || 'curvy'}, best: ${modelData.best_features || 'latina body'}
+Niche: ${modelData.main_niche || 'Latina'}
+
+TALK ABOUT: ${modelData.conversation_topics || 'music, travel, life'}
+EXTRA: ${modelData.extra_context || ''}
+Status: ${modelData.relationship_status || 'single'}
+
+PUBLIC: ${modelData.public_shows || 'dance, tease'}
+PRIVATE: ${modelData.private_shows || 'full nude, toys'}
+NEVER: ${modelData.hard_limits || 'nothing'}
+CONDITIONS: ${modelData.partial_conditions || 'none'}
+
+Prices: ${modelData.private_price || 60} tk/min private
+Lovense: ${modelData.has_lovense ? 'Yes' : 'No'}
+When sell: ${modelData.when_mention_private || 'only_if_ask'}
+Style: ${modelData.sales_style || 'mysterious'}
+
 ${tipMenuText ? `Tip menu: ${tipMenuText}` : ''}
-${roomInfo ? `Room topic: ${roomInfo}` : ''}
+${roomInfo ? `Room: ${roomInfo}` : ''}
 
-RULES:
-- NEVER sound desperate or salesy. Fans chase you.
-- If fan talks normal topics (country, hobbies, work) → engage INTELLIGENTLY first. Build rapport 2-3 messages, THEN escalate flirty.
-- Respond ONLY in the same language the user used (100% Spanish or 100% English).
-- Max ${isPM ? '40' : '25'} words. Short & sexy.
+CORE RULES:
+- BE GENUINE: Talk like a real person, not a bot. If fan mentions hobbies/country/interests → engage INTELLIGENTLY on that topic first.
+- SELL PERSUASIVELY: Never desperate. Build rapport 2-3 messages, THEN escalate naturally. Fans chase YOU.
+- Language: 100% same as fan (EN or ES, no mixing)
+- Max ${isPM ? '40' : '25'} words
 - Emojis: ${modelData.emoji_level === 0 ? 'none' : modelData.emoji_level === 1 ? 'max 1' : modelData.emoji_level === 3 ? '3-4' : 'max 2'}
 - In public: flirt, create mystery. In PM: be intimate, escalate naturally.
-- Thank tips sexy but don't sell more.
-- If they ask something restricted → "Not my thing babe, but I can make you crazy with [alternative] 😈"
-- Only mention prices when directly asked or they request something specific.
+- If they ask something you NEVER do → offer sexy alternative
+- Only mention prices when directly asked or specific request
 
-${contextText ? `\nRecent chat:\n${contextText}\n` : ''}
+${contextText ? `\nRecent:\n${contextText}\n` : ''}
 
-Answer ONLY with valid JSON:
-{"response":"exact message here","translation_es":"traducción al español"}`;
+JSON only: {"response":"msg","translation_es":"traducción"}`;
 
   const userPrompt = `Fan "${username}" ${tip > 0 ? `tipped ${tip} tokens` : ''} says: "${message}"
 
 Respond as ${modelData.name}.`;
+
+  // LOG PARA VER QUÉ SE ENVÍA
+  console.log('📤 PROMPT ENVIADO:', systemPrompt);
+  console.log('📤 USER PROMPT:', userPrompt);
 
   // LLAMAR GROK-3-MINI (1 SOLA LLAMADA)
   try {
@@ -163,7 +190,6 @@ CRITICAL: Respond with ONLY a valid JSON object (no markdown, no backticks):
       translation: translation,
       model: modelData.name
     });
-
 
   } catch (error) {
     console.error('❌ ERROR:', error);
