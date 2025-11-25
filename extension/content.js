@@ -262,8 +262,14 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     const userHistory = history[username] || [];
 
     console.log(`🔵 IA para ${isPM ? 'PM' : 'público'} - Usuario: ${username}`);
+    // SI ESTAMOS EN PM, incluir historial público también
+    let fullContext = userHistory;
+    if (isPM && publicHistory[username]) {
+      fullContext = [...publicHistory[username], ...userHistory];
+    }
+
     console.log('📚 Historial del usuario (últimos 10):');
-    console.table(userHistory.slice(-10).map((item, index) => ({
+    console.table(fullContext.slice(-10).map((item, index) => ({
       '#': index,
       'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
       'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : (item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '')),
