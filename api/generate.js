@@ -149,7 +149,7 @@ Respond as ${modelData.name}.`;
           }
         ],
         temperature: 0.65,
-        max_tokens: isPM ? 100 : 70
+        max_tokens: isPM ? 150 : 120
       })
     });
 
