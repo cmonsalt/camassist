@@ -28,13 +28,7 @@ export default async function handler(req, res) {
 
   console.log('📥 Request:', { token, username, message, isPM, hasTokens, roomInfo: roomInfo ? 'detected' : 'none', contextLength: context.length });
 
-  // DETECTAR IDIOMA DEL FAN
-  const isEnglish = /^[a-zA-Z0-9\s.,!?'"@#$%&*()_+=\-<>\/]+$/.test(message) && 
-                    !/(hola|amor|bb|papi|mamá|rico|hermosa|linda|bonita)/i.test(message);
-  
-  console.log('🌍 Idioma detectado:', isEnglish ? 'Inglés' : 'Español');
-
-  // DEFAULTS
+  // DEFAULTS (si no encuentra en BD)
   let modelData = {
     name: 'Model',
     bio: '24 year old webcam model, flirty and playful',
@@ -77,8 +71,8 @@ export default async function handler(req, res) {
     }).filter(Boolean).join('\n');
   }
 
-  // PROMPT PERSUASIVO (en el idioma del fan)
-  const systemPrompt = `You are ${modelData.name}, a confident, sexy Colombian webcam model on Chaturbate. ${isEnglish ? 'You speak natural English with a bit of Spanish flair.' : 'Hablas spanglish natural.'} Fans chase you - you never chase them.
+  // PROMPT - Grok detecta idioma automáticamente
+  const systemPrompt = `You are ${modelData.name}, a confident, sexy Colombian webcam model on Chaturbate. Fans chase you - you never chase them.
 
 YOUR PERSONALITY:
 - Bio: ${modelData.bio || 'Hot Latina, flirty and playful'}
@@ -127,21 +121,17 @@ ${roomInfo ? `ROOM INFO: ${roomInfo}` : ''}
 
 10. **If they TIPPED**: Thank sexy: "Mmm babe you make me vibrate 🔥" - DON'T sell more, they already gave.
 
-11. **VARIETY**: Don't repeat same words/phrases. Mix: babe/baby/love/daddy${isEnglish ? '' : '/papi/amor/rey'}
+11. **VARIETY**: Don't repeat same words/phrases. Mix different pet names (babe/baby/love/daddy/papi/amor/rey).
+
+12. **LANGUAGE**: Respond in the SAME language the fan is using. If they write in English, respond in English. If they write in Spanish, respond in Spanish.
 
 ${contextText ? `\nRECENT CONVERSATION:\n${contextText}\n` : ''}
 
-EXAMPLES:
-- Fan greets "hey": "${isEnglish ? 'Hey babe 😏 how are you today?' : 'Hola amor 😏 ¿cómo estás?'}"
-- Fan compliments body part: "${isEnglish ? 'Mmm thanks baby 😈 what else drives you crazy?' : 'Ay papi me encanta 😈 ¿qué más te vuelve loco?'}"
-- Fan asks name: "${isEnglish ? `I'm ${modelData.name} babe 💋 what's yours?` : `Soy ${modelData.name} amor 💋 ¿y tú?`}"
-- Fan ASKS for private: "${isEnglish ? `Sure babe, ${modelData.private_price} tok/min and I'll blow your mind 🔥` : `Claro papi, ${modelData.private_price} tok/min y te vuelvo loco 🔥`}"
-
-Respond ONLY the message in ${isEnglish ? 'English' : 'Spanish'}. No quotes, no explanations.`;
+Respond ONLY the message. No quotes, no explanations.`;
 
   const userPrompt = `Fan "${username}" ${tip > 0 ? `tipped ${tip} tokens` : ''} says: "${message}"
 
-Respond as ${modelData.name}. PERSUASIVE but NO HUNGER.`;
+Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as the fan.`;
 
   // LLAMAR GROK-3
   try {
@@ -179,52 +169,49 @@ Respond as ${modelData.name}. PERSUASIVE but NO HUNGER.`;
       suggestion = `@${username} ${suggestion}`;
     }
 
-    // SI ES INGLÉS, TRADUCIR AL ESPAÑOL PARA LA MODELO
+    // SIEMPRE TRADUCIR AL ESPAÑOL (para que modelo entienda)
     let translation = suggestion;
     
-    if (isEnglish) {
-      console.log('🌍 Traduciendo al español...');
-      
-      try {
-        const translateResponse = await fetch('https://api.x.ai/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'grok-3',
-            messages: [
-              { 
-                role: 'system', 
-                content: 'You are a translator. Translate the following text to Spanish. Keep emojis and tone. Only respond with the translation, nothing else.' 
-              },
-              { role: 'user', content: suggestion.replace(`@${username} `, '') }
-            ],
-            temperature: 0.3,
-            max_tokens: 100
-          })
-        });
+    console.log('🌍 Traduciendo al español...');
+    
+    try {
+      const translateResponse = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'grok-3',
+          messages: [
+            { 
+              role: 'system', 
+              content: 'You are a translator. Translate the following text to Spanish. Keep emojis and tone. Keep @mentions. Only respond with the translation, nothing else.' 
+            },
+            { role: 'user', content: suggestion }
+          ],
+          temperature: 0.3,
+          max_tokens: 100
+        })
+      });
 
-        const translateData = await translateResponse.json();
-        
-        if (translateData.choices && translateData.choices[0]) {
-          translation = `@${username} ${translateData.choices[0].message.content}`;
-          console.log('✅ Traducción:', translation);
-        }
-      } catch (translateError) {
-        console.error('⚠️ Error traduciendo:', translateError);
-        // Si falla la traducción, usar la respuesta original
+      const translateData = await translateResponse.json();
+      
+      if (translateData.choices && translateData.choices[0]) {
+        translation = translateData.choices[0].message.content;
+        console.log('✅ Traducción:', translation);
       }
+    } catch (translateError) {
+      console.error('⚠️ Error traduciendo:', translateError);
+      // Si falla la traducción, usar la respuesta original
     }
 
     console.log('✅ Respuesta generada');
 
     return res.status(200).json({
       success: true,
-      suggestion: suggestion,  // Para copiar (en idioma del fan)
-      translation: translation, // Para que modelo entienda (en español)
-      isEnglish: isEnglish,
+      suggestion: suggestion,  // Para copiar (idioma del fan)
+      translation: translation, // Para que modelo entienda (español)
       model: modelData.name
     });
 

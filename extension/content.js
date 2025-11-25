@@ -300,9 +300,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     try {
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
-      if (data.isEnglish) {
-        console.log('🌍 Traducción:', data.translation);
-      }
+      console.log('🌍 Traducción:', data.translation);
 
       // Crear popup
       const popup = document.createElement('div');
@@ -319,9 +317,15 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       responseText.style.cssText = 'background:#f0f0f0;padding:10px;border-radius:3px;max-height:200px;overflow-y:auto;word-wrap:break-word;margin-bottom:10px';
       responseText.textContent = data.suggestion;
 
-      // SI ES INGLÉS, MOSTRAR TRADUCCIÓN
+      // MOSTRAR TRADUCCIÓN SOLO SI ES DIFERENTE (fan escribió en inglés)
       let translationText = null;
-      if (data.isEnglish && data.translation !== data.suggestion) {
+      let translationContent = null;
+      
+      // Comparar sin espacios extras para evitar falsos positivos
+      const suggestionClean = data.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
+      const translationClean = data.translation.replace(/\s+/g, ' ').trim().toLowerCase();
+      
+      if (suggestionClean !== translationClean) {
         translationText = document.createElement('div');
         translationText.style.cssText = 'background:#e3f2fd;padding:10px;border-radius:3px;margin-bottom:10px;border-left:3px solid #2196F3';
         
@@ -329,7 +333,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         translationLabel.style.cssText = 'font-size:11px;color:#1976D2;font-weight:600;margin-bottom:5px';
         translationLabel.textContent = '📝 Traducción (para ti):';
         
-        const translationContent = document.createElement('div');
+        translationContent = document.createElement('div');
         translationContent.style.cssText = 'color:#333';
         translationContent.textContent = data.translation;
         
@@ -357,8 +361,13 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           responseText.textContent = newData.suggestion;
           
           // Actualizar traducción si existe
-          if (translationText && newData.isEnglish && newData.translation !== newData.suggestion) {
-            translationContent.textContent = newData.translation;
+          if (translationContent) {
+            const newSuggestionClean = newData.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
+            const newTranslationClean = newData.translation.replace(/\s+/g, ' ').trim().toLowerCase();
+            
+            if (newSuggestionClean !== newTranslationClean) {
+              translationContent.textContent = newData.translation;
+            }
           }
         } catch (error) {
           console.error('Error regenerando:', error);
