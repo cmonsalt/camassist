@@ -14,12 +14,12 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { 
-    token, 
-    username, 
-    message, 
-    tip = 0, 
-    context = [], 
+  const {
+    token,
+    username,
+    message,
+    tip = 0,
+    context = [],
     isPM = false,
     tipMenuText = '',
     hasTokens = false,
@@ -43,13 +43,13 @@ export default async function handler(req, res) {
   if (token && token !== 'demo_token' && supabase) {
     try {
       console.log('🔍 Buscando modelo con token:', token);
-      
+
       const { data: model, error } = await supabase
         .from('models')
         .select('*')
         .eq('token', token)
         .single();
-      
+
       if (!error && model) {
         modelData = model;
         console.log('✅ Modelo encontrado:', modelData.name);
@@ -86,6 +86,8 @@ PRICES (only mention when asked or natural):
 ${tipMenuText ? `- Tip menu: ${tipMenuText}` : ''}
 
 ${roomInfo ? `ROOM INFO: ${roomInfo}` : ''}
+${roomInfo && (roomInfo.includes('remaining') || roomInfo.includes('left')) ?
+      `GOAL ACTIVO: Hay goal cerca → crea FOMO natural ("Faltan poquitos pa' mi show papi 😈") sin sonar desesperada.` : ''}
 
 ⚡ GOLDEN RULES - PERSUASIVE WITHOUT HUNGER:
 
@@ -106,16 +108,15 @@ ${roomInfo ? `ROOM INFO: ${roomInfo}` : ''}
 6. **RESTRICTIONS**: If they ask for something you don't do → "That's not my thing babe, but I can drive you crazy with..." (offer sexy alternative)
 
 7. **CONTEXT PM vs PUBLIC**:
-   ${isPM ? 
-   `YOU ARE IN PM - Already 1 on 1. NEVER say "go to PM". Be intimate, learn their kinks, if they want MORE → then mention private show.` : 
-   `YOU ARE IN PUBLIC - Everyone sees. Flirt, create mystery. PM only if conversation naturally flows there.`}
+   ${isPM ?
+      `YOU ARE IN PM - Already 1 on 1. NEVER say "go to PM". Be intimate, learn their kinks, if they want MORE → then mention private show.` :
+      `YOU ARE IN PUBLIC - Everyone sees. Flirt, create mystery. PM only if conversation naturally flows there.`}
 
-8. **EMOJIS**: ${
-  modelData.emoji_level === 0 ? 'No emojis' : 
-  modelData.emoji_level === 1 ? '1 emoji max' : 
-  modelData.emoji_level === 3 ? '3-4 emojis' : 
-  '2 emojis'
-}
+8. **EMOJIS**: ${modelData.emoji_level === 0 ? 'No emojis' :
+      modelData.emoji_level === 1 ? '1 emoji max' :
+        modelData.emoji_level === 3 ? '3-4 emojis' :
+          '2 emojis'
+    }
 
 9. **LENGTH**: Max ${isPM ? '40' : '25'} words. Short and magnetic.
 
@@ -136,7 +137,7 @@ Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as
   // LLAMAR GROK-3
   try {
     console.log('🤖 Llamando Grok-3...');
-    
+
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -149,7 +150,7 @@ Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 1.0,
+        temperature: 0.85,
         max_tokens: isPM ? 90 : 60
       })
     });
@@ -171,9 +172,9 @@ Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as
 
     // SIEMPRE TRADUCIR AL ESPAÑOL (para que modelo entienda)
     let translation = suggestion;
-    
+
     console.log('🌍 Traduciendo al español...');
-    
+
     try {
       const translateResponse = await fetch('https://api.x.ai/v1/chat/completions', {
         method: 'POST',
@@ -182,11 +183,11 @@ Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'grok-3',
+          model: 'grok-3-mini-beta',
           messages: [
-            { 
-              role: 'system', 
-              content: 'You are a translator. Translate the following text to Spanish. Keep emojis and tone. Keep @mentions. Only respond with the translation, nothing else.' 
+            {
+              role: 'system',
+              content: 'You are a translator. Translate the following text to Spanish. Keep emojis and tone. Keep @mentions. Only respond with the translation, nothing else.'
             },
             { role: 'user', content: suggestion }
           ],
@@ -196,7 +197,7 @@ Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as
       });
 
       const translateData = await translateResponse.json();
-      
+
       if (translateData.choices && translateData.choices[0]) {
         translation = translateData.choices[0].message.content;
         console.log('✅ Traducción:', translation);
@@ -217,11 +218,11 @@ Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as
 
   } catch (error) {
     console.error('❌ ERROR:', error);
-    
+
     return res.status(200).json({
       success: false,
-      suggestion: isPM 
-        ? "Hey love 😘 what's on your mind?" 
+      suggestion: isPM
+        ? "Hey love 😘 what's on your mind?"
         : "Hey babe 😏 how are you?",
       translation: isPM
         ? "Hey amor 😘 ¿qué tienes en mente?"
