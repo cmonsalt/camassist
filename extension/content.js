@@ -11,7 +11,7 @@ console.log('👤 Broadcaster username:', broadcasterUsername);
 const extensionStartTime = Date.now();
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
 
-// Detectar tip menu (versión simple)
+// Detectar tip menu (versión simpl)
 let tipMenuText = '';
 
 function detectTipMenu() {
@@ -52,21 +52,21 @@ function detectTipMenu() {
 // NUEVO: Detectar Room Info (goals, lovense, etc)
 function detectRoomInfo() {
   const roomSubjectEl = document.querySelector('[data-testid="room-subject"]');
-  
+
   if (!roomSubjectEl) {
     console.log('⚠️ No se encontró room subject');
     return '';
   }
-  
+
   const fullText = roomSubjectEl.innerText || roomSubjectEl.textContent || '';
-  
+
   // Quitar hashtags para limpiar (todo después del primer #)
   const withoutHashtags = fullText.split('#')[0].trim();
-  
+
   if (withoutHashtags) {
     console.log('📝 Room info capturado:', withoutHashtags);
   }
-  
+
   return withoutHashtags;
 }
 
@@ -280,6 +280,13 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       // NUEVO: Capturar room info al momento de generar
       const roomInfo = detectRoomInfo();
 
+      // SI ESTAMOS EN PM, incluir historial público también
+      let fullContext = userHistory;
+      if (isPM && publicHistory[username]) {
+        // Combinar: primero público, luego PM
+        fullContext = [...publicHistory[username], ...userHistory];
+      }
+
       const response = await fetch('https://camassist.vercel.app/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -287,7 +294,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           token: localStorage.getItem('model_token') || 'demo_token',
           username,
           message: messageText,
-          context: userHistory.slice(-10),
+          context: fullContext.slice(-10),
           isPM,
           tip: tipAmount,
           tipMenuText: localStorage.getItem('detected_tip_menu') || '',
@@ -320,23 +327,23 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       // MOSTRAR TRADUCCIÓN SOLO SI ES DIFERENTE (fan escribió en inglés)
       let translationText = null;
       let translationContent = null;
-      
+
       // Comparar sin espacios extras para evitar falsos positivos
       const suggestionClean = data.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
       const translationClean = data.translation.replace(/\s+/g, ' ').trim().toLowerCase();
-      
+
       if (suggestionClean !== translationClean) {
         translationText = document.createElement('div');
         translationText.style.cssText = 'background:#e3f2fd;padding:10px;border-radius:3px;margin-bottom:10px;border-left:3px solid #2196F3';
-        
+
         const translationLabel = document.createElement('div');
         translationLabel.style.cssText = 'font-size:11px;color:#1976D2;font-weight:600;margin-bottom:5px';
         translationLabel.textContent = '📝 Traducción (para ti):';
-        
+
         translationContent = document.createElement('div');
         translationContent.style.cssText = 'color:#333';
         translationContent.textContent = data.translation;
-        
+
         translationText.appendChild(translationLabel);
         translationText.appendChild(translationContent);
       }
@@ -359,12 +366,12 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         try {
           const newData = await getResponse();
           responseText.textContent = newData.suggestion;
-          
+
           // Actualizar traducción si existe
           if (translationContent) {
             const newSuggestionClean = newData.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
             const newTranslationClean = newData.translation.replace(/\s+/g, ' ').trim().toLowerCase();
-            
+
             if (newSuggestionClean !== newTranslationClean) {
               translationContent.textContent = newData.translation;
             }
