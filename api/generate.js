@@ -14,12 +14,12 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { 
-    token, 
-    username, 
-    message, 
-    tip = 0, 
-    context = [], 
+  const {
+    token,
+    username,
+    message,
+    tip = 0,
+    context = [],
     isPM = false,
     tipMenuText = '',
     hasTokens = false,
@@ -43,13 +43,13 @@ export default async function handler(req, res) {
   if (token && token !== 'demo_token' && supabase) {
     try {
       console.log('🔍 Buscando modelo con token:', token);
-      
+
       const { data: model, error } = await supabase
         .from('models')
         .select('*')
         .eq('token', token)
         .single();
-      
+
       if (!error && model) {
         modelData = model;
         console.log('✅ Modelo encontrado:', modelData.name);
@@ -106,16 +106,15 @@ ${roomInfo ? `ROOM INFO: ${roomInfo}` : ''}
 6. **RESTRICCIONES**: Si pide algo que no haces → "Eso no es lo mío amor, pero te puedo volver loco con..." (ofrece alternativa sexy)
 
 7. **CONTEXTO PM vs PÚBLICO**:
-   ${isPM ? 
-   `ESTÁS EN PM - Ya están en privado 1 a 1. NUNCA digas "vamos a PM". Sé íntima, conoce sus gustos, si quiere MÁS → ahí mencionas show privado.` : 
-   `ESTÁS EN PÚBLICO - Todos ven. Coquetea, crea misterio. PM solo si la conversación lo amerita naturalmente.`}
+   ${isPM ?
+      `ESTÁS EN PM - Ya están en privado 1 a 1. NUNCA digas "vamos a PM". Sé íntima, conoce sus gustos, si quiere MÁS → ahí mencionas show privado.` :
+      `ESTÁS EN PÚBLICO - Todos ven. Coquetea, crea misterio. PM solo si la conversación lo amerita naturalmente.`}
 
-8. **EMOJIS**: ${
-  modelData.emoji_level === 0 ? 'Sin emojis' : 
-  modelData.emoji_level === 1 ? '1 emoji máx' : 
-  modelData.emoji_level === 3 ? '3-4 emojis' : 
-  '2 emojis'
-}
+8. **EMOJIS**: ${modelData.emoji_level === 0 ? 'Sin emojis' :
+      modelData.emoji_level === 1 ? '1 emoji máx' :
+        modelData.emoji_level === 3 ? '3-4 emojis' :
+          '2 emojis'
+    }
 
 9. **LARGO**: Máximo ${isPM ? '40' : '25'} palabras. Corto y magnético.
 
@@ -143,7 +142,7 @@ Responde como ${modelData.name}. PERSUASIVA pero SIN HAMBRE.`;
   // LLAMAR GROK-3
   try {
     console.log('🤖 Llamando Grok-3...');
-    
+
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -169,7 +168,12 @@ Responde como ${modelData.name}. PERSUASIVA pero SIN HAMBRE.`;
       throw new Error('Invalid Grok response');
     }
 
-    const suggestion = data.choices[0].message.content;
+    let suggestion = data.choices[0].message.content;
+
+    // Agregar @username solo en público
+    if (!isPM) {
+      suggestion = `@${username} ${suggestion}`;
+    }
 
     console.log('✅ Respuesta generada');
 
@@ -182,11 +186,11 @@ Responde como ${modelData.name}. PERSUASIVA pero SIN HAMBRE.`;
 
   } catch (error) {
     console.error('❌ ERROR:', error);
-    
+
     return res.status(200).json({
       success: false,
-      suggestion: isPM 
-        ? "Hey amor 😘 ¿qué tienes en mente?" 
+      suggestion: isPM
+        ? "Hey amor 😘 ¿qué tienes en mente?"
         : "Holi papi 😏 ¿cómo estás?",
       translation: isPM
         ? "Hey amor 😘 ¿qué tienes en mente?"
