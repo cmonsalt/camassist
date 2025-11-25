@@ -14,7 +14,8 @@ export default async function handler(req, res) {
         'emma@studio.com': {
             password: 'emma123',
             studioName: "Emma's Studio",
-            studioId: 'studio_001'
+            studioId: 'studio_001',
+            model_token: 'mdl_test_001'
         }
     };
     
@@ -25,7 +26,7 @@ export default async function handler(req, res) {
         
         return res.json({
             success: true,
-            token,
+            token: studio.model_token, 
             studioName: studio.studioName,
             studioId: studio.studioId
         });
