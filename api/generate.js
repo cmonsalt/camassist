@@ -140,22 +140,16 @@ Respond as ${modelData.name}.`;
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'grok-3-mini-beta',
+        model: 'grok-beta',
         messages: [
           { role: 'system', content: systemPrompt },
           {
             role: 'user',
-            content: `${userPrompt}
-
-CRITICAL: Respond with ONLY a valid JSON object (no markdown, no backticks):
-{
-  "response": "your message here",
-  "translation_es": "traducción al español aquí"
-}`
+            content: userPrompt
           }
         ],
-        temperature: 0.85,
-        max_tokens: isPM ? 120 : 90
+        temperature: 0.65,
+        max_tokens: isPM ? 100 : 70
       })
     });
 
