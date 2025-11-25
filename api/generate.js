@@ -98,6 +98,10 @@ ${contextText ? `\nRecent chat:\n${contextText}\n` : ''}
 Answer ONLY with valid JSON:
 {"response":"exact message here","translation_es":"traducción al español"}`;
 
+  const userPrompt = `Fan "${username}" ${tip > 0 ? `tipped ${tip} tokens` : ''} says: "${message}"
+
+Respond as ${modelData.name}.`;
+
   // LLAMAR GROK-3-MINI (1 SOLA LLAMADA)
   try {
     console.log('🤖 Llamando Grok-3-mini...');
