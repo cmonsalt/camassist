@@ -8,9 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .section-card { @apply bg-white rounded-xl shadow-sm p-6 mb-6; }
     </style>
 </head>
 
@@ -25,12 +24,10 @@
                 </div>
 
                 <nav class="space-y-2">
-                    <a href="/dashboard/index.html"
-                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <a href="/dashboard/index.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">📊</span> Dashboard
                     </a>
-                    <a href="/dashboard/modelos.html"
-                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <a href="/dashboard/modelos.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">👥</span> Modelos
                     </a>
                 </nav>
@@ -41,8 +38,7 @@
                     <div class="text-white/60">Studio</div>
                     <div class="font-semibold" id="studioName">Emma's Studio</div>
                 </div>
-                <button onclick="logout()"
-                    class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
                     <span class="mr-2">🚪</span> Salir
                 </button>
             </div>
@@ -50,119 +46,277 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-y-auto">
-            <div class="p-8">
+            <div class="p-8 max-w-4xl">
                 <!-- Header -->
                 <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-gray-800">Configuración</h1>
-                    <p class="text-gray-600">Personaliza la configuración de <span id="currentModelName"
-                            class="font-semibold text-purple-600">la modelo</span></p>
+                    <h1 class="text-3xl font-bold text-gray-800">Configuración de Modelo</h1>
+                    <p class="text-gray-600">Completa la información para que la IA responda mejor</p>
                 </div>
 
-                <!-- Settings Form -->
-                <div class="bg-white rounded-xl shadow-sm p-6 max-w-3xl">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-6 flex items-center">
-                        <span class="mr-2">⚙️</span> Configuración de la Modelo
+                <!-- SECCIÓN 1: IDENTIDAD -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">📋</span> Identidad
                     </h2>
 
-                    <!-- Nombre de la Modelo -->
-                    <div class="mb-6">
-                        <label class="block font-medium text-gray-700 mb-2">Nombre de la Modelo</label>
-                        <input type="text" id="modelName" placeholder="Valentina"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    </div>
-
-                    <!-- Bio -->
-                    <div class="mb-6">
-                        <label class="block font-medium text-gray-700 mb-2">Bio / Descripción</label>
-                        <textarea id="bio" rows="3" placeholder="Soy Valentina, me encanta bailar y divertirme..."
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
-                        <p class="text-sm text-gray-500 mt-1">Descripción de la modelo que la IA usará para personalizar
-                            respuestas</p>
-                    </div>
-
-                    <!-- Nichos/Tags -->
-                    <div class="mb-6">
-                        <label for="niches" class="block font-medium text-gray-700 mb-2">
-                            🏷️ Nichos / Tags
-                        </label>
-                        <input type="text" id="niches" placeholder="Latina, Big Ass, Squirt, Feet, MILF..."
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <p class="text-sm text-gray-500 mt-1">Separados por comas - lo que define a la modelo</p>
-                    </div>
-
-                    <!-- Restricciones -->
-                    <div class="mb-6">
-                        <label for="restrictionsInput" class="block font-medium text-gray-700 mb-2">
-                            🚫 Restricciones (lo que NO hace)
-                        </label>
-                        <input type="text" id="restrictionsInput" placeholder="Anal, Squirt, Deepthroat..."
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <p class="text-sm text-gray-500 mt-1">Separados por comas - la IA sugerirá alternativas</p>
-                    </div>
-
-                    <!-- Precio show privado -->
-                    <div class="mb-6">
-                        <label for="privatePrice" class="block font-medium text-gray-700 mb-2">
-                            💰 Precio show privado (tokens/min)
-                        </label>
-                        <input type="number" id="privatePrice" placeholder="60" min="6" max="300"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <p class="text-sm text-gray-500 mt-1">Precio por minuto en show privado</p>
-                    </div>
-
-                    <!-- Lovense -->
-                    <div class="mb-6 p-4 bg-pink-50 rounded-lg">
-                        <label class="flex items-center justify-between cursor-pointer">
-                            <div>
-                                <span class="font-medium text-gray-700">🔥 Lovense Conectado</span>
-                                <p class="text-sm text-gray-500 mt-1">La IA mencionará que vibra cuando recibe tokens
-                                </p>
-                            </div>
-                            <input type="checkbox" id="hasLovense"
-                                class="w-5 h-5 text-pink-600 rounded focus:ring-pink-500">
-                        </label>
-                    </div>
-
-                    <!-- Tip Menu (Auto-detectado) -->
-                    <div class="mb-6 p-4 bg-blue-50 rounded-lg">
-                        <div class="flex items-center mb-2">
-                            <span class="font-medium text-gray-700">💰 Tip Menu</span>
-                            <span
-                                class="ml-2 px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">Auto-detectado</span>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre artístico</label>
+                            <input type="text" id="name" placeholder="Valentina"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                         </div>
-                        <p class="text-sm text-gray-500">El tip menu se detecta automáticamente del chat de Chaturbate
-                        </p>
-                    </div>
-
-                    <!-- Nivel de Emojis -->
-                    <div class="mb-6">
-                        <label class="block font-medium text-gray-700 mb-3">Cantidad de Emojis</label>
-                        <div class="grid grid-cols-4 gap-3">
-                            <button onclick="setLevel('emoji', 0)" id="emoji-0"
-                                class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
-                                Sin
-                            </button>
-                            <button onclick="setLevel('emoji', 1)" id="emoji-1"
-                                class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
-                                Pocos
-                            </button>
-                            <button onclick="setLevel('emoji', 2)" id="emoji-2"
-                                class="py-2 px-4 rounded-lg border-2 border-purple-500 bg-purple-50 transition text-sm">
-                                Normal
-                            </button>
-                            <button onclick="setLevel('emoji', 3)" id="emoji-3"
-                                class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
-                                Muchos
-                            </button>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Edad</label>
+                            <input type="number" id="age" placeholder="24" min="18" max="99"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad/País</label>
+                            <input type="text" id="location" placeholder="Medellín, Colombia"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Idiomas</label>
+                            <select id="languages"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="spanish_only">Solo español</option>
+                                <option value="spanish_basic_english">Español + inglés básico</option>
+                                <option value="bilingual">Bilingüe</option>
+                            </select>
                         </div>
                     </div>
-
-                    <!-- Guardar -->
-                    <button onclick="saveSettings()"
-                        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg transform hover:scale-[1.01] transition-all duration-200">
-                        💾 Guardar Configuración
-                    </button>
                 </div>
+
+                <!-- SECCIÓN 2: PERSONALIDAD -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">💃</span> Personalidad
+                    </h2>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">¿Cómo eres?</label>
+                        <select id="personality"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="shy_flirty">Tímida pero coqueta</option>
+                            <option value="extrovert_playful">Extrovertida y juguetona</option>
+                            <option value="intellectual">Intelectual, me gusta conversar profundo</option>
+                            <option value="funny">Divertida, bromista</option>
+                            <option value="dominant">Dominante, me gusta llevar el control</option>
+                            <option value="submissive">Sumisa, me gusta complacer</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Temas que te gusta conversar</label>
+                        <input type="text" id="conversation_topics" 
+                            placeholder="Ej: fútbol (Bayern Munich), reggaeton, viajar, gym, películas"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Separa con comas - esto hace que la IA converse de forma natural sobre estos temas</p>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 3: FÍSICO Y NICHO -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">🔥</span> Físico y Nicho
+                    </h2>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de cuerpo</label>
+                            <select id="body_type"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="petite">Petite / Delgada</option>
+                                <option value="curvy">Curvy / Con curvas</option>
+                                <option value="bbw">BBW / Plus size</option>
+                                <option value="athletic">Athletic / Fitness</option>
+                                <option value="milf">MILF (30+)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nicho principal</label>
+                            <input type="text" id="main_niche" placeholder="Ej: Latina caliente, Ebony, Asian, Teen 18+"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tus mejores atributos (lo que más te halagan)</label>
+                        <input type="text" id="best_features" 
+                            placeholder="Ej: big ass, tetas grandes, piernas, ojos, sonrisa, tatuajes"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Separa con comas</p>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 4: LO QUE SÍ HACES -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">✅</span> Lo que SÍ haces
+                    </h2>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">En chat PÚBLICO</label>
+                        <textarea id="public_shows" rows="2"
+                            placeholder="Ej: bailar, twerk, topless, aceite en cuerpo, cambio de ropa, lencería"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">En PRIVADO</label>
+                        <textarea id="private_shows" rows="3"
+                            placeholder="Ej: desnudo completo, masturbación, dildo, squirt, anal, roleplay, JOI, dirty talk"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 5: LO QUE NO HACES -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">❌</span> Lo que NO haces (nunca)
+                    </h2>
+
+                    <div>
+                        <textarea id="hard_limits" rows="2"
+                            placeholder="Ej: anal, garganta profunda, humillación, mostrar cara"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">La IA ofrecerá alternativas cuando pidan esto</p>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 6: CONDICIONES ESPECIALES -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">⚠️</span> Lo que haces con condiciones
+                    </h2>
+
+                    <div>
+                        <textarea id="partial_conditions" rows="3"
+                            placeholder="Ej:
+Anal: solo en privado de 30+ min o tip extra de 500 tokens
+Squirt: solo con Lovense al máximo
+Cara completa: solo con fans VIP"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Una condición por línea</p>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 7: PRECIOS -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">💰</span> Precios
+                    </h2>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Precio privado (tok/min)</label>
+                            <input type="number" id="private_price" placeholder="60" min="6" max="500"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div class="flex items-center">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="has_lovense" class="w-5 h-5 text-pink-600 rounded focus:ring-pink-500 mr-2">
+                                <span class="font-medium text-gray-700">🔥 Lovense conectado</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-blue-50 rounded-lg">
+                        <p class="text-sm text-blue-700">💡 El tip menu se detecta automáticamente del chat de Chaturbate</p>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 8: ESTRATEGIA -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">🎯</span> Estrategia de venta
+                    </h2>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">¿Cuándo mencionar privado?</label>
+                            <select id="when_mention_private"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="only_if_ask">Solo si preguntan precio</option>
+                                <option value="after_rapport">Después de 3-4 mensajes en PM</option>
+                                <option value="big_tip">Si dan tip grande (500+)</option>
+                                <option value="specific_request">Si piden ver algo específico</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estilo de venta</label>
+                            <select id="sales_style"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="direct">Directa (precio claro)</option>
+                                <option value="mysterious">Misteriosa (crea curiosidad)</option>
+                                <option value="exclusive">Exclusiva (solo para especiales)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 9: CONTEXTO PERSONAL -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">🎭</span> Contexto personal
+                    </h2>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">¿Tienes pareja?</label>
+                            <select id="relationship_status"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="single">Soltera</option>
+                                <option value="taken">Tengo novio/a</option>
+                                <option value="no_say">Prefiero no decir</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Otra info relevante</label>
+                        <textarea id="extra_context" rows="2"
+                            placeholder="Ej: Estudio medicina, tengo tatuaje de mariposa, me encanta el gym, soy gamer"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Esto ayuda a la IA a conversar de forma más personal</p>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN 10: EMOJIS -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">😊</span> Cantidad de Emojis
+                    </h2>
+
+                    <div class="grid grid-cols-4 gap-3">
+                        <button onclick="setLevel('emoji', 0)" id="emoji-0"
+                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
+                            Sin
+                        </button>
+                        <button onclick="setLevel('emoji', 1)" id="emoji-1"
+                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
+                            Pocos (1)
+                        </button>
+                        <button onclick="setLevel('emoji', 2)" id="emoji-2"
+                            class="py-2 px-4 rounded-lg border-2 border-purple-500 bg-purple-50 transition text-sm">
+                            Normal (2)
+                        </button>
+                        <button onclick="setLevel('emoji', 3)" id="emoji-3"
+                            class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
+                            Muchos (3-4)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Guardar -->
+                <button onclick="saveSettings()"
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-[1.01] transition-all duration-200 text-lg">
+                    💾 Guardar Configuración
+                </button>
+
+                <p class="text-center text-sm text-gray-500 mt-4">
+                    La información se guarda de forma segura y solo se usa para personalizar las respuestas de la IA
+                </p>
             </div>
         </main>
     </div>
@@ -173,15 +327,7 @@
         const supabase = window.supabase.createClient(
             'https://wptjtwbvophyszijeupc.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwdGp0d2J2b3BoeXN6aWpldXBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NTYyNzAsImV4cCI6MjA3OTMzMjI3MH0.CkpvCyuyr1P66xXedm936jc3B-6t4Crlhwbij_5A3QE'
-            
         );
-
-        // Get model from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentModel = urlParams.get('model') || 'valentina';
-
-        // Update header with model name
-        document.getElementById('currentModelName').textContent = currentModel.charAt(0).toUpperCase() + currentModel.slice(1);
 
         // Check auth
         const token = localStorage.getItem('model_token');
@@ -193,7 +339,7 @@
         // Settings state
         let emojiLevel = 2;
 
-        // Load settings
+        // Load settings on page load
         loadSettings();
 
         async function loadSettings() {
@@ -207,27 +353,42 @@
                 if (error) throw error;
 
                 if (data) {
-                    // Campos básicos
-                    document.getElementById('modelName').value = data.name || '';
-                    document.getElementById('bio').value = data.bio || '';
-                    document.getElementById('hasLovense').checked = data.has_lovense || false;
-                    
-                    // Niches (array a string con comas)
-                    if (data.niches && data.niches.length > 0) {
-                        document.getElementById('niches').value = data.niches.join(', ');
-                    }
-                    
-                    // Restrictions (array a string con comas)
-                    if (data.restrictions && data.restrictions.length > 0) {
-                        document.getElementById('restrictionsInput').value = data.restrictions.join(', ');
-                    }
-                    
-                    // Precio privado
-                    if (data.private_price) {
-                        document.getElementById('privatePrice').value = data.private_price;
-                    }
-                    
-                    // Emoji level
+                    // IDENTIDAD
+                    document.getElementById('name').value = data.name || '';
+                    document.getElementById('age').value = data.age || '';
+                    document.getElementById('location').value = data.location || '';
+                    document.getElementById('languages').value = data.languages || 'spanish_only';
+
+                    // PERSONALIDAD
+                    document.getElementById('personality').value = data.personality || 'extrovert_playful';
+                    document.getElementById('conversation_topics').value = data.conversation_topics || '';
+
+                    // FÍSICO
+                    document.getElementById('body_type').value = data.body_type || 'curvy';
+                    document.getElementById('main_niche').value = data.main_niche || '';
+                    document.getElementById('best_features').value = data.best_features || '';
+
+                    // LO QUE HACE
+                    document.getElementById('public_shows').value = data.public_shows || '';
+                    document.getElementById('private_shows').value = data.private_shows || '';
+
+                    // LÍMITES
+                    document.getElementById('hard_limits').value = data.hard_limits || '';
+                    document.getElementById('partial_conditions').value = data.partial_conditions || '';
+
+                    // PRECIOS
+                    document.getElementById('private_price').value = data.private_price || 60;
+                    document.getElementById('has_lovense').checked = data.has_lovense || false;
+
+                    // ESTRATEGIA
+                    document.getElementById('when_mention_private').value = data.when_mention_private || 'only_if_ask';
+                    document.getElementById('sales_style').value = data.sales_style || 'mysterious';
+
+                    // CONTEXTO
+                    document.getElementById('relationship_status').value = data.relationship_status || 'single';
+                    document.getElementById('extra_context').value = data.extra_context || '';
+
+                    // EMOJIS
                     emojiLevel = data.emoji_level || 2;
                     setLevel('emoji', emojiLevel, false);
 
@@ -235,7 +396,6 @@
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
-                alert('Error cargando configuración: ' + error.message);
             }
         }
 
@@ -252,46 +412,59 @@
                     }
                 }
             }
-
             if (updateState && type === 'emoji') {
                 emojiLevel = level;
             }
         }
 
         async function saveSettings() {
-            // Procesar niches (convertir string con comas a array)
-            const nichesInput = document.getElementById('niches').value;
-            const niches = nichesInput 
-                ? nichesInput.split(',').map(n => n.trim()).filter(n => n) 
-                : [];
-
-            // Procesar restrictions (convertir string con comas a array)
-            const restrictionsInput = document.getElementById('restrictionsInput').value;
-            const restrictions = restrictionsInput 
-                ? restrictionsInput.split(',').map(r => r.trim()).filter(r => r) 
-                : [];
-
-            // Precio privado
-            const privatePrice = parseInt(document.getElementById('privatePrice').value) || 60;
-
             try {
                 const { data, error } = await supabase
                     .from('models')
                     .update({
-                        name: document.getElementById('modelName').value,
-                        bio: document.getElementById('bio').value,
-                        has_lovense: document.getElementById('hasLovense').checked,
-                        emoji_level: emojiLevel,
-                        niches: niches,
-                        restrictions: restrictions,
-                        private_price: privatePrice
+                        // IDENTIDAD
+                        name: document.getElementById('name').value,
+                        age: parseInt(document.getElementById('age').value) || null,
+                        location: document.getElementById('location').value,
+                        languages: document.getElementById('languages').value,
+
+                        // PERSONALIDAD
+                        personality: document.getElementById('personality').value,
+                        conversation_topics: document.getElementById('conversation_topics').value,
+
+                        // FÍSICO
+                        body_type: document.getElementById('body_type').value,
+                        main_niche: document.getElementById('main_niche').value,
+                        best_features: document.getElementById('best_features').value,
+
+                        // LO QUE HACE
+                        public_shows: document.getElementById('public_shows').value,
+                        private_shows: document.getElementById('private_shows').value,
+
+                        // LÍMITES
+                        hard_limits: document.getElementById('hard_limits').value,
+                        partial_conditions: document.getElementById('partial_conditions').value,
+
+                        // PRECIOS
+                        private_price: parseInt(document.getElementById('private_price').value) || 60,
+                        has_lovense: document.getElementById('has_lovense').checked,
+
+                        // ESTRATEGIA
+                        when_mention_private: document.getElementById('when_mention_private').value,
+                        sales_style: document.getElementById('sales_style').value,
+
+                        // CONTEXTO
+                        relationship_status: document.getElementById('relationship_status').value,
+                        extra_context: document.getElementById('extra_context').value,
+
+                        // EMOJIS
+                        emoji_level: emojiLevel
                     })
                     .eq('token', token);
 
                 if (error) throw error;
 
                 alert('✅ Configuración guardada correctamente');
-                console.log('✅ Guardado:', { niches, restrictions, privatePrice });
             } catch (error) {
                 console.error('Error saving:', error);
                 alert('❌ Error al guardar: ' + error.message);
