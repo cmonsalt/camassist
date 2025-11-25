@@ -134,9 +134,9 @@ Respond ONLY the message. No quotes, no explanations.`;
 
 Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as the fan.`;
 
-  // LLAMAR GROK-3
+  // LLAMAR GROK-3-MINI (1 SOLA LLAMADA)
   try {
-    console.log('🤖 Llamando Grok-3...');
+    console.log('🤖 Llamando Grok-3-mini...');
 
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
@@ -145,76 +145,57 @@ Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-      model: 'grok-3-mini-beta',
+        model: 'grok-3-mini-beta',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          {
+            role: 'user',
+            content: `${userPrompt}
+
+CRITICAL: Respond with ONLY a valid JSON object (no markdown, no backticks):
+{
+  "response": "your message here",
+  "translation_es": "traducción al español aquí"
+}`
+          }
         ],
         temperature: 0.85,
-        max_tokens: isPM ? 90 : 60
+        max_tokens: isPM ? 120 : 90
       })
     });
 
     const data = await response.json();
-    console.log('📤 Grok-3 status:', response.status);
+    console.log('📤 Grok-3-mini status:', response.status);
 
     if (!data.choices || !data.choices[0]) {
       console.error('❌ Invalid Grok response:', data);
       throw new Error('Invalid Grok response');
     }
 
-    let suggestion = data.choices[0].message.content;
+    let responseText = data.choices[0].message.content.trim();
+
+    // Limpiar markdown si aparece
+    responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+
+    const parsed = JSON.parse(responseText);
+    let suggestion = parsed.response;
+    let translation = parsed.translation_es;
 
     // Agregar @username solo en público
     if (!isPM) {
       suggestion = `@${username} ${suggestion}`;
+      translation = `@${username} ${translation}`;
     }
 
-    // SIEMPRE TRADUCIR AL ESPAÑOL (para que modelo entienda)
-    let translation = suggestion;
-
-    console.log('🌍 Traduciendo al español...');
-
-    try {
-      const translateResponse = await fetch('https://api.x.ai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: 'grok-3-mini-beta',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a translator. Translate the following text to Spanish. Keep emojis and tone. Keep @mentions. Only respond with the translation, nothing else.'
-            },
-            { role: 'user', content: suggestion }
-          ],
-          temperature: 0.3,
-          max_tokens: 100
-        })
-      });
-
-      const translateData = await translateResponse.json();
-
-      if (translateData.choices && translateData.choices[0]) {
-        translation = translateData.choices[0].message.content;
-        console.log('✅ Traducción:', translation);
-      }
-    } catch (translateError) {
-      console.error('⚠️ Error traduciendo:', translateError);
-      // Si falla la traducción, usar la respuesta original
-    }
-
-    console.log('✅ Respuesta generada');
+    console.log('✅ Respuesta generada en 1 llamada');
 
     return res.status(200).json({
       success: true,
-      suggestion: suggestion,  // Para copiar (idioma del fan)
-      translation: translation, // Para que modelo entienda (español)
+      suggestion: suggestion,
+      translation: translation,
       model: modelData.name
     });
+
 
   } catch (error) {
     console.error('❌ ERROR:', error);
