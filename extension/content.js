@@ -292,7 +292,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           tip: tipAmount,
           tipMenuText: localStorage.getItem('detected_tip_menu') || '',
           hasTokens: hasTokens,
-          roomInfo: roomInfo  // NUEVO
+          roomInfo: roomInfo
         })
       });
       return response.json();
@@ -300,6 +300,9 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     try {
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
+      if (data.isEnglish) {
+        console.log('🌍 Traducción:', data.translation);
+      }
 
       // Crear popup
       const popup = document.createElement('div');
@@ -310,16 +313,35 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       title.style.marginTop = '0';
       title.textContent = `💬 ${isPM ? 'PM' : 'Público'} - @${username}`;
 
+      // RESPUESTA PARA COPIAR
       const responseText = document.createElement('p');
       responseText.id = 'ai-response';
-      responseText.style.cssText = 'background:#f0f0f0;padding:10px;border-radius:3px;max-height:200px;overflow-y:auto;word-wrap:break-word';
+      responseText.style.cssText = 'background:#f0f0f0;padding:10px;border-radius:3px;max-height:200px;overflow-y:auto;word-wrap:break-word;margin-bottom:10px';
       responseText.textContent = data.suggestion;
+
+      // SI ES INGLÉS, MOSTRAR TRADUCCIÓN
+      let translationText = null;
+      if (data.isEnglish && data.translation !== data.suggestion) {
+        translationText = document.createElement('div');
+        translationText.style.cssText = 'background:#e3f2fd;padding:10px;border-radius:3px;margin-bottom:10px;border-left:3px solid #2196F3';
+        
+        const translationLabel = document.createElement('div');
+        translationLabel.style.cssText = 'font-size:11px;color:#1976D2;font-weight:600;margin-bottom:5px';
+        translationLabel.textContent = '📝 Traducción (para ti):';
+        
+        const translationContent = document.createElement('div');
+        translationContent.style.cssText = 'color:#333';
+        translationContent.textContent = data.translation;
+        
+        translationText.appendChild(translationLabel);
+        translationText.appendChild(translationContent);
+      }
 
       const copyBtn = document.createElement('button');
       copyBtn.textContent = '📋 Copiar';
       copyBtn.style.cssText = 'background:green;color:white;padding:5px 10px;border:none;cursor:pointer;border-radius:3px;font-size:12px';
       copyBtn.onclick = () => {
-        navigator.clipboard.writeText(responseText.textContent);
+        navigator.clipboard.writeText(data.suggestion);
         copyBtn.textContent = '✓ Copiado!';
         setTimeout(() => popup.remove(), 500);
       };
@@ -333,6 +355,11 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         try {
           const newData = await getResponse();
           responseText.textContent = newData.suggestion;
+          
+          // Actualizar traducción si existe
+          if (translationText && newData.isEnglish && newData.translation !== newData.suggestion) {
+            translationContent.textContent = newData.translation;
+          }
         } catch (error) {
           console.error('Error regenerando:', error);
         }
@@ -347,6 +374,9 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
 
       popup.appendChild(title);
       popup.appendChild(responseText);
+      if (translationText) {
+        popup.appendChild(translationText);
+      }
       popup.appendChild(copyBtn);
       popup.appendChild(regenBtn);
       popup.appendChild(closeBtn);
