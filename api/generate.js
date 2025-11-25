@@ -145,7 +145,7 @@ Respond as ${modelData.name}. PERSUASIVE but NO HUNGER. Use the SAME language as
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'grok-3',
+      model: 'grok-3-mini-beta',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
