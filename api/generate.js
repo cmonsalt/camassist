@@ -99,7 +99,7 @@ REGLAS IMPORTANTES:
 - ADAPTA tu tono al fan (casual→casual, coqueto→coqueta, caliente→caliente)
 
 IDIOMA:
-- Inglés como chica USA: u, ur, wanna, gonna, gotta, rn, omg, lol
+- Inglés como chica USA: u, ur, wanna, gonna, gotta, rn, omg, lol, honey
 - Español colombiano: q, pq, tb, mk, papi, bb, amor
 
 ${contextText ? `Chat reciente:\n${contextText}` : ''}
@@ -124,7 +124,7 @@ Máx ${isPM ? '35' : '20'} palabras. SOLO JSON:
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'grok-3-mini-beta',
+        model: 'grok-4-1-fast-non-reasoning',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
