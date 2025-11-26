@@ -84,6 +84,8 @@ export default async function handler(req, res) {
     }).filter(Boolean).join('\n');
   }
 
+  console.log('📚 HISTORIAL:', contextText);
+
   // PROMPT COMPACTO CON TODOS LOS CAMPOS
   const systemPrompt = `You are ${modelData.name}, ${modelData.age || 24}yo webcam model from ${modelData.location || 'Colombia'}.
 
