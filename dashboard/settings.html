@@ -239,62 +239,6 @@ Cara completa: solo con fans VIP"
                     </div>
                 </div>
 
-                <!-- SECCIÓN 7: PRECIOS -->
-                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <span class="mr-2">💰</span> Precios
-                    </h2>
-
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Precio privado (tok/min)</label>
-                            <input type="number" id="private_price" placeholder="60" min="6" max="500"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        </div>
-                        <div class="flex items-center">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" id="has_lovense"
-                                    class="w-5 h-5 text-pink-600 rounded focus:ring-pink-500 mr-2">
-                                <span class="font-medium text-gray-700">🔥 Lovense conectado</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="p-3 bg-blue-50 rounded-lg">
-                        <p class="text-sm text-blue-700">💡 El tip menu se detecta automáticamente del chat de
-                            Chaturbate</p>
-                    </div>
-                </div>
-
-                <!-- SECCIÓN 8: ESTRATEGIA -->
-                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <span class="mr-2">🎯</span> Estrategia de venta
-                    </h2>
-
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">¿Cuándo mencionar
-                                privado?</label>
-                            <select id="when_mention_private"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="only_if_ask">Solo si preguntan precio</option>
-                                <option value="after_rapport">Después de 3-4 mensajes en PM</option>
-                                <option value="big_tip">Si dan tip grande (500+)</option>
-                                <option value="specific_request">Si piden ver algo específico</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Estilo de venta</label>
-                            <select id="sales_style"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                <option value="direct">Directa (precio claro)</option>
-                                <option value="mysterious">Misteriosa (crea curiosidad)</option>
-                                <option value="exclusive">Exclusiva (solo para especiales)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- SECCIÓN 9: CONTEXTO PERSONAL -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
@@ -417,14 +361,6 @@ Cara completa: solo con fans VIP"
                     document.getElementById('hard_limits').value = data.hard_limits || '';
                     document.getElementById('partial_conditions').value = data.partial_conditions || '';
 
-                    // PRECIOS
-                    document.getElementById('private_price').value = data.private_price || 60;
-                    document.getElementById('has_lovense').checked = data.has_lovense || false;
-
-                    // ESTRATEGIA
-                    document.getElementById('when_mention_private').value = data.when_mention_private || 'only_if_ask';
-                    document.getElementById('sales_style').value = data.sales_style || 'mysterious';
-
                     // CONTEXTO
                     document.getElementById('relationship_status').value = data.relationship_status || 'single';
                     document.getElementById('extra_context').value = data.extra_context || '';
@@ -485,14 +421,6 @@ Cara completa: solo con fans VIP"
                         // LÍMITES
                         hard_limits: document.getElementById('hard_limits').value,
                         partial_conditions: document.getElementById('partial_conditions').value,
-
-                        // PRECIOS
-                        private_price: parseInt(document.getElementById('private_price').value) || 60,
-                        has_lovense: document.getElementById('has_lovense').checked,
-
-                        // ESTRATEGIA
-                        when_mention_private: document.getElementById('when_mention_private').value,
-                        sales_style: document.getElementById('sales_style').value,
 
                         // CONTEXTO
                         relationship_status: document.getElementById('relationship_status').value,
