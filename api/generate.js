@@ -21,34 +21,18 @@ export default async function handler(req, res) {
     tip = 0,
     context = [],
     isPM = false,
-    tipMenuText = '',
-    hasTokens = false,
-    roomInfo = ''
   } = req.body;
 
-  console.log('📥 Request:', { token, username, message, isPM, hasTokens, roomInfo: roomInfo ? 'detected' : 'none', contextLength: context.length });
+  console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length });
 
-  // DEFAULTS (si no encuentra en BD)
+  // DEFAULTS
   let modelData = {
     name: 'Model',
     age: 24,
     location: 'Colombia',
-    personality: 'extrovert_playful',
-    conversation_topics: '',
-    body_type: 'curvy',
-    main_niche: 'Latina',
-    best_features: 'latina body',
-    public_shows: 'dance, tease',
-    private_shows: 'full nude, toys',
-    hard_limits: '',
-    partial_conditions: '',
-    has_lovense: false,
-    private_price: 60,
-    when_mention_private: 'only_if_ask',
-    sales_style: 'mysterious',
-    relationship_status: 'single',
-    extra_context: '',
-    emoji_level: 2
+    personality: 'coqueta y juguetona',
+    conversation_topics: 'música, viajes',
+    hard_limits: ''
   };
 
   // LEER DE BD
@@ -86,41 +70,46 @@ export default async function handler(req, res) {
 
   console.log('📚 HISTORIAL:', contextText);
 
-  // PROMPT COMPACTO CON TODOS LOS CAMPOS
-  const systemPrompt = `You are ${modelData.name}, ${modelData.age || 24}yo webcam model from ${modelData.location || 'Colombia'}.
+  // PROMPT GENUINO Y HUMANO
+  const systemPrompt = `Eres ${modelData.name}, ${modelData.age || 24} años, modelo webcam de ${modelData.location || 'Colombia'}.
 
-This is a LIVE cam show. You can't see what's happening but understand the moment from the conversation.
+Esto es un show EN VIVO. No ves lo que pasa pero entiendes el momento por la conversación.
 
-Personality: ${modelData.personality || 'flirty and playful'}
-I like: ${modelData.conversation_topics || 'music, travel'}
-Private: ${modelData.private_price || 60} tk/min
-${modelData.has_lovense ? 'Lovense: Yes' : ''}
+TU PERSONALIDAD: ${modelData.personality || 'coqueta y juguetona'}
+TE GUSTA HABLAR DE: ${modelData.conversation_topics || 'música, viajes'}
 
-Current chat: ${isPM ? 'PRIVATE MESSAGE (1-on-1, be intimate and hot)' : 'PUBLIC CHAT (everyone sees, flirt and tease)'}
+ESTÁS EN: ${isPM ? 'MENSAJE PRIVADO (1 a 1, sé íntima y caliente)' : 'CHAT PÚBLICO (todos ven, coquetea y crea misterio)'}
 
-RULES:
-- Be genuine and flirty, not desperate
-- Same language as fan (100% EN or 100% ES)
-- Max ${isPM ? '35' : '25'} words
+CÓMO DEBES SER:
+- Eres una AMIGA coqueta, NO un bot
+- Habla como humana real: usa "q" en vez de "que", "tb" en vez de "también", "pq" en vez de "porque"
+- En inglés USA: usa "u" en vez de "you", "ur" en vez de "your", "wanna", "gonna", "gotta", "rn" (right now)
+- Usa palabras cariñosas: amor, papi, cariño, honey, babe, baby
+- Sé GENUINA y PERSUASIVA - quieres que el fan se quede, se enamore, gaste
+- NUNCA digas precios ni "vamos a privado"
+- Si fan quiere más, insinúa: "eso te lo muestro cuando estemos solitos 😏" o "that's something special just for u baby"
+- NO preguntes en cada mensaje, solo si el fan está frío
+- Máximo ${isPM ? '35' : '25'} palabras
+- 100% en el idioma del fan (español O inglés, NO mezclar)
 
-NEVER DO: ${modelData.hard_limits || 'nothing'}
+NUNCA HAGAS: ${modelData.hard_limits || 'nada'}
 
-${contextText ? `Recent:\n${contextText}` : ''}
+${contextText ? `CONVERSACIÓN RECIENTE:\n${contextText}` : ''}
 
-Output ONLY valid JSON. No text before or after:
-{"response":"msg","translation_es":"traducción"}`;
+Responde SOLO JSON válido:
+{"response":"tu mensaje aquí","translation_es":"traducción al español"}`;
 
-  const userPrompt = `Fan "${username}" ${tip > 0 ? `tipped ${tip} tokens` : ''} says: "${message}"
+  const userPrompt = `Fan "${username}" ${tip > 0 ? `dio ${tip} tokens` : ''} dice: "${message}"
 
-Respond as ${modelData.name}.`;
+Responde como ${modelData.name}.`;
 
   // LOG PARA VER QUÉ SE ENVÍA
   console.log('📤 PROMPT ENVIADO:', systemPrompt);
   console.log('📤 USER PROMPT:', userPrompt);
 
-  // LLAMAR GROK-3-MINI (1 SOLA LLAMADA)
+  // LLAMAR GROK
   try {
-    console.log('🤖 Llamando Grok-3-mini...');
+    console.log('🤖 Llamando Grok...');
 
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
@@ -132,29 +121,24 @@ Respond as ${modelData.name}.`;
         model: 'grok-3-mini-beta',
         messages: [
           { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: userPrompt
-          }
+          { role: 'user', content: userPrompt }
         ],
-        temperature: 0.65,
-        max_tokens: isPM ? 150 : 120
+        temperature: 0.75,
+        max_tokens: isPM ? 120 : 100
       })
     });
 
     const data = await response.json();
-    console.log('📤 Grok-3-mini status:', response.status);
+    console.log('📤 Grok status:', response.status);
 
     if (!data.choices || !data.choices[0]) {
       console.error('❌ Invalid Grok response:', data);
       throw new Error('Invalid Grok response');
     }
-    let responseText = data.choices[0].message.content.trim();
 
-    // Limpiar markdown si aparece
+    let responseText = data.choices[0].message.content.trim();
     responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
 
-    // LOG para debug
     console.log('📥 RAW RESPONSE:', responseText);
 
     let suggestion, translation;
@@ -164,7 +148,6 @@ Respond as ${modelData.name}.`;
       suggestion = parsed.response;
       translation = parsed.translation_es;
     } catch (parseError) {
-      // Si falla JSON, mostrar error
       console.log('⚠️ JSON parse falló');
       throw new Error('JSON parse failed');
     }
@@ -175,7 +158,7 @@ Respond as ${modelData.name}.`;
       translation = `@${username} ${translation}`;
     }
 
-    console.log('✅ Respuesta generada en 1 llamada');
+    console.log('✅ Respuesta generada');
 
     return res.status(200).json({
       success: true,

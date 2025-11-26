@@ -11,68 +11,6 @@ console.log('👤 Broadcaster username:', broadcasterUsername);
 const extensionStartTime = Date.now();
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
 
-// Detectar tip menu (versión simpl)
-let tipMenuText = '';
-
-function detectTipMenu() {
-  const notices = document.querySelectorAll('[data-testid="room-notice"]');
-
-  let tipMenuContent = [];
-  let capturing = false;
-
-  notices.forEach(notice => {
-    const text = notice.textContent.trim();
-
-    // Empezar a capturar cuando encontramos "Tip Menu"
-    if (text.includes('Tip Menu')) {
-      capturing = true;
-      tipMenuContent = [text]; // Agregar el título
-      console.log('🎯 Tip Menu detectado, capturando contenido...');
-    }
-    // Si estamos capturando, agregar las líneas
-    else if (capturing) {
-      // Parar si encontramos instrucciones del sistema
-      if (text.includes('#nomenu') || text.includes('Type menu.help')) {
-        capturing = false;
-      } else if (text.startsWith('Notice:')) {
-        // Es una acción del menu
-        tipMenuContent.push(text);
-      }
-    }
-  });
-
-  if (tipMenuContent.length > 0) {
-    tipMenuText = tipMenuContent.join('\n');
-    localStorage.setItem('detected_tip_menu', tipMenuText);
-    console.log('✅ Tip Menu guardado:');
-    console.log(tipMenuText);
-  }
-}
-
-// NUEVO: Detectar Room Info (goals, lovense, etc)
-function detectRoomInfo() {
-  const roomSubjectEl = document.querySelector('[data-testid="room-subject"]');
-
-  if (!roomSubjectEl) {
-    console.log('⚠️ No se encontró room subject');
-    return '';
-  }
-
-  const fullText = roomSubjectEl.innerText || roomSubjectEl.textContent || '';
-
-  // Quitar hashtags para limpiar (todo después del primer #)
-  const withoutHashtags = fullText.split('#')[0].trim();
-
-  if (withoutHashtags) {
-    console.log('📝 Room info capturado:', withoutHashtags);
-  }
-
-  return withoutHashtags;
-}
-
-// Ejecutar al cargar
-detectTipMenu();
-setInterval(detectTipMenu, 30000);
 
 setInterval(() => {
 
@@ -279,13 +217,6 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     btn.textContent = '...';
 
     const getResponse = async () => {
-      // Detectar si el fan tiene tokens (hasTokens class)
-      const usernameLabel = container.querySelector('[data-testid="username-label"]');
-      const hasTokens = usernameLabel?.classList.contains('hasTokens') || false;
-
-      // NUEVO: Capturar room info al momento de generar
-      const roomInfo = detectRoomInfo();
-
       // SI ESTAMOS EN PM, incluir historial público también
       let fullContext = userHistory;
       if (isPM && publicHistory[username]) {
@@ -302,10 +233,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           message: messageText,
           context: fullContext.slice(-10),
           isPM,
-          tip: tipAmount,
-          tipMenuText: localStorage.getItem('detected_tip_menu') || '',
-          hasTokens: hasTokens,
-          roomInfo: roomInfo
+          tip: tipAmount
         })
       });
       return response.json();
