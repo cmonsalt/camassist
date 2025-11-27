@@ -1,5 +1,13 @@
 console.log("CamAssist loaded!");
 
+// Obtener token de chrome.storage si existe
+chrome.storage.local.get(['model_token'], (result) => {
+  if (result.model_token) {
+    localStorage.setItem('model_token', result.model_token);
+    console.log('✅ Token cargado desde extensión:', result.model_token);
+  }
+});
+
 // HISTORIALES SEPARADOS
 let publicHistory = {};  // Por username en chat público
 let pmHistory = {};      // Por username en PM
