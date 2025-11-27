@@ -10,68 +10,67 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+        }
 
-            /* MÓVIL */
-            @media (max-width: 768px) {
-                .flex.h-screen {
-                    flex-direction: column;
-                }
+        /* MÓVIL */
+        @media (max-width: 768px) {
+            .flex.h-screen {
+                flex-direction: column;
+            }
 
-                .flex.h-screen>aside {
-                    height: auto !important;
-                }
+            .flex.h-screen>aside {
+                height: auto !important;
+            }
 
-                aside {
-                    width: 100%;
-                    height: auto;
-                    min-height: fit-content;
-                    padding-bottom: 1rem;
-                }
+            aside {
+                width: 100%;
+                height: auto;
+                min-height: fit-content;
+                padding-bottom: 1rem;
+            }
 
+            aside .p-6 {
+                padding: 1rem;
+            }
 
-                aside .p-6 {
-                    padding: 1rem;
-                }
+            aside .mb-8 {
+                margin-bottom: 0.5rem;
+            }
 
-                aside .mb-8 {
-                    margin-bottom: 0.5rem;
-                }
+            aside nav {
+                display: flex;
+                gap: 0.5rem;
+            }
 
-                aside nav {
-                    display: flex;
-                    gap: 0.5rem;
-                }
+            aside nav a {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+                white-space: nowrap;
+            }
 
-                aside nav a {
-                    padding: 0.5rem 0.75rem;
-                    font-size: 0.75rem;
-                    white-space: nowrap;
-                }
+            aside nav a span:first-child {
+                display: none;
+            }
 
-                aside nav a span:first-child {
-                    display: none;
-                }
+            aside .mt-auto {
+                display: none;
+            }
 
-                aside .mt-auto {
-                    display: none;
-                }
+            main .p-8 {
+                padding: 1rem;
+            }
 
-                main .p-8 {
-                    padding: 1rem;
-                }
+            .grid.grid-cols-1.md\\:grid-cols-4 {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
 
-                .grid.grid-cols-1.md\\:grid-cols-4 {
-                    grid-template-columns: 1fr 1fr;
-                    gap: 0.5rem;
-                }
+            .grid.grid-cols-1.md\\:grid-cols-4>div {
+                padding: 0.75rem;
+            }
 
-                .grid.grid-cols-1.md\\:grid-cols-4>div {
-                    padding: 0.75rem;
-                }
-
-                .text-3xl {
-                    font-size: 1.5rem;
-                }
+            .text-3xl {
+                font-size: 1.5rem;
             }
         }
     </style>
