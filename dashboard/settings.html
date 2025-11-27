@@ -315,11 +315,20 @@ Cara completa: solo con fans VIP"
         );
 
         // Check auth
+        // Check auth
         const studioId = localStorage.getItem('studio_id');
         if (!studioId) {
             window.location.href = '/dashboard/login.html';
         }
 
+        // Obtener token de URL o localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token') || localStorage.getItem('model_token');
+
+        if (!token) {
+            alert('No se encontró token de modelo');
+            window.location.href = '/dashboard/modelos.html';
+        }
         // Settings state
         let emojiLevel = 2;
 
