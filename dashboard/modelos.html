@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,55 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* MÓVIL */
+        @media (max-width: 768px) {
+            .flex.h-screen {
+                flex-direction: column;
+            }
+
+            aside {
+                width: 100%;
+                height: auto;
+                padding: 1rem;
+            }
+
+            aside .p-6 {
+                padding: 0.5rem;
+            }
+
+            aside .mb-8 {
+                margin-bottom: 0.5rem;
+            }
+
+            aside nav {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            aside nav a {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+
+            aside .mt-auto {
+                display: none;
+            }
+
+            main .p-8 {
+                padding: 1rem;
+            }
+
+            .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
+
 <body class="bg-gray-50">
     <div class="flex h-screen">
         <!-- Sidebar -->
@@ -19,12 +66,14 @@
                     <span class="text-3xl mr-3">🤖</span>
                     <h1 class="text-xl font-bold">CamAssist</h1>
                 </div>
-                
+
                 <nav class="space-y-2">
-                    <a href="/dashboard/index.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <a href="/dashboard/index.html"
+                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">📊</span> Dashboard
                     </a>
-                    <a href="/dashboard/modelos.html" class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
+                    <a href="/dashboard/modelos.html"
+                        class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
                         <span class="mr-3">👥</span> Modelos
                     </a>
                 </nav>
@@ -35,7 +84,8 @@
                     <div class="text-white/60">Studio</div>
                     <div class="font-semibold" id="studioName">Mi Studio</div>
                 </div>
-                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
+                <button onclick="logout()"
+                    class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
                     <span class="mr-2">🚪</span> Salir
                 </button>
             </div>
@@ -50,7 +100,8 @@
                         <h1 class="text-3xl font-bold text-gray-800">Modelos</h1>
                         <p class="text-gray-600">Gestiona las modelos de tu studio</p>
                     </div>
-                    <button onclick="showAddModal()" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition">
+                    <button onclick="showAddModal()"
+                        class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition">
                         ➕ Agregar Modelo
                     </button>
                 </div>
@@ -67,7 +118,7 @@
     <div id="addModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
         <div class="bg-white rounded-2xl p-8 w-full max-w-md">
             <h2 class="text-2xl font-bold text-gray-800 mb-6">➕ Agregar Modelo</h2>
-            
+
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la modelo</label>
                 <input type="text" id="newModelName" placeholder="Ej: Valentina"
@@ -75,7 +126,8 @@
             </div>
 
             <div class="flex gap-3">
-                <button onclick="createModel()" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold">
+                <button onclick="createModel()"
+                    class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold">
                     Crear Modelo
                 </button>
                 <button onclick="hideAddModal()" class="px-6 py-3 bg-gray-200 rounded-lg">
@@ -90,7 +142,7 @@
         <div class="bg-white rounded-2xl p-8 w-full max-w-md">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">✅ Modelo Creada</h2>
             <p class="text-gray-600 mb-4">Este es el token de la modelo. ¡Guárdalo!</p>
-            
+
             <div class="bg-gray-100 p-4 rounded-lg mb-4">
                 <p class="text-sm text-gray-500 mb-1">Token:</p>
                 <p class="font-mono text-lg font-bold text-purple-600 break-all" id="newToken"></p>
@@ -109,7 +161,7 @@
         // Check auth
         const studioId = localStorage.getItem('studio_id');
         const studioName = localStorage.getItem('studio_name');
-        
+
         if (!studioId) {
             window.location.href = '/dashboard/login.html';
         }
@@ -139,7 +191,7 @@
 
         function renderModels(models) {
             const grid = document.getElementById('modelsGrid');
-            
+
             if (models.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full text-center py-12">
@@ -240,4 +292,5 @@
         }
     </script>
 </body>
+
 </html>
