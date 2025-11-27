@@ -192,7 +192,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   const btn = document.createElement('button');
   btn.textContent = '🤖';
   btn.className = 'ai-btn';
-  btn.style.cssText = 'background:#4CAF50;color:white;border:none;padding:2px 6px;margin-left:5px;cursor:pointer;border-radius:3px;font-size:10px';
+  //btn.style.cssText = 'background:#4CAF50;color:white;border:none;padding:2px 6px;margin-left:5px;cursor:pointer;border-radius:3px;font-size:10px';
+  btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px';
 
   btn.onclick = async () => {
     // Obtener historial correcto según contexto
@@ -337,12 +338,12 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       document.body.appendChild(popup);
 
       btn.textContent = '✓';
-      setTimeout(() => btn.textContent = 'IA', 2000);
+      setTimeout(() => btn.textContent = '🤖', 2000);
 
     } catch (error) {
       console.error('Error:', error);
       btn.textContent = '!';
-      setTimeout(() => btn.textContent = 'IA', 2000);
+      setTimeout(() => btn.textContent = '🤖', 2000);
     }
   };
 
