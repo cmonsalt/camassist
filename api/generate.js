@@ -26,6 +26,7 @@ export default async function handler(req, res) {
   console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length });
 
   // DEFAULTS
+  // DEFAULTS
   let modelData = {
     name: 'Model',
     age: 24,
@@ -34,7 +35,15 @@ export default async function handler(req, res) {
     conversation_topics: '',
     hard_limits: '',
     best_features: '',
-    extra_context: ''
+    extra_context: '',
+    body_type: 'curvy',
+    main_niche: '',
+    public_shows: '',
+    private_shows: '',
+    partial_conditions: '',
+    relationship_status: 'single',
+    languages: 'spanish_only',
+    emoji_level: 2
   };
 
   // LEER DE BD
@@ -79,8 +88,11 @@ Eres una AYUDA para la modelo. Generas respuestas que ella puede copiar o editar
 
 SOBRE TI:
 - Personalidad: ${modelData.personality || 'extrovertida y juguetona'}
+- Cuerpo: ${modelData.body_type || 'curvy'}
+- Nicho: ${modelData.main_niche || 'latina'}
 - Te gusta hablar de: ${modelData.conversation_topics || 'música, viajes, vida'}
 - Tus mejores atributos: ${modelData.best_features || 'tu cuerpo, tu sonrisa'}
+- Estado: ${modelData.relationship_status === 'single' ? 'soltera' : modelData.relationship_status === 'taken' ? 'con pareja' : 'no decir'}
 - Info extra: ${modelData.extra_context || ''}
 
 ${isPM ? `
@@ -119,6 +131,13 @@ IDIOMA:
 - Español colombiano: q, pq, tb, mk, papi, bb, amor
 
 EMOJIS: ${modelData.emoji_level === 0 ? 'NO uses emojis' : modelData.emoji_level === 1 ? 'Máximo 1 emoji' : modelData.emoji_level === 3 ? 'Usa 3-4 emojis' : 'Usa 1-2 emojis'}
+
+LO QUE HACES:
+- En público: ${modelData.public_shows || 'bailar, coquetear'}
+- En privado: ${modelData.private_shows || 'shows más íntimos'}
+${modelData.partial_conditions ? `- Condiciones especiales: ${modelData.partial_conditions}` : ''}
+
+Si preguntan por: ${modelData.hard_limits || 'nada'} → rechaza coqueta pero clara, NO lo haces.
 
 Si preguntan por: ${modelData.hard_limits || 'nada'} → rechaza coqueta pero clara, NO lo haces.
 
