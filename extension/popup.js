@@ -17,35 +17,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // Guardar token
-  saveBtn.addEventListener('click', async () => {
-    const token = tokenInput.value.trim();
+ saveBtn.addEventListener('click', async () => {
+  const token = tokenInput.value.trim();
+  
+  if (!token) {
+    alert('Por favor ingresa tu token');
+    return;
+  }
+
+  saveBtn.textContent = '⏳ Verificando...';
+  saveBtn.disabled = true;
+
+  const verified = await verifyToken(token);
+  
+  if (verified) {
+    // Guardar en chrome.storage
+    chrome.storage.local.set({ model_token: token });
     
-    if (!token) {
-      alert('Por favor ingresa tu token');
-      return;
-    }
-
-    saveBtn.textContent = '⏳ Verificando...';
-    saveBtn.disabled = true;
-
-    const verified = await verifyToken(token);
+    // Guardar en localStorage de la página activa (Chaturbate)
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (tabs[0]) {
+        chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+          func: (tk) => localStorage.setItem('model_token', tk),
+          args: [token]
+        });
+      }
+    });
     
-    if (verified) {
-      chrome.storage.local.set({ model_token: token });
-      
-      // También guardar en localStorage para content.js
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs[0]) {
-          chrome.tabs.executeScript(tabs[0].id, {
-            code: `localStorage.setItem('model_token', '${token}');`
-          });
-        }
-      });
-    }
+    alert('✅ Token guardado! Recarga la página de Chaturbate.');
+  }
 
-    saveBtn.textContent = '💾 Guardar Token';
-    saveBtn.disabled = false;
-  });
+  saveBtn.textContent = '💾 Guardar Token';
+  saveBtn.disabled = false;
+});
 
   async function verifyToken(token) {
     try {

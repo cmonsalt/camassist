@@ -4,16 +4,11 @@
   "version": "1.0",
   "description": "AI assistant for webcam models",
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icon16.png",
-      "48": "icon48.png",
-      "128": "icon128.png"
-    }
+    "default_popup": "popup.html"
   },
   "content_scripts": [{
     "matches": ["*://*.chaturbate.com/*"],
     "js": ["content.js"]
   }],
-  "permissions": ["storage"]
+  "permissions": ["storage", "activeTab", "scripting"]
 }
