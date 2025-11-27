@@ -315,9 +315,8 @@ Cara completa: solo con fans VIP"
         );
 
         // Check auth
-        const token = localStorage.getItem('model_token') || localStorage.getItem('token');
-        if (!token) {
-            alert('No estás autenticado');
+        const studioId = localStorage.getItem('studio_id');
+        if (!studioId) {
             window.location.href = '/dashboard/login.html';
         }
 
