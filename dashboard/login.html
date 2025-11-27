@@ -20,7 +20,7 @@
             <p class="text-gray-500 mt-2">AI para Modelos Webcam</p>
         </div>
         
-        <div class="space-y-4">
+        <div id="loginForm" class="space-y-4">
             <input type="email" id="email" placeholder="Email del Studio" 
                    class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition">
             
@@ -31,15 +31,51 @@
                     class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200">
                 Iniciar Sesión
             </button>
+
+            <button onclick="showRegister()" 
+                    class="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-all duration-200">
+                Crear Cuenta
+            </button>
         </div>
-        
-        <div class="mt-8 text-center text-sm text-gray-500">
-            ¿No tienes cuenta? 
-            <a href="#" class="text-purple-600 hover:underline font-medium">Contactar</a>
+
+        <div id="registerForm" class="space-y-4 hidden">
+            <input type="email" id="regEmail" placeholder="Email del Studio" 
+                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition">
+            
+            <input type="password" id="regPassword" placeholder="Contraseña" 
+                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition">
+
+            <input type="password" id="regPassword2" placeholder="Confirmar Contraseña" 
+                   class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200 transition">
+            
+            <button onclick="register()" 
+                    class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg transform hover:scale-[1.02] transition-all duration-200">
+                Crear Cuenta
+            </button>
+
+            <button onclick="showLogin()" 
+                    class="w-full bg-gray-100 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-200 transition-all duration-200">
+                Volver a Login
+            </button>
         </div>
     </div>
 
     <script>
+        // Si ya está logueado, ir al dashboard
+        if (localStorage.getItem('studio_id')) {
+            window.location.href = '/dashboard/modelos.html';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        }
+
         async function login() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -53,17 +89,53 @@
                 const response = await fetch('https://camassist.vercel.app/api/auth', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({email, password})
+                    body: JSON.stringify({ email, password })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('studioName', data.studioName);
-                    window.location.href = '/dashboard/settings.html';
+                    localStorage.setItem('studio_id', data.studio_id);
+                    localStorage.setItem('studio_name', data.studio_name);
+                    window.location.href = '/dashboard/modelos.html';
                 } else {
-                    alert('Credenciales incorrectas');
+                    alert(data.message || 'Credenciales incorrectas');
+                }
+            } catch (error) {
+                alert('Error de conexión');
+            }
+        }
+
+        async function register() {
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const password2 = document.getElementById('regPassword2').value;
+            
+            if (!email || !password || !password2) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+
+            if (password !== password2) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+            
+            try {
+                const response = await fetch('https://camassist.vercel.app/api/auth', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, password, action: 'register' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    localStorage.setItem('studio_id', data.studio_id);
+                    localStorage.setItem('studio_name', data.studio_name);
+                    window.location.href = '/dashboard/modelos.html';
+                } else {
+                    alert(data.message || 'Error al registrar');
                 }
             } catch (error) {
                 alert('Error de conexión');
@@ -72,7 +144,13 @@
         
         // Enter key support
         document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') login();
+            if (e.key === 'Enter') {
+                if (!document.getElementById('loginForm').classList.contains('hidden')) {
+                    login();
+                } else {
+                    register();
+                }
+            }
         });
     </script>
 </body>
