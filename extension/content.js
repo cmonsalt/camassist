@@ -295,11 +295,10 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       copyBtn.textContent = '📋 Copiar';
       copyBtn.style.cssText = 'background:green;color:white;padding:5px 10px;border:none;cursor:pointer;border-radius:3px;font-size:12px';
       copyBtn.onclick = () => {
-        navigator.clipboard.writeText(data.suggestion);
+        navigator.clipboard.writeText(responseText.textContent);
         copyBtn.textContent = '✓ Copiado!';
         setTimeout(() => popup.remove(), 500);
       };
-
       const regenBtn = document.createElement('button');
       regenBtn.textContent = '🔄 Regenerar';
       regenBtn.style.cssText = 'margin-left:5px;padding:5px 10px;cursor:pointer;border-radius:3px;font-size:12px';
