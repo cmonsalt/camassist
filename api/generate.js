@@ -178,7 +178,7 @@ Máx ${isPM ? '50' : '20'} palabras. SOLO JSON:
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.75,
+        temperature: 0.85,
         max_tokens: isPM ? 150 : 100
       })
     });
