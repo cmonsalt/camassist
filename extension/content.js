@@ -272,8 +272,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       let translationContent = null;
 
       // Comparar sin espacios extras para evitar falsos positivos
-      const suggestionClean = data.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
-      const translationClean = data.translation.replace(/\s+/g, ' ').trim().toLowerCase();
+      const suggestionClean = data.suggestion ? data.suggestion.replace(/\s+/g, ' ').trim().toLowerCase() : '';
+      const translationClean = data.translation ? data.translation.replace(/\s+/g, ' ').trim().toLowerCase() : '';
 
       if (suggestionClean !== translationClean) {
         translationText = document.createElement('div');
