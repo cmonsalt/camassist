@@ -252,6 +252,9 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       console.log('🟢 Respuesta:', data.suggestion);
       console.log('🌍 Traducción:', data.translation);
 
+      // COPIAR AUTOMÁTICO AL PORTAPAPELES
+      navigator.clipboard.writeText(data.suggestion);
+
       // Crear popup
       const popup = document.createElement('div');
       popup.id = 'ai-popup';
@@ -259,7 +262,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
 
       const title = document.createElement('h3');
       title.style.marginTop = '0';
-      title.textContent = `💬 ${isPM ? 'PM' : 'Público'} - @${username}`;
+      title.textContent = `💬 ${isPM ? 'PM' : 'Público'} - @${username} ✅ Copiado!`;
 
       // RESPUESTA PARA COPIAR
       const responseText = document.createElement('p');
@@ -291,14 +294,14 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         translationText.appendChild(translationContent);
       }
 
-      const copyBtn = document.createElement('button');
-      copyBtn.textContent = '📋 Copiar';
-      copyBtn.style.cssText = 'background:green;color:white;padding:5px 10px;border:none;cursor:pointer;border-radius:3px;font-size:12px';
-      copyBtn.onclick = () => {
-        navigator.clipboard.writeText(responseText.textContent);
-        copyBtn.textContent = '✓ Copiado!';
-        setTimeout(() => popup.remove(), 500);
-      };
+      // const copyBtn = document.createElement('button');
+      // copyBtn.textContent = '📋 Copiar';
+      // copyBtn.style.cssText = 'background:green;color:white;padding:5px 10px;border:none;cursor:pointer;border-radius:3px;font-size:12px';
+      // copyBtn.onclick = () => {
+      //   navigator.clipboard.writeText(responseText.textContent);
+      //   copyBtn.textContent = '✓ Copiado!';
+      //   setTimeout(() => popup.remove(), 500);
+      // };
       const regenBtn = document.createElement('button');
       regenBtn.textContent = '🔄 Regenerar';
       regenBtn.style.cssText = 'margin-left:5px;padding:5px 10px;cursor:pointer;border-radius:3px;font-size:12px';
@@ -308,6 +311,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         try {
           const newData = await getResponse();
           responseText.textContent = newData.suggestion;
+          navigator.clipboard.writeText(newData.suggestion);
 
           // Actualizar traducción si existe
           if (translationContent) {
@@ -335,7 +339,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       if (translationText) {
         popup.appendChild(translationText);
       }
-      popup.appendChild(copyBtn);
+
       popup.appendChild(regenBtn);
       popup.appendChild(closeBtn);
 
