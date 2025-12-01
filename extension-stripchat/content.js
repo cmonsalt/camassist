@@ -9,8 +9,8 @@ chrome.storage.local.get(['model_token'], (result) => {
 });
 
 // HISTORIALES SEPARADOS
-let publicHistory = {};  // Por username en chat público
-let pmHistory = {};      // Por username en PM
+let publicHistory = {};
+let pmHistory = {};
 
 // Obtener username del broadcaster desde la URL
 const broadcasterUsername = window.location.pathname.split('/')[1] || '';
@@ -20,41 +20,39 @@ const extensionStartTime = Date.now();
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
 
 setInterval(() => {
+
+  // ============================================
   // 1. DETECTAR MENSAJES DE CHAT PÚBLICO
   // ============================================
   const publicMessages = document.querySelectorAll('div[data-message-id].regular-public-message');
-  
+
   publicMessages.forEach(msg => {
     if (msg.dataset.processed) return;
-    
+
     // Obtener username
-    const usernameEl = msg.querySelector('.message-username, .username-userlevels');
+    const usernameEl = msg.querySelector('.message-username');
     const username = usernameEl ? usernameEl.textContent.trim() : null;
-    
+
     if (!username) return;
-    
+
     // Determinar si es mensaje del broadcaster
     const isModelMessage = username.toLowerCase() === broadcasterUsername.toLowerCase();
-    
+
     // Obtener texto del mensaje
     let messageText = '';
     const bodyEl = msg.querySelector('.message-body');
     if (bodyEl) {
-      // Clonar para no modificar el original
       const clone = bodyEl.cloneNode(true);
-      // Remover el elemento del username
-      const usernameInBody = clone.querySelector('.message-username, .username-userlevels');
+      const usernameInBody = clone.querySelector('.message-username');
       if (usernameInBody) usernameInBody.remove();
-      // Remover botones
       clone.querySelectorAll('button').forEach(b => b.remove());
       messageText = clone.textContent.trim();
     }
-    
-    // Limpiar @mentions del inicio
+
     messageText = messageText.replace(/^@\S+\s*/g, '').trim();
-    
+
     if (!messageText) return;
-    
+
     // Detectar tips
     const isTip = messageText.includes('tipped') || messageText.includes('tokens');
     let tipAmount = 0;
@@ -62,58 +60,53 @@ setInterval(() => {
       const match = messageText.match(/(\d+)\s*(tokens?|tips?)/i);
       if (match) tipAmount = parseInt(match[1]);
     }
-    
+
     msg.dataset.processed = 'true';
-    
-    // ============================================
-    // GUARDAR EN HISTORIAL PÚBLICO
-    // ============================================
+
+    // Guardar en historial
     if (!isTip && messageText) {
       let targetUsername = username;
-      
-      // Si la modelo responde con @mention
+
       if (isModelMessage) {
         const mentionMatch = msg.textContent.match(/@(\w+)/);
         if (mentionMatch) {
           targetUsername = mentionMatch[1];
         }
       }
-      
+
       if (!publicHistory[targetUsername]) {
         publicHistory[targetUsername] = [];
       }
-      
+
       publicHistory[targetUsername].push({
         type: isModelMessage ? 'model' : 'fan',
         message: messageText,
         timestamp: Date.now()
       });
-      
+
       if (publicHistory[targetUsername].length > 20) {
         publicHistory[targetUsername].shift();
       }
-      
+
       console.log(`💬 Público - ${isModelMessage ? 'Modelo' : 'Fan'} (${targetUsername}): ${messageText}`);
     }
-    
-    // ============================================
-    // AGREGAR BOTÓN IA EN MENSAJES DE FANS (PÚBLICO)
-    // ============================================
+
+    // Agregar botón IA en mensajes de fans
     const hasTipMessage = isTip && messageText && !messageText.match(/^tipped \d+ tokens?$/i);
-    
+
     if (!isModelMessage && messageText && !msg.querySelector('.ai-btn')) {
       if (!isTip || hasTipMessage) {
         addAIButton(msg, username, messageText, false, 'public', tipAmount);
       }
     }
-    
+
     // Guardar tip
     if (isTip && tipAmount > 0) {
       if (!publicHistory[username]) {
         publicHistory[username] = [];
       }
       const now = Date.now();
-      const isDuplicate = publicHistory[username].some(item => 
+      const isDuplicate = publicHistory[username].some(item =>
         item.type === 'tip' && item.amount === tipAmount && Math.abs(item.timestamp - now) < 2000
       );
       if (!isDuplicate) {
@@ -124,98 +117,102 @@ setInterval(() => {
   });
 
   // ============================================
-  // 2. DETECTAR MENSAJES DE PM
+  // 2. DETECTAR MENSAJES DE PM (pestaña o modal)
   // ============================================
-  // PM está abierto si existe el panel de messenger
-  const pmContainer = document.querySelector('[class*="messenger-chat"], [class*="private-chat"], [id*="private-chat"]');
-  
-  // Obtener username del PM desde el header del chat
-  let pmUser = null;
-  const pmHeader = document.querySelector('[class*="ChatHeader"] span, [class*="messenger-header"]');
-  if (pmHeader) {
-    pmUser = pmHeader.textContent.trim().split(/\s/)[0];
-  }
-  
-  // Mensajes del fan en PM (counterpart = la otra persona)
-  // Selector más amplio para capturar ambas vistas de PM
   const pmFanMessages = document.querySelectorAll('[class*="counterpart-base-message"]');
-  
-  if (pmFanMessages.length > 0) {
-    console.log(`🔍 PM: Encontrados ${pmFanMessages.length} mensajes de fan`);
+
+  // Obtener username del PM desde el header
+  let pmUser = null;
+  const pmHeader = document.querySelector('[class*="ChatHeader"], [class*="messenger-header"]');
+  if (pmHeader) {
+    const spans = pmHeader.querySelectorAll('span');
+    for (const span of spans) {
+      const text = span.textContent.trim();
+      if (text && !text.includes('online') && !text.includes('offline')) {
+        pmUser = text.split(/\s/)[0];
+        break;
+      }
+    }
   }
-  
+
   pmFanMessages.forEach(msg => {
     if (msg.dataset.processed) return;
-    
-    // Obtener texto del font
+
+    // Obtener texto
     let messageText = '';
     const fontEl = msg.querySelector('font[dir="auto"]');
     if (fontEl) {
       messageText = fontEl.textContent.trim();
     }
-    
+    // Si no hay font, buscar texto directo
+    if (!messageText) {
+      const textNode = msg.querySelector('[class*="TextMessage"]');
+      if (textNode) {
+        messageText = textNode.textContent.trim();
+      }
+    }
+
     if (!messageText) return;
-    
-    // Obtener username del PM
+
     const targetUser = pmUser || 'fan';
-    
+
     msg.dataset.processed = 'true';
-    
+
     // Guardar en historial PM
     if (!pmHistory[targetUser]) {
       pmHistory[targetUser] = [];
     }
-    
+
     pmHistory[targetUser].push({
       type: 'fan',
       message: messageText,
       timestamp: Date.now()
     });
-    
+
     if (pmHistory[targetUser].length > 20) {
       pmHistory[targetUser].shift();
     }
-    
+
     console.log(`💬 PM - Fan (${targetUser}): ${messageText}`);
-    
+
     // Agregar botón IA
     if (!msg.querySelector('.ai-btn')) {
       addAIButton(msg, targetUser, messageText, true, 'pm', 0);
     }
   });
-  
-  // Mensajes de la modelo en PM (para historial)
+
+  // Mensajes de la modelo en PM (solo para historial)
   const pmModelMessages = document.querySelectorAll('[class*="OwnBaseMessage"]');
-  
+
   pmModelMessages.forEach(msg => {
     if (msg.dataset.processedModel) return;
-    
+
     let messageText = '';
     const fontEl = msg.querySelector('font[dir="auto"]');
     if (fontEl) {
       messageText = fontEl.textContent.trim();
     }
-    
+
     if (!messageText) return;
-    
+
     const targetUser = pmUser || 'fan';
-    
+
     msg.dataset.processedModel = 'true';
-    
+
     if (!pmHistory[targetUser]) {
       pmHistory[targetUser] = [];
     }
-    
+
     pmHistory[targetUser].push({
       type: 'model',
       message: messageText,
       timestamp: Date.now()
     });
-    
+
     if (pmHistory[targetUser].length > 20) {
       pmHistory[targetUser].shift();
     }
-    
+
     console.log(`💬 PM - Modelo: ${messageText}`);
   });
 
@@ -228,30 +225,26 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   const btn = document.createElement('button');
   btn.textContent = '🤖';
   btn.className = 'ai-btn';
-  btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:4px 10px;margin-left:8px;cursor:pointer;border-radius:5px;font-size:14px;vertical-align:middle;display:inline-block;position:relative;z-index:1000;';
+  
+  if (isPM) {
+    // PM: botón pequeño arriba a la derecha
+    btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:2px 6px;cursor:pointer;border-radius:4px;font-size:10px;position:absolute;right:5px;top:5px;z-index:9999;';
+    container.style.position = 'relative';
+  } else {
+    // Público: botón inline al final
+    btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px;';
+  }
 
-  btn.onclick = async (e) => {
-    e.stopPropagation();
-    
-    // Obtener historial correcto según contexto
+  btn.onclick = async () => {
     const history = context === 'pm' ? pmHistory : publicHistory;
     const userHistory = history[username] || [];
 
     console.log(`🔵 IA para ${isPM ? 'PM' : 'público'} - Usuario: ${username}`);
-    
-    // SI ESTAMOS EN PM, incluir historial público también
+
     let fullContext = userHistory;
     if (isPM && publicHistory[username]) {
       fullContext = [...publicHistory[username], ...userHistory];
     }
-
-    console.log('📚 Historial del usuario (últimos 10):');
-    console.table(fullContext.slice(-10).map((item, index) => ({
-      '#': index,
-      'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
-      'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : (item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '')),
-      'Timestamp': new Date(item.timestamp).toLocaleTimeString()
-    })));
 
     btn.textContent = '...';
 
@@ -275,13 +268,11 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       });
       return response.json();
     };
-    
+
     try {
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
-      console.log('🌍 Traducción:', data.translation);
 
-      // COPIAR AUTOMÁTICO AL PORTAPAPELES
       navigator.clipboard.writeText(data.suggestion);
 
       // Crear popup
@@ -293,13 +284,12 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       title.style.cssText = 'margin:0 0 15px 0;color:#333;';
       title.textContent = `💬 ${isPM ? 'PM' : 'Público'} - @${username} ✅ Copiado!`;
 
-      // RESPUESTA PARA COPIAR
       const responseText = document.createElement('p');
       responseText.id = 'ai-response';
       responseText.style.cssText = 'background:#f0f0f0;padding:12px;border-radius:5px;max-height:200px;overflow-y:auto;word-wrap:break-word;margin-bottom:10px;color:#333;';
       responseText.textContent = data.suggestion;
 
-      // MOSTRAR TRADUCCIÓN SOLO SI ES DIFERENTE
+      // Traducción
       let translationText = null;
       let translationContent = null;
 
@@ -322,12 +312,9 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         translationText.appendChild(translationContent);
       }
 
-      const buttonContainer = document.createElement('div');
-      buttonContainer.style.cssText = 'display:flex;gap:10px;';
-
       const regenBtn = document.createElement('button');
       regenBtn.textContent = '🔄 Regenerar';
-      regenBtn.style.cssText = 'flex:1;padding:10px;cursor:pointer;border-radius:5px;font-size:13px;border:1px solid #ddd;background:#f5f5f5;';
+      regenBtn.style.cssText = 'padding:8px 15px;cursor:pointer;border-radius:5px;font-size:12px;border:1px solid #ddd;background:#f5f5f5;margin-right:10px;';
       regenBtn.onclick = async () => {
         regenBtn.disabled = true;
         regenBtn.textContent = '...';
@@ -335,13 +322,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           const newData = await getResponse();
           responseText.textContent = newData.suggestion;
           navigator.clipboard.writeText(newData.suggestion);
-
           if (translationContent && newData.translation) {
-            const newSuggestionClean = newData.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
-            const newTranslationClean = newData.translation.replace(/\s+/g, ' ').trim().toLowerCase();
-            if (newSuggestionClean !== newTranslationClean) {
-              translationContent.textContent = newData.translation;
-            }
+            translationContent.textContent = newData.translation;
           }
         } catch (error) {
           console.error('Error regenerando:', error);
@@ -352,18 +334,16 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
 
       const closeBtn = document.createElement('button');
       closeBtn.textContent = '❌ Cerrar';
-      closeBtn.style.cssText = 'flex:1;padding:10px;cursor:pointer;font-size:13px;border:none;background:#8B5CF6;color:white;border-radius:5px;';
+      closeBtn.style.cssText = 'padding:8px 15px;cursor:pointer;font-size:12px;border:none;background:#8B5CF6;color:white;border-radius:5px;';
       closeBtn.onclick = () => popup.remove();
-
-      buttonContainer.appendChild(regenBtn);
-      buttonContainer.appendChild(closeBtn);
 
       popup.appendChild(title);
       popup.appendChild(responseText);
       if (translationText) {
         popup.appendChild(translationText);
       }
-      popup.appendChild(buttonContainer);
+      popup.appendChild(regenBtn);
+      popup.appendChild(closeBtn);
 
       const oldPopup = document.getElementById('ai-popup');
       if (oldPopup) oldPopup.remove();
@@ -380,14 +360,10 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     }
   };
 
- // Encontrar mejor lugar para el botón
+  // Dónde poner el botón
   if (isPM) {
-    // PM: poner el botón con position absolute
-    container.style.position = 'relative';
-    btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 6px;cursor:pointer;border-radius:4px;font-size:11px;position:absolute;right:5px;top:5px;z-index:9999;';
     container.appendChild(btn);
   } else {
-    // Público: poner en message-body (ya funciona)
     const messageBody = container.querySelector('.message-body');
     const targetEl = messageBody || container;
     targetEl.appendChild(btn);
