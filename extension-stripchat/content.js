@@ -122,16 +122,18 @@ setInterval(() => {
   const pmFanMessages = document.querySelectorAll('div[data-message-id][class*="counterpart-base-message-container"]');
 
   // Obtener username del PM desde el header
+  // Obtener username del PM desde el header (pestaña o modal)
   let pmUser = null;
-  const pmHeader = document.querySelector('[class*="ChatHeader"], [class*="messenger-header"]');
-  if (pmHeader) {
-    const spans = pmHeader.querySelectorAll('span');
-    for (const span of spans) {
-      const text = span.textContent.trim();
-      if (text && !text.includes('online') && !text.includes('offline')) {
-        pmUser = text.split(/\s/)[0];
-        break;
-      }
+  // Intentar desde modal
+  const modalHeader = document.querySelector('[class*="ChatHeader"] span, [class*="messenger-chat"] [class*="username"]');
+  if (modalHeader) {
+    pmUser = modalHeader.textContent.trim().split(/\s/)[0];
+  }
+  // Intentar desde pestaña activa
+  if (!pmUser) {
+    const activeTab = document.querySelector('[class*="private-chat-tab"].active, [class*="chat-tab"].active:not([class*="public"])');
+    if (activeTab) {
+      pmUser = activeTab.textContent.trim().split(/\s/)[0];
     }
   }
 
@@ -224,6 +226,13 @@ setInterval(() => {
 function addAIButton(container, username, messageText, isPM, context, tipAmount) {
   const btn = document.createElement('button');
   btn.textContent = '🤖';
+  console.log('📚 Historial enviado:');
+    console.table(fullContext.slice(-10).map((item, index) => ({
+      '#': index,
+      'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
+      'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.message.substring(0, 50),
+      'Hora': new Date(item.timestamp).toLocaleTimeString()
+    })));
   btn.className = 'ai-btn';
 
   if (isPM) {
