@@ -121,7 +121,6 @@ setInterval(() => {
   // ============================================
   const pmFanMessages = document.querySelectorAll('div[data-message-id][class*="counterpart-base-message-container"]');
 
-  // Obtener username del PM desde el header
   // Obtener username del PM desde el header (pestaña o modal)
   let pmUser = null;
   // Intentar desde modal
@@ -226,20 +225,11 @@ setInterval(() => {
 function addAIButton(container, username, messageText, isPM, context, tipAmount) {
   const btn = document.createElement('button');
   btn.textContent = '🤖';
-  console.log('📚 Historial enviado:');
-    console.table(fullContext.slice(-10).map((item, index) => ({
-      '#': index,
-      'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
-      'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.message.substring(0, 50),
-      'Hora': new Date(item.timestamp).toLocaleTimeString()
-    })));
   btn.className = 'ai-btn';
 
   if (isPM) {
-    // PM: botón al lado del texto, no arriba
     btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:2px 5px;cursor:pointer;border-radius:4px;font-size:10px;margin-left:5px;vertical-align:middle;display:inline;';
   } else {
-    // Público: botón inline al final
     btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px;';
   }
 
@@ -253,6 +243,15 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     if (isPM && publicHistory[username]) {
       fullContext = [...publicHistory[username], ...userHistory];
     }
+
+    // TABLA DE HISTORIAL
+    console.log('📚 Historial enviado:');
+    console.table(fullContext.slice(-10).map((item, index) => ({
+      '#': index,
+      'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
+      'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.message.substring(0, 50),
+      'Hora': new Date(item.timestamp).toLocaleTimeString()
+    })));
 
     btn.textContent = '...';
 
@@ -369,9 +368,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   };
 
   // Dónde poner el botón
-  // Dónde poner el botón
   if (isPM) {
-    // Buscar el elemento del texto para poner botón al lado
     const textEl = container.querySelector('font[dir="auto"]') || container.querySelector('[class*="TextMessage"]');
     if (textEl) {
       textEl.parentElement.style.display = 'inline';
