@@ -224,30 +224,34 @@ setInterval(() => {
 // ============================================
 // FUNCIÓN PARA AGREGAR BOTÓN IA
 // ============================================
-
 function addAIButton(container, username, messageText, isPM, context, tipAmount) {
   const btn = document.createElement('button');
   btn.textContent = '🤖';
   btn.className = 'ai-btn';
-  btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:4px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px;display:inline-block;position:absolute;right:-40px;top:50%;transform:translateY(-50%);z-index:9999;';
-
-  // Hacer el container relative para que el absolute funcione
-  container.style.position = 'relative';
-  container.style.overflow = 'visible';
+  btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:4px 10px;margin-left:8px;cursor:pointer;border-radius:5px;font-size:14px;vertical-align:middle;display:inline-block;position:relative;z-index:1000;';
 
   btn.onclick = async (e) => {
     e.stopPropagation();
-    e.preventDefault();
     
+    // Obtener historial correcto según contexto
     const history = context === 'pm' ? pmHistory : publicHistory;
     const userHistory = history[username] || [];
 
     console.log(`🔵 IA para ${isPM ? 'PM' : 'público'} - Usuario: ${username}`);
     
+    // SI ESTAMOS EN PM, incluir historial público también
     let fullContext = userHistory;
     if (isPM && publicHistory[username]) {
       fullContext = [...publicHistory[username], ...userHistory];
     }
+
+    console.log('📚 Historial del usuario (últimos 10):');
+    console.table(fullContext.slice(-10).map((item, index) => ({
+      '#': index,
+      'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
+      'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : (item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '')),
+      'Timestamp': new Date(item.timestamp).toLocaleTimeString()
+    })));
 
     btn.textContent = '...';
 
@@ -275,9 +279,12 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     try {
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
+      console.log('🌍 Traducción:', data.translation);
 
+      // COPIAR AUTOMÁTICO AL PORTAPAPELES
       navigator.clipboard.writeText(data.suggestion);
 
+      // Crear popup
       const popup = document.createElement('div');
       popup.id = 'ai-popup';
       popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;';
@@ -286,11 +293,13 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       title.style.cssText = 'margin:0 0 15px 0;color:#333;';
       title.textContent = `💬 ${isPM ? 'PM' : 'Público'} - @${username} ✅ Copiado!`;
 
+      // RESPUESTA PARA COPIAR
       const responseText = document.createElement('p');
       responseText.id = 'ai-response';
       responseText.style.cssText = 'background:#f0f0f0;padding:12px;border-radius:5px;max-height:200px;overflow-y:auto;word-wrap:break-word;margin-bottom:10px;color:#333;';
       responseText.textContent = data.suggestion;
 
+      // MOSTRAR TRADUCCIÓN SOLO SI ES DIFERENTE
       let translationText = null;
       let translationContent = null;
 
@@ -326,8 +335,13 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           const newData = await getResponse();
           responseText.textContent = newData.suggestion;
           navigator.clipboard.writeText(newData.suggestion);
+
           if (translationContent && newData.translation) {
-            translationContent.textContent = newData.translation;
+            const newSuggestionClean = newData.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
+            const newTranslationClean = newData.translation.replace(/\s+/g, ' ').trim().toLowerCase();
+            if (newSuggestionClean !== newTranslationClean) {
+              translationContent.textContent = newData.translation;
+            }
           }
         } catch (error) {
           console.error('Error regenerando:', error);
@@ -366,5 +380,16 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     }
   };
 
-  container.appendChild(btn);
+ // Encontrar mejor lugar para el botón
+  if (isPM) {
+    // PM: poner el botón con position absolute
+    container.style.position = 'relative';
+    btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 6px;cursor:pointer;border-radius:4px;font-size:11px;position:absolute;right:5px;top:5px;z-index:9999;';
+    container.appendChild(btn);
+  } else {
+    // Público: poner en message-body (ya funciona)
+    const messageBody = container.querySelector('.message-body');
+    const targetEl = messageBody || container;
+    targetEl.appendChild(btn);
+  }
 }
