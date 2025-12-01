@@ -119,7 +119,7 @@ setInterval(() => {
   // ============================================
   // 2. DETECTAR MENSAJES DE PM (pestaña o modal)
   // ============================================
-  const pmFanMessages = document.querySelectorAll('[class*="counterpart-base-message"]');
+  const pmFanMessages = document.querySelectorAll('div[data-message-id][class*="counterpart-base-message-container"]');
 
   // Obtener username del PM desde el header
   let pmUser = null;
