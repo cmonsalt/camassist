@@ -225,11 +225,10 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   const btn = document.createElement('button');
   btn.textContent = '🤖';
   btn.className = 'ai-btn';
-  
+
   if (isPM) {
-    // PM: botón pequeño arriba a la derecha
-    btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:2px 6px;cursor:pointer;border-radius:4px;font-size:10px;position:absolute;right:5px;top:5px;z-index:9999;';
-    container.style.position = 'relative';
+    // PM: botón al lado del texto, no arriba
+    btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:2px 5px;cursor:pointer;border-radius:4px;font-size:10px;margin-left:5px;vertical-align:middle;display:inline;';
   } else {
     // Público: botón inline al final
     btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px;';
@@ -361,8 +360,16 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   };
 
   // Dónde poner el botón
+  // Dónde poner el botón
   if (isPM) {
-    container.appendChild(btn);
+    // Buscar el elemento del texto para poner botón al lado
+    const textEl = container.querySelector('font[dir="auto"]') || container.querySelector('[class*="TextMessage"]');
+    if (textEl) {
+      textEl.parentElement.style.display = 'inline';
+      textEl.after(btn);
+    } else {
+      container.appendChild(btn);
+    }
   } else {
     const messageBody = container.querySelector('.message-body');
     const targetEl = messageBody || container;
