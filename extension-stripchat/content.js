@@ -19,31 +19,7 @@ console.log('👤 Broadcaster username:', broadcasterUsername);
 const extensionStartTime = Date.now();
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
 
-// Variable para trackear el usuario del PM actual
-let currentPMUser = null;
-
 setInterval(() => {
-
-  // ============================================
-  // DETECTAR SI HAY PM ABIERTO
-  // ============================================
-  // El PM es un panel separado que se abre sobre el chat
-  const pmPanel = document.querySelector('.messenger-chat, [class*="private-chat"], [class*="PrivateChat"]');
-  const isPMOpen = pmPanel !== null;
-  
-  // Obtener username del PM desde el header
-  if (isPMOpen) {
-    const pmHeader = document.querySelector('.messenger-header, [class*="ChatHeader"]');
-    if (pmHeader) {
-      const headerText = pmHeader.textContent.trim();
-      if (headerText && headerText !== currentPMUser) {
-        currentPMUser = headerText.split(/\s/)[0]; // Tomar primer palabra (username)
-        console.log('💬 PM abierto con:', currentPMUser);
-      }
-    }
-  }
-
-  // ============================================
   // 1. DETECTAR MENSAJES DE CHAT PÚBLICO
   // ============================================
   const publicMessages = document.querySelectorAll('div[data-message-id].regular-public-message');
@@ -150,80 +126,98 @@ setInterval(() => {
   // ============================================
   // 2. DETECTAR MENSAJES DE PM
   // ============================================
-  if (isPMOpen && currentPMUser) {
-    // Mensajes del fan en PM (counterpart = la otra persona)
-    const pmFanMessages = document.querySelectorAll('[class*="counterpart-base-message-container"], [class*="counterpart-base-message"]');
-    
-    pmFanMessages.forEach(msg => {
-      if (msg.dataset.processed) return;
-      
-      // Obtener texto
-      let messageText = '';
-      const fontEl = msg.querySelector('font[dir="auto"]');
-      if (fontEl) {
-        messageText = fontEl.textContent.trim();
-      }
-      
-      if (!messageText) return;
-      
-      msg.dataset.processed = 'true';
-      
-      // Guardar en historial PM
-      if (!pmHistory[currentPMUser]) {
-        pmHistory[currentPMUser] = [];
-      }
-      
-      pmHistory[currentPMUser].push({
-        type: 'fan',
-        message: messageText,
-        timestamp: Date.now()
-      });
-      
-      if (pmHistory[currentPMUser].length > 20) {
-        pmHistory[currentPMUser].shift();
-      }
-      
-      console.log(`💬 PM - Fan (${currentPMUser}): ${messageText}`);
-      
-      // Agregar botón IA
-      if (!msg.querySelector('.ai-btn')) {
-        addAIButton(msg, currentPMUser, messageText, true, 'pm', 0);
-      }
-    });
-    
-    // Mensajes de la modelo en PM (para historial)
-    const pmModelMessages = document.querySelectorAll('[class*="OwnBaseMessage"], [class*="position-right"].base-message-wrapper');
-    
-    pmModelMessages.forEach(msg => {
-      if (msg.dataset.processedModel) return;
-      
-      let messageText = '';
-      const fontEl = msg.querySelector('font[dir="auto"]');
-      if (fontEl) {
-        messageText = fontEl.textContent.trim();
-      }
-      
-      if (!messageText) return;
-      
-      msg.dataset.processedModel = 'true';
-      
-      if (!pmHistory[currentPMUser]) {
-        pmHistory[currentPMUser] = [];
-      }
-      
-      pmHistory[currentPMUser].push({
-        type: 'model',
-        message: messageText,
-        timestamp: Date.now()
-      });
-      
-      if (pmHistory[currentPMUser].length > 20) {
-        pmHistory[currentPMUser].shift();
-      }
-      
-      console.log(`💬 PM - Modelo: ${messageText}`);
-    });
+  // PM está abierto si existe el panel de messenger
+  const pmContainer = document.querySelector('[class*="messenger-chat"], [class*="private-chat"], [id*="private-chat"]');
+  
+  // Obtener username del PM desde el header del chat
+  let pmUser = null;
+  const pmHeader = document.querySelector('[class*="ChatHeader"] span, [class*="messenger-header"]');
+  if (pmHeader) {
+    pmUser = pmHeader.textContent.trim().split(/\s/)[0];
   }
+  
+  // Mensajes del fan en PM (counterpart = la otra persona)
+  // Selector más amplio para capturar ambas vistas de PM
+  const pmFanMessages = document.querySelectorAll('[class*="counterpart-base-message"]');
+  
+  if (pmFanMessages.length > 0) {
+    console.log(`🔍 PM: Encontrados ${pmFanMessages.length} mensajes de fan`);
+  }
+  
+  pmFanMessages.forEach(msg => {
+    if (msg.dataset.processed) return;
+    
+    // Obtener texto del font
+    let messageText = '';
+    const fontEl = msg.querySelector('font[dir="auto"]');
+    if (fontEl) {
+      messageText = fontEl.textContent.trim();
+    }
+    
+    if (!messageText) return;
+    
+    // Obtener username del PM
+    const targetUser = pmUser || 'fan';
+    
+    msg.dataset.processed = 'true';
+    
+    // Guardar en historial PM
+    if (!pmHistory[targetUser]) {
+      pmHistory[targetUser] = [];
+    }
+    
+    pmHistory[targetUser].push({
+      type: 'fan',
+      message: messageText,
+      timestamp: Date.now()
+    });
+    
+    if (pmHistory[targetUser].length > 20) {
+      pmHistory[targetUser].shift();
+    }
+    
+    console.log(`💬 PM - Fan (${targetUser}): ${messageText}`);
+    
+    // Agregar botón IA
+    if (!msg.querySelector('.ai-btn')) {
+      addAIButton(msg, targetUser, messageText, true, 'pm', 0);
+    }
+  });
+  
+  // Mensajes de la modelo en PM (para historial)
+  const pmModelMessages = document.querySelectorAll('[class*="OwnBaseMessage"]');
+  
+  pmModelMessages.forEach(msg => {
+    if (msg.dataset.processedModel) return;
+    
+    let messageText = '';
+    const fontEl = msg.querySelector('font[dir="auto"]');
+    if (fontEl) {
+      messageText = fontEl.textContent.trim();
+    }
+    
+    if (!messageText) return;
+    
+    const targetUser = pmUser || 'fan';
+    
+    msg.dataset.processedModel = 'true';
+    
+    if (!pmHistory[targetUser]) {
+      pmHistory[targetUser] = [];
+    }
+    
+    pmHistory[targetUser].push({
+      type: 'model',
+      message: messageText,
+      timestamp: Date.now()
+    });
+    
+    if (pmHistory[targetUser].length > 20) {
+      pmHistory[targetUser].shift();
+    }
+    
+    console.log(`💬 PM - Modelo: ${messageText}`);
+  });
 
 }, 2000);
 
@@ -234,7 +228,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   const btn = document.createElement('button');
   btn.textContent = '🤖';
   btn.className = 'ai-btn';
-  btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px;vertical-align:middle;';
+  btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:4px 10px;margin-left:8px;cursor:pointer;border-radius:5px;font-size:14px;vertical-align:middle;display:inline-block;position:relative;z-index:1000;';
 
   btn.onclick = async (e) => {
     e.stopPropagation();
@@ -386,5 +380,15 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     }
   };
 
-  container.appendChild(btn);
+  // Encontrar mejor lugar para el botón
+  const messageBody = container.querySelector('.message-body');
+  const textMessage = container.querySelector('[class*="TextMessage"]');
+  const fontEl = container.querySelector('font[dir="auto"]');
+  const innerWrapper = container.querySelector('[class*="wrapper-inner"]');
+  
+  // Para PM: poner después del font o en el TextMessage
+  // Para público: poner en message-body
+  const targetEl = messageBody || textMessage || (fontEl ? fontEl.parentElement : null) || innerWrapper || container;
+  
+  targetEl.appendChild(btn);
 }
