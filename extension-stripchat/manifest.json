@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "CamAssist - StripChat",
+  "version": "1.0",
+  "description": "AI assistant for webcam models on StripChat",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [{
+    "matches": ["*://*.stripchat.com/*"],
+    "js": ["content.js"]
+  }],
+  "permissions": ["storage", "activeTab", "scripting"]
+}
