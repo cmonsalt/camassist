@@ -46,13 +46,13 @@ setInterval(() => {
   // ============================================
   // 1. DETECTAR MENSAJES DE CHAT PÚBLICO
   // ============================================
-  const publicMessages = document.querySelectorAll('.message-base.regular-public-message, [class*="regular-public-message"]');
+  const publicMessages = document.querySelectorAll('div[data-message-id].regular-public-message');
   
   publicMessages.forEach(msg => {
     if (msg.dataset.processed) return;
     
     // Obtener username
-    const usernameEl = msg.querySelector('.message-username, [class*="username-userlevels"]');
+    const usernameEl = msg.querySelector('.message-username, .username-userlevels');
     const username = usernameEl ? usernameEl.textContent.trim() : null;
     
     if (!username) return;
@@ -62,10 +62,20 @@ setInterval(() => {
     
     // Obtener texto del mensaje
     let messageText = '';
-    const fontEl = msg.querySelector('font[dir="auto"]');
-    if (fontEl) {
-      messageText = fontEl.textContent.trim();
+    const bodyEl = msg.querySelector('.message-body');
+    if (bodyEl) {
+      // Clonar para no modificar el original
+      const clone = bodyEl.cloneNode(true);
+      // Remover el elemento del username
+      const usernameInBody = clone.querySelector('.message-username, .username-userlevels');
+      if (usernameInBody) usernameInBody.remove();
+      // Remover botones
+      clone.querySelectorAll('button').forEach(b => b.remove());
+      messageText = clone.textContent.trim();
     }
+    
+    // Limpiar @mentions del inicio
+    messageText = messageText.replace(/^@\S+\s*/g, '').trim();
     
     if (!messageText) return;
     
