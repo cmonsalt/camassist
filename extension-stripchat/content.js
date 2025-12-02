@@ -121,8 +121,36 @@ setInterval(() => {
   // ============================================
 
   // Obtener username del PM desde el link del header
+  // Obtener username del PM desde múltiples fuentes
   let pmUser = null;
-  const usernameLink = document.querySelector('a.user-levels-username-link, [class*="user-levels-username-link"]');
+
+  // 1. Desde el link del popup de info
+  const usernameLink = document.querySelector('a.user-levels-username-link');
+  if (usernameLink) {
+    const href = usernameLink.getAttribute('href');
+    if (href && href.includes('/user/')) {
+      pmUser = href.split('/user/')[1];
+    }
+  }
+
+  // 2. Desde el header del modal de chat
+  if (!pmUser) {
+    const chatHeader = document.querySelector('[class*="MessengerChat"] [class*="username"], [class*="ChatHeader"] [class*="name"]');
+    if (chatHeader) {
+      pmUser = chatHeader.textContent.trim();
+    }
+  }
+
+  // 3. Desde el título del modal (el nombre arriba del chat)
+  if (!pmUser) {
+    const modalTitle = document.querySelector('[class*="user-info-popup-header"] a');
+    if (modalTitle) {
+      const href = modalTitle.getAttribute('href');
+      if (href && href.includes('/user/')) {
+        pmUser = href.split('/user/')[1];
+      }
+    }
+  }
   if (usernameLink) {
     const href = usernameLink.getAttribute('href');
     if (href && href.includes('/user/')) {
