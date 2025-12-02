@@ -120,31 +120,38 @@ setInterval(() => {
   // 2. DETECTAR MENSAJES DE PM (pestaña o modal)
   // ============================================
 
-  // Obtener username del PM desde el header del modal
+  // Obtener username del PM desde el link del header
   let pmUser = null;
-  const modalHeader = document.querySelector('[class*="ChatHeader"] [class*="username"], [class*="chat-header"] [class*="name"]');
-  if (modalHeader) {
-    pmUser = modalHeader.textContent.trim();
+  const usernameLink = document.querySelector('a.user-levels-username-link, [class*="user-levels-username-link"]');
+  if (usernameLink) {
+    const href = usernameLink.getAttribute('href');
+    if (href && href.includes('/user/')) {
+      pmUser = href.split('/user/')[1];
+    }
   }
-  // Si no, intentar desde el título del modal
+  // Fallback: span con el nombre
   if (!pmUser) {
-    const modalTitle = document.querySelector('[class*="MessengerChat"] [class*="Title"], [class*="messenger"] h2, [class*="messenger"] h3');
-    if (modalTitle) {
-      pmUser = modalTitle.textContent.trim().split(/\s/)[0];
+    const usernameSpan = document.querySelector('span.user-levels-username-text');
+    if (usernameSpan) {
+      pmUser = usernameSpan.textContent.trim();
     }
   }
 
-  // MENSAJES DEL FAN en PM
-  const pmFanMessages = document.querySelectorAll('div[data-message-id][class*="counterpart-base-message-container"]');
+  // TODOS los mensajes de PM (fan y modelo juntos, en orden del DOM)
+  const allPmMessages = document.querySelectorAll('div[data-message-id][class*="base-message-container"]');
 
-  pmFanMessages.forEach(msg => {
+  allPmMessages.forEach(msg => {
     if (msg.dataset.processed) return;
+
+    // Determinar si es mensaje de modelo o fan
+    const isModelMessage = msg.className.includes('OwnBaseMessage') ||
+      msg.className.includes('own') ||
+      msg.className.includes('position-right');
 
     // Obtener texto SIN el timestamp
     let messageText = '';
     const textEl = msg.querySelector('[class*="TextMessage"][class*="base-message"]');
     if (textEl) {
-      // Clonar y quitar indicadores (hora)
       const clone = textEl.cloneNode(true);
       clone.querySelectorAll('[class*="indicators"], [class*="time"], span').forEach(el => el.remove());
       messageText = clone.textContent.trim();
@@ -169,7 +176,7 @@ setInterval(() => {
     }
 
     pmHistory[targetUser].push({
-      type: 'fan',
+      type: isModelMessage ? 'model' : 'fan',
       message: messageText,
       timestamp: Date.now()
     });
@@ -178,56 +185,12 @@ setInterval(() => {
       pmHistory[targetUser].shift();
     }
 
-    console.log(`💬 PM - Fan (${targetUser}): ${messageText}`);
+    console.log(`💬 PM - ${isModelMessage ? 'Modelo' : 'Fan'} (${targetUser}): ${messageText}`);
 
-    if (!msg.querySelector('.ai-btn')) {
+    // Agregar botón IA solo en mensajes de fans
+    if (!isModelMessage && !msg.querySelector('.ai-btn')) {
       addAIButton(msg, targetUser, messageText, true, 'pm', 0);
     }
-  });
-
-  // MENSAJES DE LA MODELO en PM
-  const pmModelMessages = document.querySelectorAll('div[data-message-id][class*="OwnBaseMessage"], div[data-message-id][class*="own-base-message"]');
-
-  pmModelMessages.forEach(msg => {
-    if (msg.dataset.processedModel) return;
-
-    // Obtener texto SIN el timestamp
-    let messageText = '';
-    const textEl = msg.querySelector('[class*="TextMessage"][class*="base-message"]');
-    if (textEl) {
-      const clone = textEl.cloneNode(true);
-      clone.querySelectorAll('[class*="indicators"], [class*="time"], span').forEach(el => el.remove());
-      messageText = clone.textContent.trim();
-    }
-
-    if (!messageText) {
-      const fontEl = msg.querySelector('font[dir="auto"]');
-      if (fontEl) {
-        messageText = fontEl.textContent.trim();
-      }
-    }
-
-    if (!messageText) return;
-
-    const targetUser = pmUser || 'fan';
-
-    msg.dataset.processedModel = 'true';
-
-    if (!pmHistory[targetUser]) {
-      pmHistory[targetUser] = [];
-    }
-
-    pmHistory[targetUser].push({
-      type: 'model',
-      message: messageText,
-      timestamp: Date.now()
-    });
-
-    if (pmHistory[targetUser].length > 20) {
-      pmHistory[targetUser].shift();
-    }
-
-    console.log(`💬 PM - Modelo (${targetUser}): ${messageText}`);
   });
 
 }, 2000);
