@@ -138,7 +138,7 @@ setInterval(() => {
   }
 
   // TODOS los mensajes de PM (fan y modelo juntos, en orden del DOM)
-  const allPmMessages = document.querySelectorAll('div[data-message-id][class*="base-message-container"]');
+  const allPmMessages = document.querySelectorAll('div[data-message-id][class*="base-message"]');
 
   allPmMessages.forEach(msg => {
     if (msg.dataset.processed) return;
