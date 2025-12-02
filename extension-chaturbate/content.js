@@ -190,6 +190,68 @@ setInterval(() => {
       }
     }
   });
+  // ============================================
+  // 3. DETECTAR MENSAJES DEL MODAL PM FLOTANTE
+  // ============================================
+
+  // Obtener username del modal PM
+  let modalPmUser = null;
+  const modalHeader = document.querySelector('[data-testid="virtual-list"]')?.closest('div')?.querySelector('[class*="username"], [class*="user-name"]');
+  if (!modalHeader) {
+    // Buscar en el título del modal (el nombre arriba)
+    const modalTitle = document.querySelector('div[style*="z-index"] span[class*="user"]');
+    if (modalTitle) {
+      modalPmUser = modalTitle.textContent.trim();
+    }
+  } else {
+    modalPmUser = modalHeader.textContent.trim();
+  }
+
+  // Mensajes en el modal PM flotante
+  const modalPmMessages = document.querySelectorAll('[data-testid="received-message"], [data-testid="sent-message"]');
+
+  modalPmMessages.forEach(msg => {
+    if (msg.dataset.processedModal) return;
+
+    const isModelMessage = msg.getAttribute('data-testid') === 'sent-message';
+
+    // Obtener texto
+    let messageText = '';
+    const contentEl = msg.querySelector('[data-testid="message-contents"] span');
+    if (contentEl) {
+      messageText = contentEl.textContent.trim();
+    }
+
+    if (!messageText) return;
+
+    // Obtener username del header si no lo tenemos
+    if (!modalPmUser) {
+      modalPmUser = 'pm_user';
+    }
+
+    msg.dataset.processedModal = 'true';
+
+    if (!pmHistory[modalPmUser]) {
+      pmHistory[modalPmUser] = [];
+    }
+
+    pmHistory[modalPmUser].push({
+      type: isModelMessage ? 'model' : 'fan',
+      message: messageText,
+      timestamp: Date.now()
+    });
+
+    if (pmHistory[modalPmUser].length > 20) {
+      pmHistory[modalPmUser].shift();
+    }
+
+    console.log(`💬 Modal PM - ${isModelMessage ? 'Modelo' : 'Fan'} (${modalPmUser}): ${messageText}`);
+
+    // Agregar botón IA solo en mensajes de fans
+    if (!isModelMessage && !msg.querySelector('.ai-btn')) {
+      addAIButton(msg, modalPmUser, messageText, true, 'pm', 0);
+    }
+  });
 
 }, 2000);
 
