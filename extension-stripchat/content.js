@@ -119,37 +119,42 @@ setInterval(() => {
   // ============================================
   // 2. DETECTAR MENSAJES DE PM (pestaña o modal)
   // ============================================
-  const pmFanMessages = document.querySelectorAll('div[data-message-id][class*="counterpart-base-message-container"]');
 
-  // Obtener username del PM desde el header (pestaña o modal)
+  // Obtener username del PM desde el header del modal
   let pmUser = null;
-  // Intentar desde modal
-  const modalHeader = document.querySelector('[class*="ChatHeader"] span, [class*="messenger-chat"] [class*="username"]');
+  const modalHeader = document.querySelector('[class*="ChatHeader"] [class*="username"], [class*="chat-header"] [class*="name"]');
   if (modalHeader) {
-    pmUser = modalHeader.textContent.trim().split(/\s/)[0];
+    pmUser = modalHeader.textContent.trim();
   }
-  // Intentar desde pestaña activa
+  // Si no, intentar desde el título del modal
   if (!pmUser) {
-    const activeTab = document.querySelector('[class*="private-chat-tab"].active, [class*="chat-tab"].active:not([class*="public"])');
-    if (activeTab) {
-      pmUser = activeTab.textContent.trim().split(/\s/)[0];
+    const modalTitle = document.querySelector('[class*="MessengerChat"] [class*="Title"], [class*="messenger"] h2, [class*="messenger"] h3');
+    if (modalTitle) {
+      pmUser = modalTitle.textContent.trim().split(/\s/)[0];
     }
   }
+
+  // MENSAJES DEL FAN en PM
+  const pmFanMessages = document.querySelectorAll('div[data-message-id][class*="counterpart-base-message-container"]');
 
   pmFanMessages.forEach(msg => {
     if (msg.dataset.processed) return;
 
-    // Obtener texto
+    // Obtener texto SIN el timestamp
     let messageText = '';
-    const fontEl = msg.querySelector('font[dir="auto"]');
-    if (fontEl) {
-      messageText = fontEl.textContent.trim();
+    const textEl = msg.querySelector('[class*="TextMessage"][class*="base-message"]');
+    if (textEl) {
+      // Clonar y quitar indicadores (hora)
+      const clone = textEl.cloneNode(true);
+      clone.querySelectorAll('[class*="indicators"], [class*="time"], span').forEach(el => el.remove());
+      messageText = clone.textContent.trim();
     }
-    // Si no hay font, buscar texto directo
+
+    // Fallback
     if (!messageText) {
-      const textNode = msg.querySelector('[class*="TextMessage"]');
-      if (textNode) {
-        messageText = textNode.textContent.trim();
+      const fontEl = msg.querySelector('font[dir="auto"]');
+      if (fontEl) {
+        messageText = fontEl.textContent.trim();
       }
     }
 
@@ -159,7 +164,6 @@ setInterval(() => {
 
     msg.dataset.processed = 'true';
 
-    // Guardar en historial PM
     if (!pmHistory[targetUser]) {
       pmHistory[targetUser] = [];
     }
@@ -176,22 +180,31 @@ setInterval(() => {
 
     console.log(`💬 PM - Fan (${targetUser}): ${messageText}`);
 
-    // Agregar botón IA
     if (!msg.querySelector('.ai-btn')) {
       addAIButton(msg, targetUser, messageText, true, 'pm', 0);
     }
   });
 
-  // Mensajes de la modelo en PM (solo para historial)
-  const pmModelMessages = document.querySelectorAll('[class*="OwnBaseMessage"]');
+  // MENSAJES DE LA MODELO en PM
+  const pmModelMessages = document.querySelectorAll('div[data-message-id][class*="OwnBaseMessage"], div[data-message-id][class*="own-base-message"]');
 
   pmModelMessages.forEach(msg => {
     if (msg.dataset.processedModel) return;
 
+    // Obtener texto SIN el timestamp
     let messageText = '';
-    const fontEl = msg.querySelector('font[dir="auto"]');
-    if (fontEl) {
-      messageText = fontEl.textContent.trim();
+    const textEl = msg.querySelector('[class*="TextMessage"][class*="base-message"]');
+    if (textEl) {
+      const clone = textEl.cloneNode(true);
+      clone.querySelectorAll('[class*="indicators"], [class*="time"], span').forEach(el => el.remove());
+      messageText = clone.textContent.trim();
+    }
+
+    if (!messageText) {
+      const fontEl = msg.querySelector('font[dir="auto"]');
+      if (fontEl) {
+        messageText = fontEl.textContent.trim();
+      }
     }
 
     if (!messageText) return;
@@ -214,7 +227,7 @@ setInterval(() => {
       pmHistory[targetUser].shift();
     }
 
-    console.log(`💬 PM - Modelo: ${messageText}`);
+    console.log(`💬 PM - Modelo (${targetUser}): ${messageText}`);
   });
 
 }, 2000);
