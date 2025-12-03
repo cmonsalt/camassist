@@ -222,6 +222,10 @@ setInterval(() => {
       messageText = contentEl.textContent.trim();
     }
 
+    // Detectar si tiene imagen
+    const imageEl = msg.querySelector('img[data-testid="pvt-img"]');
+    const imageUrl = imageEl ? imageEl.src : null;
+
     if (!messageText) return;
 
     // Obtener username del header si no lo tenemos
@@ -249,7 +253,7 @@ setInterval(() => {
 
     // Agregar botón IA solo en mensajes de fans
     if (!isModelMessage && !msg.querySelector('.ai-btn')) {
-      addAIButton(msg, modalPmUser, messageText, true, 'pm', 0);
+      addAIButton(msg, modalPmUser, messageText, true, 'pm', 0, imageUrl);
     }
   });
 
@@ -258,12 +262,13 @@ setInterval(() => {
 // ============================================
 // FUNCIÓN PARA AGREGAR BOTÓN IA
 // ============================================
-function addAIButton(container, username, messageText, isPM, context, tipAmount) {
+function addAIButton(container, username, messageText, isPM, context, tipAmount, imageUrl = null) {
   const btn = document.createElement('button');
-  btn.textContent = '🤖';
+  btn.textContent = imageUrl ? '🖼️' : '🤖';
   btn.className = 'ai-btn';
-  //btn.style.cssText = 'background:#4CAF50;color:white;border:none;padding:2px 6px;margin-left:5px;cursor:pointer;border-radius:3px;font-size:10px';
-  btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px';
+  btn.style.cssText = imageUrl
+    ? 'background:#10B981;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px'
+    : 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px';
 
   btn.onclick = async () => {
     // Obtener historial correcto según contexto
@@ -304,7 +309,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           message: messageText,
           context: fullContext.slice(-10),
           isPM,
-          tip: tipAmount
+          tip: tipAmount,
+          imageUrl
         })
       });
       return response.json();
@@ -411,12 +417,12 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       document.body.appendChild(popup);
 
       btn.textContent = '✓';
-      setTimeout(() => btn.textContent = '🤖', 2000);
+      setTimeout(() => btn.textContent = imageUrl ? '🖼️' : '🤖', 2000);
 
     } catch (error) {
       console.error('Error:', error);
       btn.textContent = '!';
-      setTimeout(() => btn.textContent = '🤖', 2000);
+      setTimeout(() => btn.textContent = imageUrl ? '🖼️' : '🤖', 2000);
     }
   };
 
