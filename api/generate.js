@@ -21,9 +21,10 @@ export default async function handler(req, res) {
     tip = 0,
     context = [],
     isPM = false,
+    imageUrl = null,
   } = req.body;
 
-  console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length });
+  console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length, hasImage: !!imageUrl });
 
   // DEFAULTS
   // DEFAULTS
@@ -186,6 +187,39 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
   try {
     console.log('🤖 Llamando Grok...');
 
+    // Configurar modelo y mensajes según si hay imagen o no
+    const model = imageUrl ? 'grok-2-vision-1212' : 'grok-4-1-fast-non-reasoning';
+
+    let messages;
+    if (imageUrl) {
+      // Con imagen: formato especial
+      messages = [
+        { role: 'system', content: systemPrompt },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: {
+                url: imageUrl,
+                detail: 'high'
+              }
+            },
+            {
+              type: 'text',
+              text: `El fan ${username} envió esta foto íntima. Responde de forma larga, sensorial, emocional, que sienta que SÍ te gustó de verdad. No un simple "wow". Ejemplo: "Se nota que estabas pensando en mí... te ves tan fuerte, varonil, me encanta cómo se marcan tus venas... quisiera tenerla cerquita 🔥". SOLO JSON: {"response":"texto","translation_es":"traducción"}`
+            }
+          ]
+        }
+      ];
+    } else {
+      // Sin imagen: formato normal
+      messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ];
+    }
+
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -193,16 +227,12 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'grok-4-1-fast-non-reasoning',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
+        model,
+        messages,
         temperature: 0.85,
         max_tokens: isPM ? 150 : 100
       })
     });
-
     const data = await response.json();
     console.log('📤 Grok status:', response.status);
 
