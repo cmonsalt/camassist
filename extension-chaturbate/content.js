@@ -257,6 +257,44 @@ setInterval(() => {
     }
   });
 
+  // ============================================
+  // 4. DETECTAR IMÁGENES EN PM (chat-image)
+  // ============================================
+  const pmImages = document.querySelectorAll('[data-testid="chat-image"]');
+
+  pmImages.forEach(imgContainer => {
+    if (imgContainer.dataset.processedImage) return;
+
+    const dataNick = imgContainer.getAttribute('data-nick');
+    if (!dataNick) return;
+
+    if (dataNick === broadcasterUsername) return;
+
+    const imgEl = imgContainer.querySelector('img[data-testid="pvt-img"]');
+    if (!imgEl) return;
+
+    const imageUrl = imgEl.src;
+    if (!imageUrl) return;
+
+    imgContainer.dataset.processedImage = 'true';
+
+    console.log(`🖼️ Imagen detectada de ${dataNick}: ${imageUrl.substring(0, 50)}...`);
+
+    if (!pmHistory[dataNick]) {
+      pmHistory[dataNick] = [];
+    }
+
+    pmHistory[dataNick].push({
+      type: 'image',
+      imageUrl: imageUrl,
+      timestamp: Date.now()
+    });
+
+    if (!imgContainer.querySelector('.ai-btn')) {
+      addAIButton(imgContainer, dataNick, '[Envió una imagen]', true, 'pm', 0, imageUrl);
+    }
+  });
+
 }, 2000);
 
 // ============================================
