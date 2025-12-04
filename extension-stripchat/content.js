@@ -36,7 +36,7 @@ setInterval(() => {
     if (!username) return;
 
     // Determinar si es mensaje del broadcaster
-    const isModelMessage = username.toLowerCase() === broadcasterUsername.toLowerCase();
+    const isModelMessage = usernameEl && usernameEl.classList.contains('user-levels-username-chat-owner');
 
     // Obtener texto del mensaje
     let messageText = '';
