@@ -79,9 +79,16 @@ setInterval(() => {
     if (msg.dataset.processed) return;
 
     // Ignorar mensajes anteriores a cuando se cargó la extensión
+    // const messageTime = parseInt(msg.getAttribute('data-ts') || '0');
+    // if (messageTime > 0 && messageTime < extensionStartTime) {
+    //   msg.dataset.processed = 'true'; // Marcar como procesado pero no guardar
+    //   return;
+    // }
+
+    // Ignorar mensajes anteriores SOLO en chat público
     const messageTime = parseInt(msg.getAttribute('data-ts') || '0');
-    if (messageTime > 0 && messageTime < extensionStartTime) {
-      msg.dataset.processed = 'true'; // Marcar como procesado pero no guardar
+    if (!isPM && messageTime > 0 && messageTime < extensionStartTime) {
+      msg.dataset.processed = 'true';
       return;
     }
 
