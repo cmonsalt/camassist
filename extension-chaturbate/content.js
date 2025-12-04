@@ -419,35 +419,34 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
       const regenBtn = document.createElement('button');
       regenBtn.textContent = '🔄 Regenerar';
       regenBtn.style.cssText = 'margin-left:5px;padding:5px 10px;cursor:pointer;border-radius:3px;font-size:12px';
-   regenBtn.onclick = async () => {
-  regenBtn.disabled = true;
-  regenBtn.textContent = '...';
-  try {
-    const newData = await getResponse();
-    
-    if (newData.suggestion && !newData.suggestion.includes('Error')) {
-      responseText.textContent = newData.suggestion;
-      navigator.clipboard.writeText(newData.suggestion);
+      regenBtn.onclick = async () => {
+        regenBtn.disabled = true;
+        regenBtn.textContent = '...';
+        try {
+          const newData = await getResponse();
 
-      // Actualizar traducción si existe
-      if (translationContent && newData.translation) {
-        const newSuggestionClean = newData.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
-        const newTranslationClean = newData.translation.replace(/\s+/g, ' ').trim().toLowerCase();
+          if (newData.suggestion && !newData.suggestion.includes('Error')) {
+            responseText.textContent = newData.suggestion;
+            navigator.clipboard.writeText(newData.suggestion);
 
-        if (newSuggestionClean !== newTranslationClean) {
-          translationContent.textContent = newData.translation;
+            // Actualizar traducción si existe
+            if (translationContent && newData.translation) {
+              const newSuggestionClean = newData.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
+              const newTranslationClean = newData.translation.replace(/\s+/g, ' ').trim().toLowerCase();
+
+              if (newSuggestionClean !== newTranslationClean) {
+                translationContent.textContent = newData.translation;
+              }
+            }
+          } else {
+            console.error('Respuesta inválida:', newData);
+          }
+        } catch (error) {
+          console.error('Error regenerando:', error);
         }
-      }
-    } else {
-      console.error('Respuesta inválida:', newData);
-    }
-  } catch (error) {
-    console.error('Error regenerando:', error);
-  }
-  regenBtn.disabled = false;
-  regenBtn.textContent = '🔄 Regenerar';
-};
-
+        regenBtn.disabled = false;
+        regenBtn.textContent = '🔄 Regenerar';
+      };
       const closeBtn = document.createElement('button');
       closeBtn.textContent = '❌ Cerrar';
       closeBtn.style.cssText = 'margin-left:10px;padding:5px 10px;cursor:pointer;font-size:12px';
