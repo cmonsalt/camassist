@@ -345,6 +345,9 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
         fullContext = [...publicHistory[username], ...userHistory];
       }
 
+      // Ordenar por timestamp
+      fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
+
       const response = await fetch('https://camassist.vercel.app/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
