@@ -135,11 +135,12 @@ setInterval(() => {
         history[targetUsername] = [];
       }
 
-      // Guardar mensaje
+      // Guardar mensaje con timestamp real
+      const msgTs = parseInt(msg.getAttribute('data-ts') || '0') || Date.now();
       history[targetUsername].push({
         type: isModelMessage ? 'model' : 'fan',
         message: messageText,
-        timestamp: Date.now()
+        timestamp: msgTs
       });
 
       // Mantener últimos 20
