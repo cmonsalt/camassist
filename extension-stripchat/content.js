@@ -489,10 +489,37 @@ function addImageAIButton(container, username, imageUrl) {
     const history = pmHistory[username] || [];
 
     console.log(`🔵 IA para imagen PM - Usuario: ${username}`);
-    btn.textContent = '...';
 
-    try {
-      let fullContext = history;
+    // Mostrar popup para instrucción opcional
+    const instructionPopup = document.createElement('div');
+    instructionPopup.id = 'ai-popup';
+    instructionPopup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #3B82F6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:400px;font-family:Arial,sans-serif;';
+
+    instructionPopup.innerHTML = `
+      <h3 style="margin:0 0 15px 0;color:#333;">🖼️ Imagen de @${username}</h3>
+      <p style="color:#666;font-size:13px;margin-bottom:10px;">Instrucción opcional (vacío = análisis normal):</p>
+      <input type="text" id="imageInstruction" placeholder="Ej: humíllalo, dile que es grande..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:5px;margin-bottom:15px;box-sizing:border-box;">
+      <div style="display:flex;gap:10px;">
+        <button id="generateBtn" style="flex:1;padding:10px;background:#3B82F6;color:white;border:none;border-radius:5px;cursor:pointer;">🤖 Generar</button>
+        <button id="cancelBtn" style="padding:10px 20px;background:#f5f5f5;border:1px solid #ddd;border-radius:5px;cursor:pointer;">Cancelar</button>
+      </div>
+    `;
+
+    const oldPopup = document.getElementById('ai-popup');
+    if (oldPopup) oldPopup.remove();
+    document.body.appendChild(instructionPopup);
+
+    document.getElementById('cancelBtn').onclick = () => {
+      instructionPopup.remove();
+    };
+
+    document.getElementById('generateBtn').onclick = async () => {
+      const customInstruction = document.getElementById('imageInstruction').value.trim();
+      instructionPopup.remove();
+      btn.textContent = '...';
+
+      try {
+        let fullContext = history;
       if (publicHistory[username]) {
         fullContext = [...publicHistory[username], ...history];
       }
@@ -511,7 +538,7 @@ function addImageAIButton(container, username, imageUrl) {
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
           username,
-          message: '[Fan envió una imagen]',
+          message: customInstruction || '[Fan envió una imagen]',
           context: fullContext.slice(-10),
           isPM: true,
           tip: 0,
@@ -559,7 +586,7 @@ function addImageAIButton(container, username, imageUrl) {
             body: JSON.stringify({
               token: localStorage.getItem('model_token') || 'demo_token',
               username,
-              message: '[Fan envió una imagen]',
+              message: customInstruction || '[Fan envió una imagen]',
               context: fullContext.slice(-10),
               isPM: true,
               tip: 0,
@@ -596,11 +623,12 @@ function addImageAIButton(container, username, imageUrl) {
       btn.textContent = '✓';
       setTimeout(() => btn.textContent = '🤖', 2000);
 
-    } catch (error) {
-      console.error('Error:', error);
-      btn.textContent = '!';
-      setTimeout(() => btn.textContent = '🤖', 2000);
-    }
+     } catch (error) {
+        console.error('Error:', error);
+        btn.textContent = '!';
+        setTimeout(() => btn.textContent = '🤖', 2000);
+      }
+    };
   };
 
   // Posicionar el botón sobre la imagen
