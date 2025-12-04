@@ -24,7 +24,7 @@ setInterval(() => {
   // ============================================
   // 1. DETECTAR MENSAJES DE CHAT PÚBLICO
   // ============================================
-  const publicMessages = document.querySelectorAll('div[data-message-id].regular-public-message');
+ const publicMessages = document.querySelectorAll('div[data-message-id].regular-public-message, div[data-message-id].tip-message');
 
   publicMessages.forEach(msg => {
     if (msg.dataset.processed) return;
