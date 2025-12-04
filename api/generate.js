@@ -180,10 +180,6 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
 
   const userPrompt = `Fan ${username} dice: "${message}"`;
 
-  // LOG PARA VER QUÉ SE ENVÍA
-  console.log('📤 PROMPT ENVIADO:', systemPrompt);
-  console.log('📤 USER PROMPT:', userPrompt);
-
   // LLAMAR GROK
   try {
     console.log('🤖 Llamando Grok...');
@@ -236,6 +232,8 @@ REGLAS:
 
 SOLO JSON: {"response":"texto","translation_es":"traducción si respuesta es en inglés, sino null"}`;
 
+      console.log('📤 PROMPT IMAGEN:', imagePrompt);
+
       messages = [
         {
           role: 'user',
@@ -256,6 +254,8 @@ SOLO JSON: {"response":"texto","translation_es":"traducción si respuesta es en 
       ];
     } else {
       // Sin imagen: formato normal
+      console.log('📤 PROMPT TEXTO:', systemPrompt);
+      console.log('📤 USER PROMPT:', userPrompt);
       messages = [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
