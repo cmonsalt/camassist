@@ -24,7 +24,7 @@ setInterval(() => {
   // ============================================
   // 1. DETECTAR MENSAJES DE CHAT PÚBLICO
   // ============================================
- const publicMessages = document.querySelectorAll('div[data-message-id].regular-public-message, div[data-message-id].tip-message');
+  const publicMessages = document.querySelectorAll('div[data-message-id].regular-public-message, div[data-message-id].tip-message');
 
   publicMessages.forEach(msg => {
     if (msg.dataset.processed) return;
@@ -111,12 +111,12 @@ setInterval(() => {
       if (!publicHistory[username]) {
         publicHistory[username] = [];
       }
-      const now = Date.now();
+      const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
       const isDuplicate = publicHistory[username].some(item =>
-        item.type === 'tip' && item.amount === tipAmount && Math.abs(item.timestamp - now) < 2000
+        item.type === 'tip' && item.timestamp === msgId
       );
       if (!isDuplicate) {
-        publicHistory[username].push({ type: 'tip', amount: tipAmount, timestamp: now });
+        publicHistory[username].push({ type: 'tip', amount: tipAmount, timestamp: msgId });
         console.log(`💰 Público - Tip de ${username}: ${tipAmount} tokens`);
       }
     }
