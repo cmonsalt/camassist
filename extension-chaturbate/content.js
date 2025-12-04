@@ -323,8 +323,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
     console.log('📚 Historial del usuario (últimos 10):');
     console.table(fullContext.slice(-10).map((item, index) => ({
       '#': index,
-      'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
-      'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : (item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '')),
+      'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : item.type === 'image' ? '🖼️ Imagen' : '💰 Tip',
+      'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.type === 'image' ? '[Imagen]' : (item.message ? item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '') : ''),
       'Timestamp': new Date(item.timestamp).toLocaleTimeString()
     })));
 
