@@ -172,6 +172,30 @@ setInterval(() => {
     }
   }
 
+  // Detectar tips en PM (tienen estructura diferente)
+  const pmTips = document.querySelectorAll('div.tipped-message:not([data-processed])');
+  pmTips.forEach(tip => {
+    if (tip.dataset.processed) return;
+
+    const tipTextEl = tip.querySelector('.tip-message-text');
+    if (!tipTextEl) return;
+
+    const tipText = tipTextEl.textContent.trim();
+    const tipMatch = tipText.match(/(\d+)\s*(tk|tokens?)/i);
+
+    if (tipMatch) {
+      const targetUser = pmUser || 'fan';
+      if (!pmHistory[targetUser]) {
+        pmHistory[targetUser] = [];
+      }
+      const tipAmount = parseInt(tipMatch[1]);
+      const msgId = messageCounter++;
+      pmHistory[targetUser].push({ type: 'tip', amount: tipAmount, timestamp: msgId });
+      console.log(`💰 PM - Tip de ${targetUser}: ${tipAmount} tokens`);
+    }
+    tip.dataset.processed = 'true';
+  });
+
   // TODOS los mensajes de PM (fan y modelo juntos, en orden del DOM)
   const allPmMessages = document.querySelectorAll('div[data-message-id][class*="base-message"]');
 
