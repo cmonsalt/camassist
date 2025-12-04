@@ -427,7 +427,11 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
 
           if (newData.suggestion && !newData.suggestion.includes('Error')) {
             responseText.textContent = newData.suggestion;
-            navigator.clipboard.writeText(newData.suggestion);
+            try {
+              navigator.clipboard.writeText(newData.suggestion);
+            } catch (e) {
+              console.log('No se pudo copiar al portapapeles');
+            }
 
             // Actualizar traducción si existe
             if (translationContent && newData.translation) {
