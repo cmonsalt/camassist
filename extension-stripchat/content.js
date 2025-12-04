@@ -464,6 +464,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   };
 
   // Dónde poner el botón
+  // Dónde poner el botón
   if (isPM) {
     const textEl = container.querySelector('font[dir="auto"]') || container.querySelector('[class*="TextMessage"]');
     if (textEl) {
@@ -477,8 +478,9 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     const targetEl = messageBody || container;
     targetEl.appendChild(btn);
   }
+}
 
-  function addImageAIButton(container, username, imageUrl) {
+function addImageAIButton(container, username, imageUrl) {
   const btn = document.createElement('button');
   btn.textContent = '🖼️';
   btn.className = 'ai-btn';
@@ -486,7 +488,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
 
   btn.onclick = async () => {
     const history = pmHistory[username] || [];
-    
+
     console.log(`🔵 IA para imagen PM - Usuario: ${username}`);
     btn.textContent = '...';
 
@@ -573,5 +575,4 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   // Posicionar el botón sobre la imagen
   container.style.position = 'relative';
   container.appendChild(btn);
-}
 }
