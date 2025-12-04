@@ -54,10 +54,10 @@ setInterval(() => {
     if (!messageText) return;
 
     // Detectar tips
-    const isTip = messageText.includes('tipped') || messageText.includes('tokens');
+    const isTip = messageText.includes('tipped') || messageText.includes('tokens') || messageText.includes('propina') || messageText.includes('tk de') || msg.classList.contains('tip-message');
     let tipAmount = 0;
     if (isTip) {
-      const match = messageText.match(/(\d+)\s*(tokens?|tips?)/i);
+      const match = messageText.match(/(\d+)\s*(tokens?|tips?|tk)/i);
       if (match) tipAmount = parseInt(match[1]);
     }
 
@@ -200,6 +200,27 @@ setInterval(() => {
     }
 
     if (!messageText) return;
+
+    // Detectar si es tip en PM
+    const isTipPM = msg.classList.contains('tipped-message') || messageText.includes('propina');
+    if (isTipPM) {
+      const tipMatch = messageText.match(/(\d+)\s*(tk|tokens?)/i);
+      if (tipMatch) {
+        const targetUser = pmUser || 'fan';
+        if (!pmHistory[targetUser]) {
+          pmHistory[targetUser] = [];
+        }
+        const tipAmount = parseInt(tipMatch[1]);
+        const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
+        const exists = pmHistory[targetUser].some(item => item.timestamp === msgId && item.type === 'tip');
+        if (!exists) {
+          pmHistory[targetUser].push({ type: 'tip', amount: tipAmount, timestamp: msgId });
+          console.log(`💰 PM - Tip de ${targetUser}: ${tipAmount} tokens`);
+        }
+      }
+      msg.dataset.processed = 'true';
+      return;
+    }
 
     const targetUser = pmUser || 'fan';
 
