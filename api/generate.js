@@ -209,7 +209,10 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
             },
             {
               type: 'text',
-              text: `El fan ${username} envió esta imagen. Analiza qué es y responde de forma natural y genuina.
+              text: `El fan ${username} envió esta imagen.
+
+${contextText ? `CONTEXTO DE LA CONVERSACIÓN:\n${contextText}\n` : ''}
+Analiza qué es y responde de forma natural y genuina.
 
 SI ES FOTO DE PENE/MIEMBRO:
 - DESCRIBE específicamente lo que ves: tamaño, grosor, forma, cabeza, venas, dureza
