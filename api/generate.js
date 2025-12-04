@@ -77,6 +77,7 @@ export default async function handler(req, res) {
       if (c.type === 'fan') return `Fan: ${c.message}`;
       if (c.type === 'model') return `You: ${c.message}`;
       if (c.type === 'tip') return `[Fan tipped ${c.amount} tokens]`;
+      if (c.type === 'image') return `[Fan envió una foto íntima]`;
     }).filter(Boolean).join('\n');
   }
 
