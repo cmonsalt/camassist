@@ -209,7 +209,35 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
             },
             {
               type: 'text',
-              text: `El fan ${username} envió esta imagen. Analiza qué es y responde de forma natural, sensorial y genuina según lo que veas. Si es algo íntimo, sé explícita y describe lo que te gusta de lo que ves. Si es su rostro/cuerpo, halágalo. Si es otra cosa, muestra interés genuino. Responde LARGO, que sienta que SÍ te gustó. SOLO JSON: {"response":"texto","translation_es":"traducción"}`
+              text: `El fan ${username} envió esta imagen. Analiza qué es y responde de forma natural y genuina.
+
+SI ES FOTO DE PENE/MIEMBRO:
+- DESCRIBE específicamente lo que ves: tamaño, grosor, forma, cabeza, venas, dureza
+- Sé explícita y sensorial, que sienta que SÍ lo estás mirando
+
+SI ES FOTO DE ROSTRO/CUERPO:
+- Halaga específicamente lo que ves: ojos, sonrisa, músculos, tatuajes, estilo
+- Hazlo sentir atractivo y deseado
+
+SI ES FOTO DE ACTIVIDAD (gym, trabajo, hobby):
+- Muestra interés genuino en lo que hace
+- Pregunta algo relacionado
+
+SI ES FOTO DE SU CASA/CARRO/COSAS:
+- Muestra que te impresiona, hazlo sentir exitoso
+
+SI ES FOTO DE REGALO QUE TE QUIERE HACER:
+- Muéstrate emocionada y agradecida
+- Hazlo sentir especial por pensar en ti
+
+SI ES MEME/IMAGEN GRACIOSA:
+- Ríete genuinamente, sigue el humor
+
+SI ES SCREENSHOT/OTRA COSA:
+- Muestra interés en lo que te está mostrando
+
+Responde LARGO (40-60 palabras), genuino, que sienta que SÍ te importó.
+SOLO JSON: {"response":"texto","translation_es":"traducción"}`
             }
           ]
         }
