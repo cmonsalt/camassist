@@ -245,22 +245,6 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
 
     console.log(`🔵 IA para ${isPM ? 'PM' : 'público'} - Usuario: ${username}`);
 
-    let fullContext = userHistory;
-    if (isPM && publicHistory[username]) {
-      fullContext = [...publicHistory[username], ...userHistory];
-    }
-
-    fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
-
-    // TABLA DE HISTORIAL
-    console.log('📚 Historial enviado:');
-    console.table(fullContext.slice(-10).map((item, index) => ({
-      '#': index,
-      'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
-      'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.message.substring(0, 50),
-      'Hora': new Date(item.timestamp).toLocaleTimeString()
-    })));
-
     btn.textContent = '...';
 
     const getResponse = async () => {
@@ -268,6 +252,18 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       if (isPM && publicHistory[username]) {
         fullContext = [...publicHistory[username], ...userHistory];
       }
+
+      // Ordenar por timestamp
+      fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
+
+      // TABLA DE HISTORIAL
+      console.log('📚 Historial enviado a IA (últimos 10):');
+      console.table(fullContext.slice(-10).map((item, index) => ({
+        '#': index,
+        'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
+        'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.message.substring(0, 50),
+        'Hora': new Date(item.timestamp).toLocaleTimeString()
+      })));
 
       const response = await fetch('https://camassist.vercel.app/api/generate', {
         method: 'POST',
@@ -283,7 +279,6 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       });
       return response.json();
     };
-
     try {
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
