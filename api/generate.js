@@ -189,6 +189,7 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
 
     // Configurar modelo y mensajes según si hay imagen o no
     const model = imageUrl ? 'grok-2-vision-1212' : 'grok-4-1-fast-non-reasoning';
+    console.log('🤖 Usando modelo:', model);
 
     let messages;
     if (imageUrl) {
