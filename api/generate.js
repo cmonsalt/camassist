@@ -209,7 +209,7 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
             },
             {
               type: 'text',
-              text: `El fan ${username} envió esta foto íntima. Responde de forma larga, sensorial, emocional, que sienta que SÍ te gustó de verdad. No un simple "wow". Ejemplo: "Se nota que estabas pensando en mí... te ves tan fuerte, varonil, me encanta cómo se marcan tus venas... quisiera tenerla cerquita 🔥". SOLO JSON: {"response":"texto","translation_es":"traducción"}`
+              text: `El fan ${username} envió esta imagen. Analiza qué es y responde de forma natural, sensorial y genuina según lo que veas. Si es algo íntimo, sé explícita y describe lo que te gusta de lo que ves. Si es su rostro/cuerpo, halágalo. Si es otra cosa, muestra interés genuino. Responde LARGO, que sienta que SÍ te gustó. SOLO JSON: {"response":"texto","translation_es":"traducción"}`
             }
           ]
         }
