@@ -424,22 +424,17 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
         regenBtn.textContent = '...';
         try {
           const newData = await getResponse();
+          responseText.textContent = newData.suggestion;
+          navigator.clipboard.writeText(newData.suggestion);
 
-          if (newData.suggestion && !newData.suggestion.includes('Error')) {
-            responseText.textContent = newData.suggestion;
-            navigator.clipboard.writeText(newData.suggestion);
+          // Actualizar traducción si existe
+          if (translationContent) {
+            const newSuggestionClean = newData.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
+            const newTranslationClean = newData.translation.replace(/\s+/g, ' ').trim().toLowerCase();
 
-            // Actualizar traducción si existe
-            if (translationContent && newData.translation) {
-              const newSuggestionClean = newData.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
-              const newTranslationClean = newData.translation.replace(/\s+/g, ' ').trim().toLowerCase();
-
-              if (newSuggestionClean !== newTranslationClean) {
-                translationContent.textContent = newData.translation;
-              }
+            if (newSuggestionClean !== newTranslationClean) {
+              translationContent.textContent = newData.translation;
             }
-          } else {
-            console.error('Respuesta inválida:', newData);
           }
         } catch (error) {
           console.error('Error regenerando:', error);
