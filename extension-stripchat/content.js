@@ -196,6 +196,43 @@ setInterval(() => {
     tip.dataset.processed = 'true';
   });
 
+  // Detectar imágenes en PM
+  const pmImages = document.querySelectorAll('div.photo-message:not([data-processed])');
+  pmImages.forEach(imgMsg => {
+    if (imgMsg.dataset.processed) return;
+
+    const imgEl = imgMsg.querySelector('img.photo-image');
+    if (!imgEl) return;
+
+    const imageUrl = imgEl.getAttribute('src');
+    if (!imageUrl) return;
+
+    const targetUser = pmUser || 'fan';
+
+    // Guardar en historial
+    if (!pmHistory[targetUser]) {
+      pmHistory[targetUser] = [];
+    }
+    const msgId = messageCounter++;
+    pmHistory[targetUser].push({
+      type: 'fan',
+      message: '[Imagen enviada]',
+      timestamp: msgId,
+      imageUrl: imageUrl
+    });
+
+    console.log(`🖼️ PM - Imagen de ${targetUser}: ${imageUrl.substring(0, 50)}...`);
+
+    // Agregar botón IA azul para imagen
+    if (!imgMsg.querySelector('.ai-btn')) {
+      addImageAIButton(imgMsg, targetUser, imageUrl);
+    }
+
+    imgMsg.dataset.processed = 'true';
+  });
+
+  // TODOS los mensajes de PM (fan y modelo juntos, en orden del DOM)
+
   // TODOS los mensajes de PM (fan y modelo juntos, en orden del DOM)
   const allPmMessages = document.querySelectorAll('div[data-message-id][class*="base-message"]');
 
@@ -440,4 +477,101 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     const targetEl = messageBody || container;
     targetEl.appendChild(btn);
   }
+
+  function addImageAIButton(container, username, imageUrl) {
+  const btn = document.createElement('button');
+  btn.textContent = '🖼️';
+  btn.className = 'ai-btn';
+  btn.style.cssText = 'background:#3B82F6;color:white;border:none;padding:4px 8px;cursor:pointer;border-radius:5px;font-size:12px;position:absolute;bottom:5px;right:5px;z-index:100;';
+
+  btn.onclick = async () => {
+    const history = pmHistory[username] || [];
+    
+    console.log(`🔵 IA para imagen PM - Usuario: ${username}`);
+    btn.textContent = '...';
+
+    try {
+      let fullContext = history;
+      if (publicHistory[username]) {
+        fullContext = [...publicHistory[username], ...history];
+      }
+      fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
+
+      console.log('📚 Historial enviado a IA (últimos 10):');
+      console.table(fullContext.slice(-10).map((item, index) => ({
+        '#': index,
+        'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
+        'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.message.substring(0, 50)
+      })));
+
+      const response = await fetch('https://camassist.vercel.app/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: localStorage.getItem('model_token') || 'demo_token',
+          username,
+          message: '[Fan envió una imagen]',
+          context: fullContext.slice(-10),
+          isPM: true,
+          tip: 0,
+          hasImage: true,
+          imageUrl: imageUrl
+        })
+      });
+
+      const data = await response.json();
+      console.log('🟢 Respuesta:', data.suggestion);
+
+      navigator.clipboard.writeText(data.suggestion);
+
+      // Crear popup
+      const popup = document.createElement('div');
+      popup.id = 'ai-popup';
+      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #3B82F6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;';
+
+      const title = document.createElement('h3');
+      title.style.cssText = 'margin:0 0 15px 0;color:#333;';
+      title.textContent = `🖼️ Imagen PM - @${username} ✅ Copiado!`;
+
+      const responseText = document.createElement('p');
+      responseText.style.cssText = 'background:#f0f0f0;padding:12px;border-radius:5px;max-height:200px;overflow-y:auto;word-wrap:break-word;margin-bottom:10px;color:#333;';
+      responseText.textContent = data.suggestion;
+
+      // Traducción
+      let translationText = null;
+      if (data.translation && data.suggestion.toLowerCase() !== data.translation.toLowerCase()) {
+        translationText = document.createElement('div');
+        translationText.style.cssText = 'background:#e3f2fd;padding:10px;border-radius:5px;margin-bottom:10px;border-left:3px solid #2196F3;';
+        translationText.innerHTML = `<div style="font-size:11px;color:#1976D2;font-weight:600;margin-bottom:5px;">📝 Traducción:</div><div style="color:#333;">${data.translation}</div>`;
+      }
+
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = '❌ Cerrar';
+      closeBtn.style.cssText = 'padding:8px 15px;cursor:pointer;font-size:12px;border:none;background:#3B82F6;color:white;border-radius:5px;';
+      closeBtn.onclick = () => popup.remove();
+
+      popup.appendChild(title);
+      popup.appendChild(responseText);
+      if (translationText) popup.appendChild(translationText);
+      popup.appendChild(closeBtn);
+
+      const oldPopup = document.getElementById('ai-popup');
+      if (oldPopup) oldPopup.remove();
+
+      document.body.appendChild(popup);
+
+      btn.textContent = '✓';
+      setTimeout(() => btn.textContent = '🖼️', 2000);
+
+    } catch (error) {
+      console.error('Error:', error);
+      btn.textContent = '!';
+      setTimeout(() => btn.textContent = '🖼️', 2000);
+    }
+  };
+
+  // Posicionar el botón sobre la imagen
+  container.style.position = 'relative';
+  container.appendChild(btn);
+}
 }
