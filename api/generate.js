@@ -232,7 +232,7 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
         model,
         messages,
         temperature: 0.85,
-        max_tokens: isPM ? 150 : 100
+        max_tokens: imageUrl ? 300 : (isPM ? 150 : 100)
       })
     });
     const data = await response.json();
