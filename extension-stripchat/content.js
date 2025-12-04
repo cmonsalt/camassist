@@ -79,11 +79,16 @@ setInterval(() => {
       }
 
       const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
-      publicHistory[targetUsername].push({
-        type: isModelMessage ? 'model' : 'fan',
-        message: messageText,
-        timestamp: msgId
-      });
+
+      // Verificar si ya existe este mensaje (evitar duplicados)
+      const exists = publicHistory[targetUsername].some(item => item.timestamp === msgId);
+      if (!exists) {
+        publicHistory[targetUsername].push({
+          type: isModelMessage ? 'model' : 'fan',
+          message: messageText,
+          timestamp: msgId
+        });
+      }
 
       if (publicHistory[targetUsername].length > 20) {
         publicHistory[targetUsername].shift();
@@ -205,11 +210,16 @@ setInterval(() => {
     }
 
     const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
-    pmHistory[targetUser].push({
-      type: isModelMessage ? 'model' : 'fan',
-      message: messageText,
-      timestamp: msgId
-    });
+
+    // Verificar si ya existe este mensaje (evitar duplicados)
+    const exists = pmHistory[targetUser].some(item => item.timestamp === msgId);
+    if (!exists) {
+      pmHistory[targetUser].push({
+        type: isModelMessage ? 'model' : 'fan',
+        message: messageText,
+        timestamp: msgId
+      });
+    }
 
     if (pmHistory[targetUser].length > 20) {
       pmHistory[targetUser].shift();
