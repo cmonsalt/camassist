@@ -184,50 +184,58 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
   try {
     console.log('🤖 Llamando Grok...');
 
-    // Configurar modelo y mensajes según si hay imagen o no
-    const model = imageUrl ? 'grok-2-vision-1212' : 'grok-4-1-fast-non-reasoning';
+    // Configurar modelo (siempre texto para respuesta final, Vision solo para analizar)
+    const model = 'grok-4-1-fast-non-reasoning';
     console.log('🤖 Usando modelo:', model);
 
     let messages;
     if (imageUrl) {
-      // Con imagen: prompt específico para imágenes (sin el systemPrompt largo)
-      const imagePrompt = `Eres ${modelData.name}, ${modelData.age} años, modelo webcam de ${modelData.location || 'Colombia'}.
+      // PASO 1: Grok Vision analiza la imagen
+      console.log('🖼️ Paso 1: Analizando imagen con Vision...');
 
-CONVERSACIÓN RECIENTE (LEE ESTO PRIMERO, ES LO MÁS IMPORTANTE):
-${contextText || 'No hay mensajes previos'}
+      const visionResponse = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.XAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'grok-2-vision-1212',
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'image_url',
+                image_url: { url: imageUrl, detail: 'high' }
+              },
+              {
+                type: 'text',
+                text: 'Describe esta imagen en 1 frase corta y objetiva. Si es un pene, di el tamaño (pequeño/normal/grande), si está erecto, color, forma. Si es otra cosa (cara, cuerpo, objeto), descríbelo. Solo la descripción, nada más.'
+              }
+            ]
+          }],
+          temperature: 0.3,
+          max_tokens: 100
+        })
+      });
 
-El fan ${username} te envió esta imagen.
+      const visionData = await visionResponse.json();
+      let imageDescription = 'una imagen';
 
-TU TAREA:
-1. Mira la CONVERSACIÓN RECIENTE - si el fan pidió algo (humillación, que te burles, que lo halagues, etc), HAZLO exactamente.
-2. Si no pidió nada especial, analiza la imagen y responde natural.
-3. Sé honesta con lo que ves en la imagen.
+      if (visionData.choices && visionData.choices[0]) {
+        imageDescription = visionData.choices[0].message.content.trim();
+      }
 
-REGLAS:
-- Escribe como WhatsApp, informal.
-- ${modelData.emoji_level === 0 ? 'NO uses emojis' : modelData.emoji_level === 1 ? 'Máximo 1 emoji' : modelData.emoji_level === 3 ? 'Usa 3-4 emojis' : 'Usa 1-2 emojis'}
-- 40-60 palabras máximo.
+      console.log('🖼️ Descripción de imagen:', imageDescription);
 
-SOLO JSON: {"response":"texto","translation_es":"traducción si es en inglés, sino null"}`;
-      console.log('📤 PROMPT IMAGEN:', imagePrompt);
+      // PASO 2: Usar el prompt de texto normal con la descripción
+      console.log('💬 Paso 2: Generando respuesta con contexto...');
+
+      const imageMessage = `[Fan envió una foto: ${imageDescription}]`;
 
       messages = [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image_url',
-              image_url: {
-                url: imageUrl,
-                detail: 'high'
-              }
-            },
-            {
-              type: 'text',
-              text: imagePrompt
-            }
-          ]
-        }
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Fan ${username} dice: "${imageMessage}"` }
       ];
     } else {
       // Sin imagen: formato normal
