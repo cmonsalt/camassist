@@ -291,10 +291,11 @@ setInterval(() => {
       pmHistory[dataNick] = [];
     }
 
+    const imageTs = parseInt(imgContainer.getAttribute('data-ts') || '0') || Date.now();
     pmHistory[dataNick].push({
       type: 'image',
       imageUrl: imageUrl,
-      timestamp: Date.now()
+      timestamp: imageTs
     });
 
     if (!imgContainer.querySelector('.ai-btn')) {
