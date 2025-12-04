@@ -464,7 +464,6 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   };
 
   // Dónde poner el botón
-  // Dónde poner el botón
   if (isPM) {
     const textEl = container.querySelector('font[dir="auto"]') || container.querySelector('[class*="TextMessage"]');
     if (textEl) {
@@ -547,6 +546,37 @@ function addImageAIButton(container, username, imageUrl) {
         translationText.innerHTML = `<div style="font-size:11px;color:#1976D2;font-weight:600;margin-bottom:5px;">📝 Traducción:</div><div style="color:#333;">${data.translation}</div>`;
       }
 
+      const regenBtn = document.createElement('button');
+      regenBtn.textContent = '🔄 Regenerar';
+      regenBtn.style.cssText = 'padding:8px 15px;cursor:pointer;border-radius:5px;font-size:12px;border:1px solid #ddd;background:#f5f5f5;margin-right:10px;';
+      regenBtn.onclick = async () => {
+        regenBtn.disabled = true;
+        regenBtn.textContent = '...';
+        try {
+          const newResponse = await fetch('https://camassist.vercel.app/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token: localStorage.getItem('model_token') || 'demo_token',
+              username,
+              message: '[Fan envió una imagen]',
+              context: fullContext.slice(-10),
+              isPM: true,
+              tip: 0,
+              hasImage: true,
+              imageUrl: imageUrl
+            })
+          });
+          const newData = await newResponse.json();
+          responseText.textContent = newData.suggestion;
+          navigator.clipboard.writeText(newData.suggestion);
+        } catch (error) {
+          console.error('Error regenerando:', error);
+        }
+        regenBtn.disabled = false;
+        regenBtn.textContent = '🔄 Regenerar';
+      };
+
       const closeBtn = document.createElement('button');
       closeBtn.textContent = '❌ Cerrar';
       closeBtn.style.cssText = 'padding:8px 15px;cursor:pointer;font-size:12px;border:none;background:#3B82F6;color:white;border-radius:5px;';
@@ -555,6 +585,7 @@ function addImageAIButton(container, username, imageUrl) {
       popup.appendChild(title);
       popup.appendChild(responseText);
       if (translationText) popup.appendChild(translationText);
+      popup.appendChild(regenBtn);
       popup.appendChild(closeBtn);
 
       const oldPopup = document.getElementById('ai-popup');
