@@ -1,0 +1,40 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradiente de fondo -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6"/>
+      <stop offset="100%" style="stop-color:#EC4899"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Burbuja de chat redondeada -->
+  <rect x="8" y="12" width="112" height="96" rx="24" fill="url(#bgGradient)"/>
+  
+  <!-- Cola de la burbuja -->
+  <path d="M24 108 L24 124 L44 108" fill="url(#bgGradient)"/>
+  
+  <!-- Chip en la frente -->
+  <rect x="52" y="24" width="24" height="18" rx="3" fill="white" opacity="0.9"/>
+  <!-- Líneas del chip (circuitos) -->
+  <line x1="52" y1="30" x2="44" y2="30" stroke="white" stroke-width="2" opacity="0.7"/>
+  <line x1="52" y1="36" x2="46" y2="36" stroke="white" stroke-width="2" opacity="0.7"/>
+  <line x1="76" y1="30" x2="84" y2="30" stroke="white" stroke-width="2" opacity="0.7"/>
+  <line x1="76" y1="36" x2="82" y2="36" stroke="white" stroke-width="2" opacity="0.7"/>
+  <!-- Punto central del chip -->
+  <circle cx="64" cy="33" r="4" fill="#8B5CF6"/>
+  
+  <!-- Ojos -->
+  <ellipse cx="44" cy="60" rx="12" ry="14" fill="white"/>
+  <ellipse cx="84" cy="60" rx="12" ry="14" fill="white"/>
+  
+  <!-- Pupilas -->
+  <ellipse cx="46" cy="62" rx="6" ry="8" fill="#1F2937"/>
+  <ellipse cx="86" cy="62" rx="6" ry="8" fill="#1F2937"/>
+  
+  <!-- Brillos en ojos -->
+  <circle cx="42" cy="56" r="3" fill="white"/>
+  <circle cx="82" cy="56" r="3" fill="white"/>
+  
+  <!-- Sonrisa coqueta -->
+  <path d="M40 82 Q64 96 88 82" stroke="white" stroke-width="4" stroke-linecap="round" fill="none"/>
+</svg>
