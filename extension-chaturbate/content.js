@@ -311,7 +311,7 @@ setInterval(() => {
 // ============================================
 function addAIButton(container, username, messageText, isPM, context, tipAmount, imageUrl = null) {
   const btn = document.createElement('button');
-  btn.textContent = imageUrl ? '🖼️' : '🤖';
+  btn.textContent = '🤖';
   btn.className = 'ai-btn';
   btn.style.cssText = imageUrl
     ? 'background:#10B981;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px'
