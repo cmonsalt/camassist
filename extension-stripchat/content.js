@@ -78,10 +78,11 @@ setInterval(() => {
         publicHistory[targetUsername] = [];
       }
 
+      const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
       publicHistory[targetUsername].push({
         type: isModelMessage ? 'model' : 'fan',
         message: messageText,
-        timestamp: Date.now()
+        timestamp: msgId
       });
 
       if (publicHistory[targetUsername].length > 20) {
@@ -203,10 +204,11 @@ setInterval(() => {
       pmHistory[targetUser] = [];
     }
 
+    const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
     pmHistory[targetUser].push({
       type: isModelMessage ? 'model' : 'fan',
       message: messageText,
-      timestamp: Date.now()
+      timestamp: msgId
     });
 
     if (pmHistory[targetUser].length > 20) {
@@ -247,6 +249,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     if (isPM && publicHistory[username]) {
       fullContext = [...publicHistory[username], ...userHistory];
     }
+
+    fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
 
     // TABLA DE HISTORIAL
     console.log('📚 Historial enviado:');
