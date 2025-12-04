@@ -482,7 +482,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
 
 function addImageAIButton(container, username, imageUrl) {
   const btn = document.createElement('button');
-  btn.textContent = '🖼️';
+  btn.textContent = '🤖';
   btn.className = 'ai-btn';
   btn.style.cssText = 'background:#3B82F6;color:white;border:none;padding:4px 8px;cursor:pointer;border-radius:5px;font-size:12px;position:absolute;bottom:5px;right:5px;z-index:100;';
 
@@ -563,12 +563,12 @@ function addImageAIButton(container, username, imageUrl) {
       document.body.appendChild(popup);
 
       btn.textContent = '✓';
-      setTimeout(() => btn.textContent = '🖼️', 2000);
+      setTimeout(() => btn.textContent = '🤖', 2000);
 
     } catch (error) {
       console.error('Error:', error);
       btn.textContent = '!';
-      setTimeout(() => btn.textContent = '🖼️', 2000);
+      setTimeout(() => btn.textContent = '🤖', 2000);
     }
   };
 
