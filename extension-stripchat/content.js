@@ -18,6 +18,7 @@ console.log('👤 Broadcaster username:', broadcasterUsername);
 
 const extensionStartTime = Date.now();
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
+let messageCounter = 0;
 
 setInterval(() => {
 
@@ -78,7 +79,7 @@ setInterval(() => {
         publicHistory[targetUsername] = [];
       }
 
-      const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
+      const msgId = messageCounter++;
 
       // Verificar si ya existe este mensaje (evitar duplicados)
       const exists = publicHistory[targetUsername].some(item => item.timestamp === msgId);
@@ -111,7 +112,7 @@ setInterval(() => {
       if (!publicHistory[username]) {
         publicHistory[username] = [];
       }
-      const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
+      const msgId = messageCounter++;
       const isDuplicate = publicHistory[username].some(item =>
         item.type === 'tip' && item.timestamp === msgId
       );
@@ -211,7 +212,7 @@ setInterval(() => {
           pmHistory[targetUser] = [];
         }
         const tipAmount = parseInt(tipMatch[1]);
-        const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
+        const msgId = messageCounter++;
         const exists = pmHistory[targetUser].some(item => item.timestamp === msgId && item.type === 'tip');
         if (!exists) {
           pmHistory[targetUser].push({ type: 'tip', amount: tipAmount, timestamp: msgId });
@@ -230,7 +231,7 @@ setInterval(() => {
       pmHistory[targetUser] = [];
     }
 
-    const msgId = parseInt(msg.getAttribute('data-message-id') || '0') || Date.now();
+    const msgId = messageCounter++;
 
     // Verificar si ya existe este mensaje (evitar duplicados)
     const exists = pmHistory[targetUser].some(item => item.timestamp === msgId);
