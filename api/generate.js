@@ -22,6 +22,7 @@ export default async function handler(req, res) {
     context = [],
     isPM = false,
     imageUrl = null,
+    platform = 'unknown',
   } = req.body;
 
   console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length, hasImage: !!imageUrl });
@@ -296,6 +297,17 @@ Máx ${isPM ? '80' : '25'} palabras. SOLO JSON:
     }
 
     console.log('✅ Respuesta generada');
+
+    // Guardar uso en BD
+    if (modelData.id && modelData.studio_id && supabase) {
+      await supabase.from('usage').insert({
+        model_id: modelData.id,
+        studio_id: modelData.studio_id,
+        type: imageUrl ? 'image' : 'text',
+        platform: platform
+      });
+      console.log('📊 Uso guardado');
+    }
 
     return res.status(200).json({
       success: true,

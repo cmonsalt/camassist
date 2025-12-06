@@ -363,6 +363,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
+          platform: 'stripchat',
           username,
           message: messageText,
           context: fullContext.slice(-10),
