@@ -130,22 +130,22 @@ setInterval(() => {
         }
       }
 
-      // Inicializar historial del usuario
+      // Inicializar historial del usuario con estructura separada
       if (!history[targetUsername]) {
-        history[targetUsername] = [];
+        history[targetUsername] = { messages: [], tips: [] };
       }
 
       // Guardar mensaje con timestamp real
       const msgTs = parseInt(msg.getAttribute('data-ts') || '0') || Date.now();
-      history[targetUsername].push({
+      history[targetUsername].messages.push({
         type: isModelMessage ? 'model' : 'fan',
         message: messageText,
         timestamp: msgTs
       });
 
-      // Mantener últimos 20
-      if (history[targetUsername].length > 20) {
-        history[targetUsername].shift();
+      // Mantener últimos 15 mensajes
+      if (history[targetUsername].messages.length > 15) {
+        history[targetUsername].messages.shift();
       }
 
       console.log(`💬 ${isPM ? 'PM' : 'Público'} - ${isModelMessage ? 'Modelo' : 'Fan'} (guardado en historial de: ${targetUsername}): ${messageText}`);
@@ -174,7 +174,7 @@ setInterval(() => {
       const history = isPM ? pmHistory : publicHistory;
 
       if (!history[username]) {
-        history[username] = [];
+        history[username] = { messages: [], tips: [] };
       }
 
       // Verificar si ya existe un tip duplicado (mismo usuario, cantidad y tiempo)
@@ -186,12 +186,16 @@ setInterval(() => {
       });
 
       if (!isDuplicate) {
-        history[username].push({
+        history[username].tips.push({
           type: 'tip',
           amount: tipAmount,
           timestamp: now
         });
 
+        // Mantener últimos 5 tips
+        if (history[username].tips.length > 5) {
+          history[username].tips.shift();
+        }
         console.log(`💰 ${isPM ? 'PM' : 'Público'} - Tip de ${username}: ${tipAmount} tokens`);
       } else {
         console.log(`⚠️ Tip duplicado ignorado - ${username}: ${tipAmount} tokens`);
@@ -244,17 +248,17 @@ setInterval(() => {
     msg.dataset.processedModal = 'true';
 
     if (!pmHistory[modalPmUser]) {
-      pmHistory[modalPmUser] = [];
+      pmHistory[modalPmUser] = { messages: [], tips: [] };
     }
 
-    pmHistory[modalPmUser].push({
+    pmHistory[modalPmUser].messages.push({
       type: isModelMessage ? 'model' : 'fan',
       message: messageText,
       timestamp: Date.now()
     });
 
-    if (pmHistory[modalPmUser].length > 20) {
-      pmHistory[modalPmUser].shift();
+    if (pmHistory[modalPmUser].messages.length > 15) {
+      pmHistory[modalPmUser].messages.shift();
     }
 
     console.log(`💬 Modal PM - ${isModelMessage ? 'Modelo' : 'Fan'} (${modalPmUser}): ${messageText}`);
@@ -289,15 +293,19 @@ setInterval(() => {
     console.log(`🖼️ Imagen detectada de ${dataNick}: ${imageUrl.substring(0, 50)}...`);
 
     if (!pmHistory[dataNick]) {
-      pmHistory[dataNick] = [];
+      pmHistory[dataNick] = { messages: [], tips: [] };
     }
 
     const imageTs = parseInt(imgContainer.getAttribute('data-ts') || '0') || Date.now();
-    pmHistory[dataNick].push({
+    pmHistory[dataNick].messages.push({
       type: 'image',
       imageUrl: imageUrl,
       timestamp: imageTs
     });
+
+    if (pmHistory[dataNick].messages.length > 15) {
+      pmHistory[dataNick].messages.shift();
+    }
 
     if (!imgContainer.querySelector('.ai-btn')) {
       addAIButton(imgContainer, dataNick, '[Envió una imagen]', true, 'pm', 0, imageUrl);
@@ -328,11 +336,18 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
 
     const getResponse = async () => {
       // SI ESTAMOS EN PM, incluir historial público también
-      let fullContext = userHistory;
+      // Combinar mensajes y tips del historial
+      const userMessages = userHistory.messages || [];
+      const userTips = userHistory.tips || [];
+      let fullContext = [...userMessages, ...userTips];
+
       if (isPM && publicHistory[username]) {
-        // Combinar: primero público, luego PM
-        fullContext = [...publicHistory[username], ...userHistory];
+        const pubMessages = publicHistory[username].messages || [];
+        const pubTips = publicHistory[username].tips || [];
+        fullContext = [...pubMessages, ...pubTips, ...fullContext];
       }
+
+      console.log('📨 Mensajes:', userMessages.length, '| Tips:', userTips.length);
 
       // Ordenar por timestamp
       // Ordenar por timestamp
