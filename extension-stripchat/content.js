@@ -76,23 +76,23 @@ setInterval(() => {
       }
 
       if (!publicHistory[targetUsername]) {
-        publicHistory[targetUsername] = [];
+        publicHistory[targetUsername] = { messages: [], tips: [] };
       }
 
       const msgId = messageCounter++;
 
       // Verificar si ya existe este mensaje (evitar duplicados)
-      const exists = publicHistory[targetUsername].some(item => item.timestamp === msgId);
+      const exists = publicHistory[targetUsername].messages.some(item => item.timestamp === msgId);
       if (!exists) {
-        publicHistory[targetUsername].push({
+        publicHistory[targetUsername].messages.push({
           type: isModelMessage ? 'model' : 'fan',
           message: messageText,
           timestamp: msgId
         });
       }
 
-      if (publicHistory[targetUsername].length > 20) {
-        publicHistory[targetUsername].shift();
+      if (publicHistory[targetUsername].messages.length > 15) {
+        publicHistory[targetUsername].messages.shift();
       }
 
       console.log(`💬 Público - ${isModelMessage ? 'Modelo' : 'Fan'} (${targetUsername}): ${messageText}`);
@@ -110,14 +110,17 @@ setInterval(() => {
     // Guardar tip
     if (isTip && tipAmount > 0) {
       if (!publicHistory[username]) {
-        publicHistory[username] = [];
+        publicHistory[username] = { messages: [], tips: [] };
       }
       const msgId = messageCounter++;
-      const isDuplicate = publicHistory[username].some(item =>
+      const isDuplicate = publicHistory[username].tips.some(item =>
         item.type === 'tip' && item.timestamp === msgId
       );
       if (!isDuplicate) {
-        publicHistory[username].push({ type: 'tip', amount: tipAmount, timestamp: msgId });
+        publicHistory[username].tips.push({ type: 'tip', amount: tipAmount, timestamp: msgId });
+        if (publicHistory[username].tips.length > 5) {
+          publicHistory[username].tips.shift();
+        }
         console.log(`💰 Público - Tip de ${username}: ${tipAmount} tokens`);
       }
     }
@@ -186,11 +189,14 @@ setInterval(() => {
     if (tipMatch) {
       const targetUser = pmUser || 'fan';
       if (!pmHistory[targetUser]) {
-        pmHistory[targetUser] = [];
+        pmHistory[targetUser] = { messages: [], tips: [] };
       }
       const tipAmount = parseInt(tipMatch[1]);
       const msgId = messageCounter++;
-      pmHistory[targetUser].push({ type: 'tip', amount: tipAmount, timestamp: msgId });
+      pmHistory[targetUser].tips.push({ type: 'tip', amount: tipAmount, timestamp: msgId });
+      if (pmHistory[targetUser].tips.length > 5) {
+        pmHistory[targetUser].tips.shift();
+      }
       console.log(`💰 PM - Tip de ${targetUser}: ${tipAmount} tokens`);
     }
     tip.dataset.processed = 'true';
@@ -211,15 +217,18 @@ setInterval(() => {
 
     // Guardar en historial
     if (!pmHistory[targetUser]) {
-      pmHistory[targetUser] = [];
+      pmHistory[targetUser] = { messages: [], tips: [] };
     }
     const msgId = messageCounter++;
-    pmHistory[targetUser].push({
+    pmHistory[targetUser].messages.push({
       type: 'fan',
       message: '[Imagen enviada]',
       timestamp: msgId,
       imageUrl: imageUrl
     });
+    if (pmHistory[targetUser].messages.length > 15) {
+      pmHistory[targetUser].messages.shift();
+    }
 
     console.log(`🖼️ PM - Imagen de ${targetUser}: ${imageUrl.substring(0, 50)}...`);
 
@@ -270,13 +279,16 @@ setInterval(() => {
       if (tipMatch) {
         const targetUser = pmUser || 'fan';
         if (!pmHistory[targetUser]) {
-          pmHistory[targetUser] = [];
+          pmHistory[targetUser] = { messages: [], tips: [] };
         }
         const tipAmount = parseInt(tipMatch[1]);
         const msgId = messageCounter++;
-        const exists = pmHistory[targetUser].some(item => item.timestamp === msgId && item.type === 'tip');
+        const exists = pmHistory[targetUser].tips.some(item => item.timestamp === msgId && item.type === 'tip');
         if (!exists) {
-          pmHistory[targetUser].push({ type: 'tip', amount: tipAmount, timestamp: msgId });
+          pmHistory[targetUser].tips.push({ type: 'tip', amount: tipAmount, timestamp: msgId });
+          if (pmHistory[targetUser].tips.length > 5) {
+            pmHistory[targetUser].tips.shift();
+          }
           console.log(`💰 PM - Tip de ${targetUser}: ${tipAmount} tokens`);
         }
       }
@@ -289,23 +301,23 @@ setInterval(() => {
     msg.dataset.processed = 'true';
 
     if (!pmHistory[targetUser]) {
-      pmHistory[targetUser] = [];
+      pmHistory[targetUser] = { messages: [], tips: [] };
     }
 
     const msgId = messageCounter++;
 
     // Verificar si ya existe este mensaje (evitar duplicados)
-    const exists = pmHistory[targetUser].some(item => item.timestamp === msgId);
+    const exists = pmHistory[targetUser].messages.some(item => item.timestamp === msgId);
     if (!exists) {
-      pmHistory[targetUser].push({
+      pmHistory[targetUser].messages.push({
         type: isModelMessage ? 'model' : 'fan',
         message: messageText,
         timestamp: msgId
       });
     }
 
-    if (pmHistory[targetUser].length > 20) {
-      pmHistory[targetUser].shift();
+    if (pmHistory[targetUser].messages.length > 15) {
+      pmHistory[targetUser].messages.shift();
     }
 
     console.log(`💬 PM - ${isModelMessage ? 'Modelo' : 'Fan'} (${targetUser}): ${messageText}`);
@@ -341,9 +353,15 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     btn.textContent = '...';
 
     const getResponse = async () => {
-      let fullContext = userHistory;
+      // Combinar mensajes y tips del historial
+      const userMessages = userHistory.messages || [];
+      const userTips = userHistory.tips || [];
+      let fullContext = [...userMessages, ...userTips];
+
       if (isPM && publicHistory[username]) {
-        fullContext = [...publicHistory[username], ...userHistory];
+        const pubMessages = publicHistory[username].messages || [];
+        const pubTips = publicHistory[username].tips || [];
+        fullContext = [...pubMessages, ...pubTips, ...fullContext];
       }
 
       // Ordenar por timestamp
@@ -493,9 +511,14 @@ function addImageAIButton(container, username, imageUrl) {
     btn.textContent = '...';
 
     try {
-      let fullContext = history;
+      const userMessages = history.messages || [];
+      const userTips = history.tips || [];
+      let fullContext = [...userMessages, ...userTips];
+
       if (publicHistory[username]) {
-        fullContext = [...publicHistory[username], ...history];
+        const pubMessages = publicHistory[username].messages || [];
+        const pubTips = publicHistory[username].tips || [];
+        fullContext = [...pubMessages, ...pubTips, ...fullContext];
       }
       fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
 
