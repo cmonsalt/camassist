@@ -383,7 +383,11 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
       console.log('🌍 Traducción:', data.translation);
 
       // COPIAR AUTOMÁTICO AL PORTAPAPELES
-      navigator.clipboard.writeText(data.suggestion);
+      try {
+        navigator.clipboard.writeText(data.suggestion);
+      } catch (e) {
+        console.log('No se pudo copiar al portapapeles');
+      }
 
       // Crear popup
       const popup = document.createElement('div');

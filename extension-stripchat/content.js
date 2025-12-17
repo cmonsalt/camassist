@@ -395,7 +395,11 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       const data = await getResponse();
       console.log('🟢 Respuesta:', data.suggestion);
 
-      navigator.clipboard.writeText(data.suggestion);
+      try {
+        navigator.clipboard.writeText(data.suggestion);
+      } catch (e) {
+        console.log('No se pudo copiar al portapapeles');
+      }
 
       // Crear popup
       const popup = document.createElement('div');
@@ -548,7 +552,11 @@ function addImageAIButton(container, username, imageUrl) {
       const data = await response.json();
       console.log('🟢 Respuesta:', data.suggestion);
 
-      navigator.clipboard.writeText(data.suggestion);
+      try {
+        navigator.clipboard.writeText(data.suggestion);
+      } catch (e) {
+        console.log('No se pudo copiar al portapapeles');
+      }
 
       // Crear popup
       const popup = document.createElement('div');
