@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CamAssist - Chaturbate",
-  "version": "1.0",
+  "version": "1.0.1",
   "description": "AI assistant for webcam models on Chaturbate",
   "icons": {
     "16": "icon16.png",
