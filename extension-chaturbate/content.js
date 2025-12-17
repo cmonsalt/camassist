@@ -179,7 +179,7 @@ setInterval(() => {
 
       // Verificar si ya existe un tip duplicado (mismo usuario, cantidad y tiempo)
       const now = Date.now();
-      const isDuplicate = history[username].some(item => {
+      const isDuplicate = history[username].tips.some(item => {
         return item.type === 'tip' &&
           item.amount === tipAmount &&
           Math.abs(item.timestamp - now) < 2000; // Menos de 2 segundos
