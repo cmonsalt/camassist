@@ -60,6 +60,17 @@ export default async function handler(req, res) {
         .single();
 
       if (!error && model) {
+        // Verificar si está activo
+        if (model.active === false) {
+          console.log('🚫 Modelo inactivo:', model.name);
+          return res.status(403).json({
+            success: false,
+            suggestion: "⚠️ Cuenta inactiva - Contacta soporte",
+            translation: "⚠️ Cuenta inactiva - Contacta soporte",
+            error: 'inactive'
+          });
+        }
+
         modelData = { ...modelData, ...model };
         console.log('✅ Modelo encontrado:', modelData.name);
       } else {
