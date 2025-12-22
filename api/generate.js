@@ -49,7 +49,7 @@ export default async function handler(req, res) {
   };
 
   // LEER DE BD
-  if (token && token !== 'demo_token' && supabase) {
+  if (token && supabase) {
     try {
       console.log('🔍 Buscando modelo con token:', token);
 
