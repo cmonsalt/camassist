@@ -74,7 +74,13 @@ export default async function handler(req, res) {
         modelData = { ...modelData, ...model };
         console.log('✅ Modelo encontrado:', modelData.name);
       } else {
-        console.log('⚠️ No se encontró modelo, usando defaults');
+        console.log('🚫 Token inválido o no encontrado');
+        return res.status(401).json({
+          success: false,
+          suggestion: "⚠️ Token inválido - Configura tu token en la extensión",
+          translation: "⚠️ Token inválido - Configura tu token en la extensión",
+          error: 'invalid_token'
+        });
       }
     } catch (dbError) {
       console.error('❌ Error BD:', dbError);
