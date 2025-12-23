@@ -12,7 +12,6 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* MÓVIL */
         @media (max-width: 768px) {
             .flex.h-screen {
                 flex-direction: column;
@@ -53,7 +52,6 @@
 
 <body class="bg-gray-50">
     <div class="flex h-screen">
-        <!-- Sidebar -->
         <aside class="w-64 bg-gradient-to-b from-purple-600 to-pink-600 text-white flex flex-col">
             <div class="p-6">
                 <div class="flex items-center mb-8">
@@ -62,10 +60,6 @@
                 </div>
 
                 <nav class="space-y-2">
-                    <!-- <a href="/dashboard/index.html"
-                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <span class="mr-3">📊</span> Dashboard
-                    </a> -->
                     <a href="/dashboard/modelos.html"
                         class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">👥</span> Modelos
@@ -76,7 +70,7 @@
             <div class="mt-auto p-6 border-t border-white/10">
                 <div class="text-sm mb-4">
                     <div class="text-white/60">Studio</div>
-                    <div class="font-semibold" id="studioName">Emma's Studio</div>
+                    <div class="font-semibold" id="studioName">Mi Studio</div>
                 </div>
                 <button onclick="logout()"
                     class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
@@ -85,21 +79,17 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="flex-1 overflow-y-auto">
             <div class="p-8 max-w-4xl">
-                <!-- Header -->
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold text-gray-800">Configuración de Modelo</h1>
                     <p class="text-gray-600">Completa la información para que la IA responda mejor</p>
                 </div>
 
-                <!-- SECCIÓN 1: IDENTIDAD -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <span class="mr-2">📋</span> Identidad
                     </h2>
-
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nombre artístico</label>
@@ -128,12 +118,10 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN 2: PERSONALIDAD -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <span class="mr-2">💃</span> Personalidad
                     </h2>
-
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">¿Cómo eres?</label>
                         <select id="personality"
@@ -146,23 +134,18 @@
                             <option value="submissive">Sumisa, me gusta complacer</option>
                         </select>
                     </div>
-
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Temas que te gusta conversar</label>
-                        <input type="text" id="conversation_topics"
-                            placeholder="Ej: Reggaeton, viajar, gym, películas"
+                        <input type="text" id="conversation_topics" placeholder="Ej: Reggaeton, viajar, gym, películas"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                        <p class="text-xs text-gray-500 mt-1">Separa con comas - esto hace que la IA converse de forma
-                            natural sobre estos temas</p>
+                        <p class="text-xs text-gray-500 mt-1">Separa con comas</p>
                     </div>
                 </div>
 
-                <!-- SECCIÓN 3: FÍSICO Y NICHO -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <span class="mr-2">🔥</span> Físico y Nicho
                     </h2>
-
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de cuerpo</label>
@@ -177,79 +160,62 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nicho principal</label>
-                            <input type="text" id="main_niche" placeholder="Ej: Latina caliente, Ebony, Asian, Teen 18+"
+                            <input type="text" id="main_niche" placeholder="Ej: Latina caliente, Ebony, Asian"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                         </div>
                     </div>
-
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Tus mejores atributos (lo que más te
-                            halagan)</label>
-                        <input type="text" id="best_features"
-                            placeholder="Ej: big ass, tetas grandes, piernas, ojos, sonrisa, tatuajes"
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tus mejores atributos</label>
+                        <input type="text" id="best_features" placeholder="Ej: big ass, ojos, sonrisa, tatuajes"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                         <p class="text-xs text-gray-500 mt-1">Separa con comas</p>
                     </div>
                 </div>
 
-                <!-- SECCIÓN 4: LO QUE SÍ HACES -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <span class="mr-2">✅</span> Lo que SÍ haces
                     </h2>
-
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-1">En chat PÚBLICO</label>
-                        <textarea id="public_shows" rows="2"
-                            placeholder="Ej: bailar, twerk, topless, aceite en cuerpo, cambio de ropa, lencería"
+                        <textarea id="public_shows" rows="2" placeholder="Ej: bailar, twerk, topless, lencería"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
                     </div>
-
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">En PRIVADO</label>
-                        <textarea id="private_shows" rows="3"
-                            placeholder="Ej: desnudo completo, masturbación, dildo, squirt, anal, roleplay, JOI, dirty talk"
+                        <textarea id="private_shows" rows="3" placeholder="Ej: desnudo completo, masturbación, dildo"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
                     </div>
                 </div>
 
-                <!-- SECCIÓN 5: LO QUE NO HACES -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <span class="mr-2">❌</span> Lo que NO haces (nunca)
                     </h2>
-
                     <div>
-                        <textarea id="hard_limits" rows="2"
-                            placeholder="Ej: anal, garganta profunda, humillación, mostrar cara"
+                        <textarea id="hard_limits" rows="2" placeholder="Ej: anal, mostrar cara, humillación"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
                         <p class="text-xs text-gray-500 mt-1">La IA ofrecerá alternativas cuando pidan esto</p>
                     </div>
                 </div>
 
-                <!-- SECCIÓN 6: CONDICIONES ESPECIALES -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <span class="mr-2">⚠️</span> Lo que haces con condiciones
                     </h2>
-
                     <div>
                         <textarea id="partial_conditions" rows="3" placeholder="Ej:
-Anal: solo en privado de 30+ min o tip extra de 500 tokens
-Squirt: solo con Lovense al máximo
-Cara completa: solo con fans VIP"
+Anal: solo en privado de 30+ min
+Squirt: solo con Lovense al máximo"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
                         <p class="text-xs text-gray-500 mt-1">Una condición por línea</p>
                     </div>
                 </div>
 
-
-                <!-- SECCIÓN 9: CONTEXTO PERSONAL -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <span class="mr-2">🎭</span> Contexto personal
                     </h2>
-
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">¿Tienes pareja?</label>
@@ -261,22 +227,17 @@ Cara completa: solo con fans VIP"
                             </select>
                         </div>
                     </div>
-
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Otra info relevante</label>
-                        <textarea id="extra_context" rows="2"
-                            placeholder="Ej: Estudio medicina, tengo tatuaje de mariposa, me encanta el gym, soy gamer"
+                        <textarea id="extra_context" rows="2" placeholder="Ej: Estudio medicina, me encanta el gym"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"></textarea>
-                        <p class="text-xs text-gray-500 mt-1">Esto ayuda a la IA a conversar de forma más personal</p>
                     </div>
                 </div>
 
-                <!-- SECCIÓN 10: EMOJIS -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                         <span class="mr-2">😊</span> Cantidad de Emojis
                     </h2>
-
                     <div class="grid grid-cols-4 gap-3">
                         <button onclick="setLevel('emoji', 0)" id="emoji-0"
                             class="py-2 px-4 rounded-lg border-2 border-gray-200 hover:border-purple-500 transition text-sm">
@@ -297,14 +258,13 @@ Cara completa: solo con fans VIP"
                     </div>
                 </div>
 
-                <!-- Guardar -->
                 <button onclick="saveSettings()"
                     class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-[1.01] transition-all duration-200 text-lg">
                     💾 Guardar Configuración
                 </button>
 
                 <p class="text-center text-sm text-gray-500 mt-4">
-                    La información se guarda de forma segura y solo se usa para personalizar las respuestas de la IA
+                    La información se guarda de forma segura
                 </p>
             </div>
         </main>
@@ -312,20 +272,18 @@ Cara completa: solo con fans VIP"
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        // Supabase config
-        const supabase = window.supabase.createClient(
+        const db = window.supabase.createClient(
             'https://wptjtwbvophyszijeupc.supabase.co',
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwdGp0d2J2b3BoeXN6aWpldXBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NTYyNzAsImV4cCI6MjA3OTMzMjI3MH0.CkpvCyuyr1P66xXedm936jc3B-6t4Crlhwbij_5A3QE'
         );
 
-        // Check auth
-        // Check auth
         const studioId = localStorage.getItem('studio_id');
+        const studioName = localStorage.getItem('studio_name');
         if (!studioId) {
             window.location.href = '/dashboard/login.html';
         }
+        document.getElementById('studioName').textContent = studioName || 'Mi Studio';
 
-        // Obtener token de URL o localStorage
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token') || localStorage.getItem('model_token');
 
@@ -333,15 +291,14 @@ Cara completa: solo con fans VIP"
             alert('No se encontró token de modelo');
             window.location.href = '/dashboard/modelos.html';
         }
-        // Settings state
+
         let emojiLevel = 2;
 
-        // Load settings on page load
         loadSettings();
 
         async function loadSettings() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await db
                     .from('models')
                     .select('*')
                     .eq('token', token)
@@ -350,38 +307,24 @@ Cara completa: solo con fans VIP"
                 if (error) throw error;
 
                 if (data) {
-                    // IDENTIDAD
                     document.getElementById('name').value = data.name || '';
                     document.getElementById('age').value = data.age || '';
                     document.getElementById('location').value = data.location || '';
                     document.getElementById('languages').value = data.languages || 'spanish_only';
-
-                    // PERSONALIDAD
                     document.getElementById('personality').value = data.personality || 'extrovert_playful';
                     document.getElementById('conversation_topics').value = data.conversation_topics || '';
-
-                    // FÍSICO
                     document.getElementById('body_type').value = data.body_type || 'curvy';
                     document.getElementById('main_niche').value = data.main_niche || '';
                     document.getElementById('best_features').value = data.best_features || '';
-
-                    // LO QUE HACE
                     document.getElementById('public_shows').value = data.public_shows || '';
                     document.getElementById('private_shows').value = data.private_shows || '';
-
-                    // LÍMITES
                     document.getElementById('hard_limits').value = data.hard_limits || '';
                     document.getElementById('partial_conditions').value = data.partial_conditions || '';
-
-                    // CONTEXTO
                     document.getElementById('relationship_status').value = data.relationship_status || 'single';
                     document.getElementById('extra_context').value = data.extra_context || '';
-
-                    // EMOJIS
                     emojiLevel = data.emoji_level || 2;
                     setLevel('emoji', emojiLevel, false);
-
-                    console.log('✅ Settings cargados:', data);
+                    console.log('✅ Settings cargados');
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
@@ -408,37 +351,24 @@ Cara completa: solo con fans VIP"
 
         async function saveSettings() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await db
                     .from('models')
                     .update({
-                        // IDENTIDAD
                         name: document.getElementById('name').value,
                         age: parseInt(document.getElementById('age').value) || null,
                         location: document.getElementById('location').value,
                         languages: document.getElementById('languages').value,
-
-                        // PERSONALIDAD
                         personality: document.getElementById('personality').value,
                         conversation_topics: document.getElementById('conversation_topics').value,
-
-                        // FÍSICO
                         body_type: document.getElementById('body_type').value,
                         main_niche: document.getElementById('main_niche').value,
                         best_features: document.getElementById('best_features').value,
-
-                        // LO QUE HACE
                         public_shows: document.getElementById('public_shows').value,
                         private_shows: document.getElementById('private_shows').value,
-
-                        // LÍMITES
                         hard_limits: document.getElementById('hard_limits').value,
                         partial_conditions: document.getElementById('partial_conditions').value,
-
-                        // CONTEXTO
                         relationship_status: document.getElementById('relationship_status').value,
                         extra_context: document.getElementById('extra_context').value,
-
-                        // EMOJIS
                         emoji_level: emojiLevel
                     })
                     .eq('token', token);
