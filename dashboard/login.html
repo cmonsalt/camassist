@@ -63,7 +63,7 @@
     <script>
         // Si ya está logueado, ir al dashboard
         if (localStorage.getItem('studio_id')) {
-            window.location.href = '/dashboard/modelos.html';
+           // window.location.href = '/dashboard/modelos.html';
         }
 
         function showRegister() {
@@ -97,7 +97,7 @@
                 if (data.success) {
                     localStorage.setItem('studio_id', data.studio_id);
                     localStorage.setItem('studio_name', data.studio_name);
-                    window.location.href = '/dashboard/modelos.html';
+                    //window.location.href = '/dashboard/modelos.html';
                 } else {
                     alert(data.message || 'Credenciales incorrectas');
                 }
@@ -133,7 +133,7 @@
                 if (data.success) {
                     localStorage.setItem('studio_id', data.studio_id);
                     localStorage.setItem('studio_name', data.studio_name);
-                    window.location.href = '/dashboard/modelos.html';
+                    //window.location.href = '/dashboard/modelos.html';
                 } else {
                     alert(data.message || 'Error al registrar');
                 }
