@@ -388,8 +388,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
       // Ordenar por timestamp
       fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
 
-      console.log('📚 Historial enviado a IA (últimos 10):');
-      console.table(fullContext.slice(-10).map((item, index) => ({
+      console.log('📚 Historial enviado a IA (últimos 20):');
+      console.table(fullContext.slice(-20).map((item, index) => ({
         '#': index,
         'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : item.type === 'image' ? '🖼️ Imagen' : '💰 Tip',
         'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.type === 'image' ? '[Imagen]' : (item.message ? item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '') : ''),

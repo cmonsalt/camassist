@@ -18,6 +18,42 @@ console.log('👤 Broadcaster username:', broadcasterUsername);
 
 const extensionStartTime = Date.now();
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
+
+// ============================================
+// FUNCIÓN PARA OBTENER GOAL Y TIP MENU (StripChat)
+// ============================================
+function getGoalAndTipMenu() {
+  // GOAL
+  let goal = '';
+  const goalTokens = document.querySelector('.epic-goal-progress__tokens');
+  const goalText = document.querySelector('.epic-goal-progress__information span');
+  if (goalTokens && goalText) {
+    goal = `${goalText.textContent.trim()} - ${goalTokens.textContent.trim()}`;
+    console.log('🎯 GOAL detectado:', goal);
+  } else {
+    console.log('⚠️ No se encontró GOAL');
+  }
+
+  // TIP MENU - desde los inputs del menú de propinas
+  let tipMenu = [];
+  const menuItems = document.querySelectorAll('input[id^="activity"]');
+  menuItems.forEach(input => {
+    const name = input.value;
+    const priceInput = input.closest('li')?.querySelector('input[id^="price"]');
+    const price = priceInput ? priceInput.value : '';
+    if (name && price) {
+      tipMenu.push(`${name} (${price}tk)`);
+    }
+  });
+
+  console.log('📋 TIP MENU detectado:', tipMenu.length, 'items:', tipMenu);
+
+  return {
+    goal: goal,
+    tipMenu: tipMenu.join(' | ')
+  };
+}
+
 let messageCounter = 0;
 
 setInterval(() => {
@@ -91,7 +127,7 @@ setInterval(() => {
         });
       }
 
-      if (publicHistory[targetUsername].messages.length > 15) {
+      if (publicHistory[targetUsername].messages.length > 20) {
         publicHistory[targetUsername].messages.shift();
       }
 
@@ -226,7 +262,7 @@ setInterval(() => {
       timestamp: msgId,
       imageUrl: imageUrl
     });
-    if (pmHistory[targetUser].messages.length > 15) {
+    if (pmHistory[targetUser].messages.length > 20) {
       pmHistory[targetUser].messages.shift();
     }
 
@@ -316,7 +352,7 @@ setInterval(() => {
       });
     }
 
-    if (pmHistory[targetUser].messages.length > 15) {
+    if (pmHistory[targetUser].messages.length > 20) {
       pmHistory[targetUser].messages.shift();
     }
 
@@ -384,9 +420,10 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           platform: 'stripchat',
           username,
           message: messageText,
-          context: fullContext.slice(-10),
+          context: fullContext.slice(-20),
           isPM,
-          tip: tipAmount
+          tip: tipAmount,
+          ...getGoalAndTipMenu()
         })
       });
       return response.json();
