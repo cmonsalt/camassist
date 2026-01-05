@@ -92,7 +92,7 @@ export default async function handler(req, res) {
   // CONSTRUIR CONTEXTO
   let contextText = '';
   if (context.length > 0) {
-    const maxContext = 10;
+    const maxContext = 20;
     contextText = context.slice(-maxContext).map(c => {
       if (c.type === 'fan') return `Fan: ${c.message}`;
       if (c.type === 'model') return `You: ${c.message}`;

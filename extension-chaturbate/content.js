@@ -179,7 +179,7 @@ setInterval(() => {
       });
 
       // Mantener últimos 15 mensajes
-      if (history[targetUsername].messages.length > 15) {
+      if (history[targetUsername].messages.length > 20) {
         history[targetUsername].messages.shift();
       }
 
@@ -404,7 +404,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
           platform: 'chaturbate',
           username,
           message: messageText,
-          context: fullContext.slice(-10),
+          context: fullContext.slice(-20),
           isPM,
           tip: tipAmount,
           imageUrl,
