@@ -17,6 +17,41 @@ const broadcasterUsername = window.location.pathname.split('/b/')[1]?.split('/')
 console.log('👤 Broadcaster username:', broadcasterUsername);
 
 const extensionStartTime = Date.now();
+
+// ============================================
+// FUNCIÓN PARA OBTENER GOAL Y TIP MENU
+// ============================================
+function getGoalAndTipMenu() {
+  // GOAL
+  let goal = '';
+  const goalEl = document.querySelector('span.RoomSubjectSpan, [data-testid="room-subject-span"]');
+  if (goalEl) {
+    goal = goalEl.textContent.trim();
+    console.log('🎯 GOAL detectado:', goal);
+  } else {
+    console.log('⚠️ No se encontró GOAL');
+  }
+
+  // TIP MENU - buscar en el chat los items del menú
+  let tipMenu = [];
+  const tipMenuItems = document.querySelectorAll('a[data-testid="shortcode-link"]');
+  tipMenuItems.forEach(item => {
+    // Obtener el texto del padre (mensaje completo) que incluye el precio
+    const parentText = item.closest('.msg-text, [class*="message"]')?.textContent.trim() || item.parentElement?.textContent.trim();
+    const text = parentText || item.textContent.trim();
+    if (text && !tipMenu.includes(text)) {
+      tipMenu.push(text);
+    }
+  });
+
+  console.log('📋 TIP MENU detectado:', tipMenu.length, 'items:', tipMenu);
+
+  return {
+    goal: goal,
+    tipMenu: tipMenu.join(' | ')
+  };
+}
+
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
 
 
@@ -372,7 +407,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
           context: fullContext.slice(-10),
           isPM,
           tip: tipAmount,
-          imageUrl
+          imageUrl,
+          ...getGoalAndTipMenu()
         })
       });
       return response.json();

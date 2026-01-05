@@ -23,6 +23,8 @@ export default async function handler(req, res) {
     isPM = false,
     imageUrl = null,
     platform = 'unknown',
+    goal = '',
+    tipMenu = '',
   } = req.body;
 
   console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length, hasImage: !!imageUrl });
@@ -174,6 +176,19 @@ ESCENARIOS ESPECIALES (responder según el tipo de mensaje):
    - Si el ejemplo dice "me haces sonrojar" → tú di "me pones rojita" o "ay qué lindo" 
    - Si el ejemplo dice "qué me harías" → tú di "cuéntame más" o "y después qué?"
    - Cada respuesta debe sentirse FRESCA y ÚNICA
+
+   ${goal ? `
+GOAL ACTUAL: ${goal}
+- Menciona el goal cuando quieras motivar al fan a tipear
+- "Ya casi llegamos bb" o "Ayúdame con el goal 😏"
+` : ''}
+
+${tipMenu ? `
+TIP MENU DISPONIBLE:
+${tipMenu}
+- Usa esta info para sugerir cosas cuando el fan quiera ver algo
+- NO menciones precios directamente, solo si pregunta
+` : ''}
 
 PERSUASIÓN (MUY IMPORTANTE):
 - NUNCA menciones tokens/tips/precio primero. Solo si el fan PREGUNTA precio directo.
