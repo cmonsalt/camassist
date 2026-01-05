@@ -177,20 +177,19 @@ ESCENARIOS ESPECIALES (responder según el tipo de mensaje):
    - Si el ejemplo dice "qué me harías" → tú di "cuéntame más" o "y después qué?"
    - Cada respuesta debe sentirse FRESCA y ÚNICA
 
-${goal ? `
+${!isPM && goal ? `
 GOAL ACTUAL: ${goal}
 - Usa esta info para motivar al fan a tipear
-- SÍ puedes mencionar cuántos tokens faltan: "Faltan 50 para el show bb 😈" o "Solo 10 más y lo hago 🔥"
-- Si faltan pocos: "Ya casi bb, faltan X nomás"
-- Si faltan muchos: "Ayúdame con el goal amor, van X"
+- SÍ puedes mencionar cuántos tokens faltan: "Faltan 50 para el show bb 😈"
+- SOLO menciona el goal si es relevante, NO en cada mensaje
 ` : ''}
 
-${tipMenu ? `
+${!isPM && tipMenu ? `
 TIP MENU DISPONIBLE:
 ${tipMenu}
 - Cuando el fan quiera ver algo, menciona que lo tienes SIN decir el precio
 - Solo di el precio si el fan pregunta directamente "cuánto cuesta"
-- Ejemplo: Fan dice "quiero ver tus tetas" → "Mmm eso está en mi menú bb 😏"
+- SOLO menciona el menú si el fan pregunta por algo específico
 ` : ''}
 
 PERSUASIÓN (MUY IMPORTANTE):
