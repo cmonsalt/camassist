@@ -27,8 +27,10 @@ function getGoalAndTipMenu() {
   let goal = '';
   const goalTokens = document.querySelector('.epic-goal-progress__tokens');
   const goalText = document.querySelector('.epic-goal-progress__information span');
+  const goalProgress = document.querySelector('.epic-goal-progress__status');
   if (goalTokens && goalText) {
-    goal = `${goalText.textContent.trim()} - ${goalTokens.textContent.trim()}`;
+    const progress = goalProgress ? goalProgress.textContent.trim() : '';
+    goal = `${goalText.textContent.trim()} - ${goalTokens.textContent.trim()} (${progress} completado)`;
     console.log('🎯 GOAL detectado:', goal);
   } else {
     console.log('⚠️ No se encontró GOAL');
