@@ -121,11 +121,11 @@ setInterval(() => {
     // }
 
     // Ignorar mensajes anteriores SOLO en chat público
-    // const messageTime = parseInt(msg.getAttribute('data-ts') || '0');
-    // if (!isPM && messageTime > 0 && messageTime < extensionStartTime) {
-    //   msg.dataset.processed = 'true';
-    //   return;
-    // }
+    const messageTime = parseInt(msg.getAttribute('data-ts') || '0');
+    if (!isPM && messageTime > 0 && messageTime < extensionStartTime) {
+      msg.dataset.processed = 'true';
+      return;
+    }
 
     msg.dataset.processed = 'true';
 
