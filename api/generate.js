@@ -220,7 +220,7 @@ Si preguntan por: ${modelData.hard_limits || 'nada'} → rechaza coqueta pero cl
 
 ${contextText ? `Chat reciente:\n${contextText}` : ''}
 
-Máx ${isPM ? '60' : '25'} palabras. SOLO JSON:
+Máx ${isPM ? '68' : '25'} palabras. SOLO JSON:
 {"response":"texto","translation_es":"traducción"}`;
 
   const userPrompt = `Fan ${username} dice: "${message}"`;
