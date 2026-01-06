@@ -320,10 +320,16 @@ Máx ${isPM ? '68' : '25'} palabras. SOLO JSON:
     let suggestion, translation;
 
     try {
-      // Arreglar JSON incompleto (a veces falta { al inicio)
+      // Arreglar JSON incompleto
       if (!responseText.startsWith('{')) {
         responseText = '{' + responseText;
       }
+      if (!responseText.endsWith('}')) {
+        responseText = responseText + '}';
+      }
+      // Limpiar caracteres extraños
+      responseText = responseText.replace(/[\x00-\x1F\x7F]/g, '');
+
       const parsed = JSON.parse(responseText);
       suggestion = parsed.response;
       translation = parsed.translation_es;
