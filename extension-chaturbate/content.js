@@ -178,7 +178,7 @@ setInterval(() => {
         timestamp: msgTs
       });
 
-      // Mantener últimos 15 mensajes
+      // Mantener últimos 20 mensajes
       if (history[targetUsername].messages.length > 20) {
         history[targetUsername].messages.shift();
       }
@@ -361,11 +361,15 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
     : 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px';
 
   btn.onclick = async () => {
-    // Obtener historial correcto según contexto
-    const history = context === 'pm' ? pmHistory : publicHistory;
+    // Detectar pestaña activa AL MOMENTO del click
+    const pmTab = document.querySelector('#pm-tab-default');
+    const currentlyInPM = pmTab && pmTab.classList.contains('active');
+
+    // Obtener historial correcto según pestaña actual
+    const history = currentlyInPM ? pmHistory : publicHistory;
     const userHistory = history[username] || [];
 
-    console.log(`🔵 IA para ${isPM ? 'PM' : 'público'} - Usuario: ${username}`);
+   console.log(`🔵 IA para ${currentlyInPM ? 'PM' : 'público'} - Usuario: ${username}`);
 
     btn.textContent = '...';
 
@@ -405,7 +409,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
           username,
           message: messageText,
           context: fullContext.slice(-20),
-          isPM,
+          isPM: currentlyInPM,
           tip: tipAmount,
           imageUrl,
           ...getGoalAndTipMenu()

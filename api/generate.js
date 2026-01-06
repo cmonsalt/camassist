@@ -358,7 +358,8 @@ Máx ${isPM ? '68' : '25'} palabras. SOLO JSON:
         model_id: modelData.id,
         studio_id: modelData.studio_id,
         type: imageUrl ? 'image' : 'text',
-        platform: platform
+        platform: platform,
+        is_pm: isPM
       });
       console.log('📊 Uso guardado');
     }
