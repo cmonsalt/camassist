@@ -54,8 +54,9 @@ export default async function handler(req, res) {
     // Obtener uso TOTAL histórico por modelo
     const { data: usageTotal, error: usageTotalError } = await supabase
       .from('usage')
-      .select('model_id')
-      .eq('studio_id', studio_id);
+      .select('model_id', { count: 'exact' })
+      .eq('studio_id', studio_id)
+      .limit(10000);
 
     const totalByModel = {};
     if (usageTotal) {
@@ -69,7 +70,8 @@ export default async function handler(req, res) {
       .from('usage')
       .select('model_id, is_pm, created_at')
       .eq('studio_id', studio_id)
-      .gte('created_at', startOfMonth);
+      .gte('created_at', startOfMonth)
+      .limit(10000);
 
     if (usageError) throw usageError;
 
