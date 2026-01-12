@@ -90,8 +90,13 @@
         }
 
         @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
     </style>
 </head>
@@ -139,9 +144,10 @@
                         <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
                         <p class="text-gray-600">Estadísticas de uso este mes</p>
                     </div>
-                    
+
                     <!-- Badge de suscripción -->
-                    <div id="subscriptionBadge" class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold">
+                    <div id="subscriptionBadge"
+                        class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold">
                         <!-- Se llena dinámicamente -->
                     </div>
                 </div>
@@ -199,7 +205,7 @@
                         <h2 class="text-xl font-semibold text-gray-800">📊 Uso por Modelo</h2>
                         <span class="text-sm text-gray-500">Este mes</span>
                     </div>
-                    
+
                     <div id="modelsUsageTable">
                         <!-- Loading skeleton -->
                         <div class="space-y-3">
@@ -216,7 +222,9 @@
                         <div class="text-3xl">💡</div>
                         <div>
                             <h3 class="font-semibold text-gray-800 mb-1">Tip para aumentar el uso</h3>
-                            <p class="text-gray-600 text-sm">Las modelos que más usan CamAssist reportan más conversiones a privado. Recuerda: <strong>la IA da el guión, la modelo es la actriz</strong>. Asegúrate de que actúen lo que dice la IA.</p>
+                            <p class="text-gray-600 text-sm">Las modelos que más usan CamAssist reportan más
+                                conversiones a privado. Recuerda: <strong>la IA da el guión, la modelo es la
+                                    actriz</strong>. Asegúrate de que actúen lo que dice la IA.</p>
                         </div>
                     </div>
                 </div>
@@ -228,7 +236,7 @@
         // Check auth
         const studioId = localStorage.getItem('studio_id');
         const studioNameStored = localStorage.getItem('studio_name');
-        
+
         if (!studioId) {
             window.location.href = '/dashboard/login.html';
         }
@@ -276,7 +284,7 @@
 
         function updateSubscriptionBadge(studio) {
             const badge = document.getElementById('subscriptionBadge');
-            
+
             if (studio.subscriptionStatus === 'trial' && studio.trialDaysLeft > 0) {
                 badge.className = 'inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800';
                 badge.innerHTML = `<span class="mr-2">⏳</span> Prueba gratis: ${studio.trialDaysLeft} días restantes`;
@@ -309,7 +317,8 @@
                         <thead>
                             <tr class="text-left text-sm text-gray-500 border-b">
                                 <th class="pb-3 font-medium">Modelo</th>
-                                <th class="pb-3 font-medium text-center">Usos Total</th>
+                                <th class="pb-3 font-medium text-center">Este mes</th>
+                                <th class="pb-3 font-medium text-center">Total</th>
                                 <th class="pb-3 font-medium text-center">Público</th>
                                 <th class="pb-3 font-medium text-center">PM</th>
                                 <th class="pb-3 font-medium text-right">Última actividad</th>
@@ -329,11 +338,12 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="py-4 text-center">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${model.usage > 0 ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-500'}">
-                                            ${model.usage}
-                                        </span>
-                                    </td>
+                                   <td class="py-4 text-center">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${model.usageMonth > 0 ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-500'}">
+        ${model.usageMonth}
+    </span>
+</td>
+<td class="py-4 text-center text-sm text-gray-600 font-semibold">${model.usageTotal}</td>
                                     <td class="py-4 text-center text-sm text-gray-600">${model.publicUsage}</td>
                                     <td class="py-4 text-center text-sm text-gray-600">${model.pmUsage}</td>
                                     <td class="py-4 text-right text-sm text-gray-500">

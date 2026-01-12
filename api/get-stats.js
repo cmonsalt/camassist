@@ -51,6 +51,19 @@ export default async function handler(req, res) {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
+    // Obtener uso TOTAL histórico por modelo
+    const { data: usageTotal, error: usageTotalError } = await supabase
+      .from('usage')
+      .select('model_id')
+      .eq('studio_id', studio_id);
+
+    const totalByModel = {};
+    if (usageTotal) {
+      usageTotal.forEach(u => {
+        totalByModel[u.model_id] = (totalByModel[u.model_id] || 0) + 1;
+      });
+    }
+
     // Obtener uso por modelo este mes
     const { data: usage, error: usageError } = await supabase
       .from('usage')
