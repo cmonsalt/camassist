@@ -51,12 +51,12 @@ export default async function handler(req, res) {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
-    // Obtener uso TOTAL histórico por modelo
+    // Obtener uso TOTAL histórico por modelo usando RPC o query directo
     const { data: usageTotal, error: usageTotalError } = await supabase
       .from('usage')
-      .select('model_id', { count: 'exact' })
+      .select('model_id')
       .eq('studio_id', studio_id)
-      .limit(10000);
+      .range(0, 49999);
 
     const totalByModel = {};
     if (usageTotal) {
