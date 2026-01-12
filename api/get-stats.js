@@ -108,7 +108,8 @@ export default async function handler(req, res) {
         id: model.id,
         name: model.name,
         token: model.token,
-        usage: modelUsage.total,
+        usageMonth: modelUsage.total,
+        usageTotal: totalByModel[model.id] || 0,
         pmUsage: modelUsage.pm,
         publicUsage: modelUsage.public,
         lastUsed: modelUsage.lastUsed
@@ -116,7 +117,7 @@ export default async function handler(req, res) {
     });
 
     // Ordenar por uso (más activos primero)
-    modelsWithUsage.sort((a, b) => b.usage - a.usage);
+    modelsWithUsage.sort((a, b) => b.usageMonth - a.usageMonth);
 
     // Calcular costo estimado (aproximado)
     const estimatedCost = (totalUsage * 0.00025).toFixed(2);
