@@ -38,6 +38,19 @@ export default async function handler(req, res) {
       trialDaysLeft = Math.max(0, Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24)));
     }
 
+    // Obtener modelos del studio
+    const { data: models, error: modelsError } = await supabase
+      .from('models')
+      .select('id, name, token, created_at')
+      .eq('studio_id', studio_id)
+      .order('created_at', { ascending: false });
+
+    if (modelsError) throw modelsError;
+
+    // Obtener inicio del mes actual
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
     // Obtener uso TOTAL histórico - paginando para evitar límite de 1000
     let allUsageTotal = [];
     let from = 0;
