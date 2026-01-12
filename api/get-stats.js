@@ -149,6 +149,7 @@ export default async function handler(req, res) {
       },
       stats: {
         totalUsage,
+        totalHistorico: allUsageTotal.length,
         pmCount,
         publicCount,
         totalModels: models.length,
