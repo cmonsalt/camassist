@@ -38,32 +38,34 @@ export default async function handler(req, res) {
       trialDaysLeft = Math.max(0, Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24)));
     }
 
-    // Obtener modelos del studio
-    const { data: models, error: modelsError } = await supabase
-      .from('models')
-      .select('id, name, token, created_at')
-      .eq('studio_id', studio_id)
-      .order('created_at', { ascending: false });
+    // Obtener uso TOTAL histórico - paginando para evitar límite de 1000
+    let allUsageTotal = [];
+    let from = 0;
+    const pageSize = 1000;
+    let hasMore = true;
 
-    if (modelsError) throw modelsError;
+    while (hasMore) {
+      const { data: batch, error } = await supabase
+        .from('usage')
+        .select('model_id')
+        .eq('studio_id', studio_id)
+        .range(from, from + pageSize - 1);
 
-    // Obtener inicio del mes actual
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      if (error) throw error;
 
-    // Obtener uso TOTAL histórico por modelo usando RPC o query directo
-    const { data: usageTotal, error: usageTotalError } = await supabase
-      .from('usage')
-      .select('model_id')
-      .eq('studio_id', studio_id)
-      .range(0, 49999);
+      if (batch && batch.length > 0) {
+        allUsageTotal = allUsageTotal.concat(batch);
+        from += pageSize;
+        hasMore = batch.length === pageSize;
+      } else {
+        hasMore = false;
+      }
+    }
 
     const totalByModel = {};
-    if (usageTotal) {
-      usageTotal.forEach(u => {
-        totalByModel[u.model_id] = (totalByModel[u.model_id] || 0) + 1;
-      });
-    }
+    allUsageTotal.forEach(u => {
+      totalByModel[u.model_id] = (totalByModel[u.model_id] || 0) + 1;
+    });
 
     // Obtener uso por modelo este mes
     const { data: usage, error: usageError } = await supabase
