@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     // Obtener modelos del studio
     const { data: models, error: modelsError } = await supabase
       .from('models')
-      .select('id, name, token, created_at, trial_started, trial_ends_at')
+      .select('id, name, token, created_at, trial_started, trial_ends_at, subscription_status')
       .eq('studio_id', studio_id)
       .order('created_at', { ascending: false });
 
@@ -126,17 +126,18 @@ export default async function handler(req, res) {
       let trialStatus = 'pending'; // No ha empezado
       let trialDaysLeft = 0;
 
-      if (model.trial_started && model.trial_ends_at) {
+      if (model.subscription_status === 'active') {
+        trialStatus = 'active_paid';
+      } else if (model.trial_started && model.trial_ends_at) {
         const trialEnds = new Date(model.trial_ends_at);
         const now = new Date();
         const daysLeft = Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24));
 
         if (daysLeft > 0) {
-          trialStatus = 'active';
+          trialStatus = 'trial';
           trialDaysLeft = daysLeft;
         } else {
-          trialStatus = 'expired';
-          trialDaysLeft = 0;
+          trialStatus = 'pending_payment';
         }
       }
 
