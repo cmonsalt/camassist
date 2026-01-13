@@ -25,6 +25,7 @@ export default async function handler(req, res) {
       .from('models')
       .select('*')
       .eq('studio_id', studio_id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
     if (error) throw error;

@@ -64,12 +64,22 @@ export default async function handler(req, res) {
       if (!error && model) {
         // Verificar si está activo
         if (model.subscription_status === 'suspended') {
-          console.log('🚫 Modelo inactivo:', model.name);
+          console.log('🚫 Modelo suspendida:', model.name);
           return res.status(403).json({
             success: false,
-            suggestion: "⚠️ Cuenta inactiva - Contacta soporte",
-            translation: "⚠️ Cuenta inactiva - Contacta soporte",
-            error: 'inactive'
+            suggestion: "⚠️ Cuenta suspendida - Contacta soporte",
+            translation: "⚠️ Cuenta suspendida - Contacta soporte",
+            error: 'suspended'
+          });
+        }
+
+        if (model.deleted_at) {
+          console.log('🚫 Modelo eliminada:', model.name);
+          return res.status(403).json({
+            success: false,
+            suggestion: "⚠️ Modelo desactivada",
+            translation: "⚠️ Modelo desactivada",
+            error: 'deleted'
           });
         }
 

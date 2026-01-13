@@ -35,6 +35,7 @@ export default async function handler(req, res) {
       .from('models')
       .select('id, name, token, created_at, trial_started, trial_ends_at, subscription_status')
       .eq('studio_id', studio_id)
+      .is('deleted_at', null)
       .order('created_at', { ascending: false });
 
     if (modelsError) throw modelsError;
