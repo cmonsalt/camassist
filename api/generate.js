@@ -353,6 +353,7 @@ Máx ${isPM ? '68' : '35'} palabras. SOLO JSON:
     console.log('✅ Respuesta generada');
 
     // Guardar uso en BD
+    // Guardar uso en BD
     if (modelData.id && modelData.studio_id && supabase) {
       await supabase.from('usage').insert({
         model_id: modelData.id,
@@ -362,6 +363,22 @@ Máx ${isPM ? '68' : '35'} palabras. SOLO JSON:
         is_pm: isPM
       });
       console.log('📊 Uso guardado');
+
+      // Activar trial de 14 días en primer uso
+      if (!modelData.trial_started) {
+        const trialEndsAt = new Date();
+        trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
+        await supabase
+          .from('models')
+          .update({
+            trial_started: true,
+            trial_ends_at: trialEndsAt.toISOString()
+          })
+          .eq('id', modelData.id);
+
+        console.log('🎁 Trial de 14 días activado para:', modelData.name);
+      }
     }
 
     return res.status(200).json({
