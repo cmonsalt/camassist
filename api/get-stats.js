@@ -24,19 +24,11 @@ export default async function handler(req, res) {
     // Obtener info del studio (incluye trial)
     const { data: studio, error: studioError } = await supabase
       .from('studios')
-      .select('name, trial_ends_at, subscription_status, created_at')
+      .select('name, created_at, billing_day')
       .eq('id', studio_id)
       .single();
 
     if (studioError) throw studioError;
-
-    // Calcular días restantes de trial
-    let trialDaysLeft = 0;
-    if (studio.trial_ends_at) {
-      const trialEnds = new Date(studio.trial_ends_at);
-      const now = new Date();
-      trialDaysLeft = Math.max(0, Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24)));
-    }
 
     // Obtener modelos del studio
     const { data: models, error: modelsError } = await supabase
@@ -166,9 +158,7 @@ export default async function handler(req, res) {
       success: true,
       studio: {
         name: studio.name,
-        trialDaysLeft,
-        subscriptionStatus: studio.subscription_status || 'trial',
-        trialEndsAt: studio.trial_ends_at
+        billingDay: studio.billing_day
       },
       stats: {
         totalUsage,
