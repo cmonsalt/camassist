@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 
       if (!error && model) {
         // Verificar si está activo
-        if (model.active === false) {
+        if (model.subscription_status === 'suspended') {
           console.log('🚫 Modelo inactivo:', model.name);
           return res.status(403).json({
             success: false,
