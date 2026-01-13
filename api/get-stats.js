@@ -41,7 +41,7 @@ export default async function handler(req, res) {
     // Obtener modelos del studio
     const { data: models, error: modelsError } = await supabase
       .from('models')
-      .select('id, name, token, created_at')
+      .select('id, name, token, created_at, trial_started, trial_ends_at')
       .eq('studio_id', studio_id)
       .order('created_at', { ascending: false });
 
@@ -121,6 +121,25 @@ export default async function handler(req, res) {
     // Combinar modelos con su uso
     const modelsWithUsage = models.map(model => {
       const modelUsage = usageByModel[model.id] || { total: 0, pm: 0, public: 0, lastUsed: null };
+
+      // Calcular estado del trial
+      let trialStatus = 'pending'; // No ha empezado
+      let trialDaysLeft = 0;
+
+      if (model.trial_started && model.trial_ends_at) {
+        const trialEnds = new Date(model.trial_ends_at);
+        const now = new Date();
+        const daysLeft = Math.ceil((trialEnds - now) / (1000 * 60 * 60 * 24));
+
+        if (daysLeft > 0) {
+          trialStatus = 'active';
+          trialDaysLeft = daysLeft;
+        } else {
+          trialStatus = 'expired';
+          trialDaysLeft = 0;
+        }
+      }
+
       return {
         id: model.id,
         name: model.name,
@@ -129,7 +148,10 @@ export default async function handler(req, res) {
         usageTotal: totalByModel[model.id] || 0,
         pmUsage: modelUsage.pm,
         publicUsage: modelUsage.public,
-        lastUsed: modelUsage.lastUsed
+        lastUsed: modelUsage.lastUsed,
+        trialStatus,
+        trialDaysLeft,
+        trialEndsAt: model.trial_ends_at
       };
     });
 

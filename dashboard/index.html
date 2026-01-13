@@ -332,6 +332,7 @@
                                 <th class="pb-3 font-medium text-center">Total</th>
                                 <th class="pb-3 font-medium text-center">Público</th>
                                 <th class="pb-3 font-medium text-center">PM</th>
+                                <th class="pb-3 font-medium text-center">Trial</th>
                                 <th class="pb-3 font-medium text-right">Última actividad</th>
                             </tr>
                         </thead>
@@ -357,6 +358,14 @@
 <td class="py-4 text-center text-sm text-gray-600 font-semibold">${model.usageTotal}</td>
                                     <td class="py-4 text-center text-sm text-gray-600">${model.publicUsage}</td>
                                     <td class="py-4 text-center text-sm text-gray-600">${model.pmUsage}</td>
+                                    <td class="py-4 text-center">
+    ${model.trialStatus === 'active'
+                    ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">✅ ${model.trialDaysLeft}d</span>`
+                    : model.trialStatus === 'expired'
+                        ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">⚠️ Vencido</span>`
+                        : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">⏳ Pendiente</span>`
+                }
+</td>
                                     <td class="py-4 text-right text-sm text-gray-500">
                                         ${model.lastUsed ? formatTimeAgo(model.lastUsed) : '<span class="text-gray-400">Sin actividad</span>'}
                                     </td>
