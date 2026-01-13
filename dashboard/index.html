@@ -273,9 +273,6 @@
                     // Actualizar nombre del studio
                     document.getElementById('studioName').textContent = data.studio.name;
 
-                    // Actualizar badge de suscripción
-                    updateSubscriptionBadge(data.studio);
-
                     // Actualizar stats
                     document.getElementById('totalResponses').textContent = data.stats.totalUsage.toLocaleString();
                     document.getElementById('totalModels').textContent = data.stats.totalModels;
@@ -290,21 +287,6 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-            }
-        }
-
-        function updateSubscriptionBadge(studio) {
-            const badge = document.getElementById('subscriptionBadge');
-
-            if (studio.subscriptionStatus === 'trial' && studio.trialDaysLeft > 0) {
-                badge.className = 'inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800';
-                badge.innerHTML = `<span class="mr-2">⏳</span> Prueba gratis: ${studio.trialDaysLeft} días restantes`;
-            } else if (studio.subscriptionStatus === 'active') {
-                badge.className = 'inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-green-100 text-green-800';
-                badge.innerHTML = `<span class="mr-2">✅</span> Suscripción activa`;
-            } else {
-                badge.className = 'inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-red-100 text-red-800';
-                badge.innerHTML = `<span class="mr-2">⚠️</span> Prueba vencida`;
             }
         }
 
