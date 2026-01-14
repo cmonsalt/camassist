@@ -73,15 +73,31 @@ export default async function handler(req, res) {
       totalByModel[u.model_id] = (totalByModel[u.model_id] || 0) + 1;
     });
 
-    // Obtener uso por modelo este mes
-    const { data: usage, error: usageError } = await supabase
-      .from('usage')
-      .select('model_id, is_pm, created_at')
-      .eq('studio_id', studio_id)
-      .gte('created_at', startOfMonth)
-      .limit(10000);
+    // Obtener uso por modelo ESTE MES - con paginación
+    let allUsageMonth = [];
+    let fromMonth = 0;
+    let hasMoreMonth = true;
 
-    if (usageError) throw usageError;
+    while (hasMoreMonth) {
+      const { data: batch, error } = await supabase
+        .from('usage')
+        .select('model_id, is_pm, created_at')
+        .eq('studio_id', studio_id)
+        .gte('created_at', startOfMonth)
+        .range(fromMonth, fromMonth + pageSize - 1);
+
+      if (error) throw error;
+
+      if (batch && batch.length > 0) {
+        allUsageMonth = allUsageMonth.concat(batch);
+        fromMonth += pageSize;
+        hasMoreMonth = batch.length === pageSize;
+      } else {
+        hasMoreMonth = false;
+      }
+    }
+
+    const usage = allUsageMonth;
 
     // Agrupar uso por modelo
     const usageByModel = {};
