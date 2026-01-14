@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "vercel dev",
+    "build:cb": "javascript-obfuscator extension-chaturbate/content.js --output extension-chaturbate/content.min.js --compact true --control-flow-flattening true --string-array true --string-array-encoding base64 && echo '✅ Chaturbate ofuscado'",
+    "build:sc": "javascript-obfuscator extension-stripchat/content.js --output extension-stripchat/content.min.js --compact true --control-flow-flattening true --string-array true --string-array-encoding base64 && echo '✅ StripChat ofuscado'",
+    "build": "npm run build:cb && npm run build:sc && echo '🎉 Todo listo!'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.1"
   }
 }
