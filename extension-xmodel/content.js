@@ -183,8 +183,8 @@ setInterval(() => {
         timestamp: msgId
       });
       
-      // Mantener máximo 20 mensajes
-      if (currentHistory[targetUser].messages.length > 20) {
+      // Mantener máximo 70 mensajes
+      if (currentHistory[targetUser].messages.length > 70) {
         currentHistory[targetUser].messages.shift();
       }
       
@@ -260,8 +260,8 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
       fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
       
       // Log de historial
-      console.log('📚 Historial enviado a IA (últimos 10):');
-      console.table(fullContext.slice(-10).map((item, index) => ({
+      console.log('📚 Historial enviado a IA (últimos 70):');
+      console.table(fullContext.slice(-70).map((item, index) => ({
         '#': index,
         'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
         'Mensaje': item.type === 'tip' ? `${item.amount} credits` : item.message.substring(0, 50),
@@ -276,7 +276,7 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
           platform: 'xmodels',
           username,
           message: messageText,
-          context: fullContext.slice(-20),
+          context: fullContext.slice(-70),
           isPM,
           chatType, // NUEVO: enviar tipo de chat específico
           tip: tipAmount,
