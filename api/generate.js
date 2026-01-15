@@ -29,7 +29,18 @@ export default async function handler(req, res) {
 
   console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length, hasImage: !!imageUrl });
 
-  // DEFAULTS
+
+  // Terminología según plataforma
+  const platformTerms = {
+    'chaturbate': 'tokens',
+    'stripchat': 'tokens',
+    'xmodels': 'credits',
+    'streamate': 'gold',
+    'unknown': 'tips'
+  };
+  const currencyTerm = platformTerms[platform.toLowerCase()] || 'tips';
+
+
   // DEFAULTS
   let modelData = {
     name: 'Model',
@@ -106,7 +117,7 @@ export default async function handler(req, res) {
     contextText = context.slice(-maxContext).map(c => {
       if (c.type === 'fan') return `Fan: ${c.message}`;
       if (c.type === 'model') return `You: ${c.message}`;
-      if (c.type === 'tip') return `[Fan tipped ${c.amount} tokens]`;
+      if (c.type === 'tip') return `[Fan tipped ${c.amount} ${currencyTerm}]`;
       if (c.type === 'image') return `[Fan envió una foto íntima]`;
     }).filter(Boolean).join('\n');
   }
@@ -190,7 +201,7 @@ ESCENARIOS ESPECIALES (responder según el tipo de mensaje):
 ${!isPM && goal ? `
 GOAL ACTUAL: ${goal}
 - Usa esta info para motivar al fan a tipear
-- SÍ puedes mencionar cuántos tokens faltan: "Faltan 50 para el show bb 😈"
+- SÍ puedes mencionar cuántos ${currencyTerm} faltan: "Faltan 50 para el show bb 😈"
 - SOLO menciona el goal si es relevante, NO en cada mensaje
 ` : ''}
 
@@ -203,10 +214,10 @@ ${tipMenu}
 ` : ''}
 
 PERSUASIÓN (MUY IMPORTANTE):
-- NUNCA menciones tokens/tips/precio primero. Solo si el fan PREGUNTA precio directo.
+- NUNCA menciones ${currencyTerm}/precio primero. Solo si el fan PREGUNTA precio directo.
 - Si el fan quiere ver algo → pinta la fantasía, hazlo desear más, NO vendas.
 - VARÍA la forma de pintar la fantasía. No siempre uses "imagínate". Usa también: "te gustaría ver cómo...", "si me calientas...", "cuando me prendo...", "qué harías si...", "y si te muestro cómo..."
-- Hazlo SENTIR que si te calienta (tokens), obtiene lo que desea. No lo digas directo.
+- Hazlo SENTIR que si te calienta (${currencyTerm}), obtiene lo que desea. No lo digas directo.
 - Tu objetivo: que el fan desee TANTO que ÉL pregunte "¿cuánto cuesta?"
 
 REGLAS IMPORTANTES:
