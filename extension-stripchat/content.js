@@ -129,7 +129,7 @@ setInterval(() => {
         });
       }
 
-      if (publicHistory[targetUsername].messages.length > 20) {
+      if (publicHistory[targetUsername].messages.length > 70) {
         publicHistory[targetUsername].messages.shift();
       }
 
@@ -264,7 +264,7 @@ setInterval(() => {
       timestamp: msgId,
       imageUrl: imageUrl
     });
-    if (pmHistory[targetUser].messages.length > 20) {
+    if (pmHistory[targetUser].messages.length > 70) {
       pmHistory[targetUser].messages.shift();
     }
 
@@ -354,7 +354,7 @@ setInterval(() => {
       });
     }
 
-    if (pmHistory[targetUser].messages.length > 20) {
+    if (pmHistory[targetUser].messages.length > 70) {
       pmHistory[targetUser].messages.shift();
     }
 
@@ -406,8 +406,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
       fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
 
       // TABLA DE HISTORIAL
-      console.log('📚 Historial enviado a IA (últimos 10):');
-      console.table(fullContext.slice(-10).map((item, index) => ({
+      console.log('📚 Historial enviado a IA (últimos 70):');
+      console.table(fullContext.slice(-70).map((item, index) => ({
         '#': index,
         'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
         'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.message.substring(0, 50),
@@ -422,7 +422,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
           platform: 'stripchat',
           username,
           message: messageText,
-          context: fullContext.slice(-20),
+          context: fullContext.slice(-70),
           isPM,
           tip: tipAmount,
           ...getGoalAndTipMenu()
@@ -565,8 +565,8 @@ function addImageAIButton(container, username, imageUrl) {
       }
       fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
 
-      console.log('📚 Historial enviado a IA (últimos 10):');
-      console.table(fullContext.slice(-10).map((item, index) => ({
+      console.log('📚 Historial enviado a IA (últimos 70):');
+      console.table(fullContext.slice(-70).map((item, index) => ({
         '#': index,
         'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : '💰 Tip',
         'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.message.substring(0, 50)
@@ -580,7 +580,7 @@ function addImageAIButton(container, username, imageUrl) {
           platform: 'stripchat',
           username,
           message: '[Fan envió una imagen]',
-          context: fullContext.slice(-10),
+          context: fullContext.slice(-70),
           isPM: true,
           tip: 0,
           hasImage: true,
@@ -633,7 +633,7 @@ function addImageAIButton(container, username, imageUrl) {
               platform: 'stripchat',
               username,
               message: '[Fan envió una imagen]',
-              context: fullContext.slice(-10),
+              context: fullContext.slice(-70),
               isPM: true,
               tip: 0,
               hasImage: true,

@@ -178,8 +178,8 @@ setInterval(() => {
         timestamp: msgTs
       });
 
-      // Mantener últimos 20 mensajes
-      if (history[targetUsername].messages.length > 20) {
+      // Mantener últimos 70 mensajes
+      if (history[targetUsername].messages.length > 70) {
         history[targetUsername].messages.shift();
       }
 
@@ -292,7 +292,7 @@ setInterval(() => {
       timestamp: Date.now()
     });
 
-    if (pmHistory[modalPmUser].messages.length > 15) {
+    if (pmHistory[modalPmUser].messages.length > 70) {
       pmHistory[modalPmUser].messages.shift();
     }
 
@@ -338,7 +338,7 @@ setInterval(() => {
       timestamp: imageTs
     });
 
-    if (pmHistory[dataNick].messages.length > 15) {
+    if (pmHistory[dataNick].messages.length > 70) {
       pmHistory[dataNick].messages.shift();
     }
 
@@ -392,8 +392,8 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
       // Ordenar por timestamp
       fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
 
-      console.log('📚 Historial enviado a IA (últimos 20):');
-      console.table(fullContext.slice(-20).map((item, index) => ({
+      console.log('📚 Historial enviado a IA (últimos 70):');
+      console.table(fullContext.slice(-70).map((item, index) => ({
         '#': index,
         'Quién': item.type === 'fan' ? '👤 Fan' : item.type === 'model' ? '💃 Modelo' : item.type === 'image' ? '🖼️ Imagen' : '💰 Tip',
         'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.type === 'image' ? '[Imagen]' : (item.message ? item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '') : ''),
@@ -408,7 +408,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
           platform: 'chaturbate',
           username,
           message: messageText,
-          context: fullContext.slice(-20),
+          context: fullContext.slice(-70),
           isPM: currentlyInPM,
           tip: tipAmount,
           imageUrl,
