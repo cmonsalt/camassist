@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "CamAssist - XModels",
+  "version": "1.0.0",
+  "description": "AI assistant for webcam models on XModels/Xcams",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [{
+    "matches": ["*://chat.xmodels.com/*", "*://*.xcams-models.com/*", "*://*.xcams.com/*"],
+    "js": ["content.min.js"]
+  }],
+  "permissions": ["storage", "activeTab", "scripting"]
+}

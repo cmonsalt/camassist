@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 280px;
+      padding: 15px;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    h1 {
+      margin: 0 0 5px 0;
+      font-size: 18px;
+      color: #333;
+    }
+    .subtitle {
+      color: #888;
+      font-size: 11px;
+      margin-bottom: 15px;
+    }
+    .platform-badge {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 12px;
+      box-sizing: border-box;
+      margin-bottom: 10px;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #8B5CF6;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .status {
+      margin-top: 12px;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 12px;
+      text-align: center;
+    }
+    .status.connected {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status.disconnected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    #modelName {
+      font-size: 11px;
+      color: #666;
+      text-align: center;
+      margin-top: 5px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 10px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🤖 CamAssist</h1>
+    <div class="subtitle">
+      <span class="platform-badge">XModels</span>
+      AI Assistant
+    </div>
+    
+    <input type="text" id="token" placeholder="Pega tu token aquí...">
+    <button id="saveBtn">💾 Guardar Token</button>
+    
+    <div id="status" class="status disconnected">⚠️ Sin conectar</div>
+    <div id="modelName"></div>
+    
+    <div class="footer">
+      camassist.co
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

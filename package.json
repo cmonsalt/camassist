@@ -2,12 +2,13 @@
   "name": "camassist-backend",
   "version": "1.0.0",
   "type": "module",
- "scripts": {
+  "scripts": {
     "dev": "vercel dev",
     "ofuscar:cb": "javascript-obfuscator extension-chaturbate/content.js --output extension-chaturbate/content.min.js --compact true --control-flow-flattening true --string-array true --string-array-encoding base64 && echo '✅ Chaturbate ofuscado'",
     "ofuscar:sc": "javascript-obfuscator extension-stripchat/content.js --output extension-stripchat/content.min.js --compact true --control-flow-flattening true --string-array true --string-array-encoding base64 && echo '✅ StripChat ofuscado'",
-    "ofuscar": "npm run ofuscar:cb && npm run ofuscar:sc && echo '🎉 Todo listo!'"
-},
+    "ofuscar:xm": "javascript-obfuscator extension-xmodels/content.js --output extension-xmodels/content.min.js --compact true --control-flow-flattening true --string-array true --string-array-encoding base64 && echo '✅ XModels ofuscado'",
+    "ofuscar": "npm run ofuscar:cb && npm run ofuscar:sc && npm run ofuscar:xm && echo '🎉 Todo listo!'"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0"
   },

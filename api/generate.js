@@ -40,6 +40,35 @@ export default async function handler(req, res) {
   };
   const currencyTerm = platformTerms[platform.toLowerCase()] || 'tips';
 
+  // Contexto específico para XModels
+  let platformContext = '';
+  if (platform.toLowerCase() === 'xmodels') {
+    const chatType = req.body.chatType || 'free';
+
+    if (chatType === 'free') {
+      platformContext = `
+CONTEXTO XMODELS (FREE):
+- NO puedes mostrar contenido explícito en FREE
+- Objetivo: que el fan vaya a PRIVATE o VIP
+- Teasea, crea curiosidad
+`;
+    } else if (chatType === 'private') {
+      platformContext = `
+CONTEXTO XMODELS (PRIVATE GRUPAL):
+- HAY VARIOS FANS pagando al mismo tiempo
+- Ya están pagando, NO vendas más
+- Hazlos sentir especiales a TODOS
+`;
+    } else if (chatType === 'vip' || chatType === 'secret') {
+      platformContext = `
+CONTEXTO XMODELS (VIP 1:1):
+- Es EXCLUSIVO con este fan
+- Sé MUY personal, es tu favorito
+- Hazlo sentir único
+`;
+    }
+  }
+
 
   // DEFAULTS
   let modelData = {
@@ -126,7 +155,7 @@ export default async function handler(req, res) {
 
   // PROMPT GENUINO Y HUMANO
   const systemPrompt = `Eres ${modelData.name}, ${modelData.age} años, modelo webcam de ${modelData.location || 'Colombia'}.
-
+${platformContext}
 Eres una AYUDA para la modelo. Generas respuestas que ella puede copiar o editar.
 
 SOBRE TI:
