@@ -144,12 +144,7 @@ CONTEXTO XMODELS (VIP 1:1):
   if (context.length > 0) {
     const maxContext = 20;
     contextText = context.slice(-maxContext).map(c => {
-      if (c.type === 'fan') {
-        if (platform.toLowerCase() === 'xmodels' && req.body.chatType === 'private' && c.username) {
-          return `${c.username}: ${c.message}`;
-        }
-        return `Fan: ${c.message}`;
-      }
+      if (c.type === 'fan') return `Fan: ${c.message}`;
       if (c.type === 'model') return `You: ${c.message}`;
       if (c.type === 'tip') return `[Fan tipped ${c.amount} ${currencyTerm}]`;
       if (c.type === 'image') return `[Fan envió una foto íntima]`;

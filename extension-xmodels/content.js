@@ -109,7 +109,7 @@ setInterval(() => {
 
     // Obtener username
     const usernameEl = msg.querySelector('span.messageNickname, .messageNickname');
-    const username = usernameEl ? usernameEl.textContent.trim() : null;
+    const username = usernameEl ? usernameEl.textContent.replace(/\u00A0/g, '').trim() : null;
     if (!username) {
       msg.dataset.processed = 'true';
       return;
@@ -151,6 +151,9 @@ setInterval(() => {
       return;
     }
 
+    // Limpiar espacios especiales del mensaje
+    messageText = messageText.replace(/\u00A0/g, ' ').trim();
+
     // Limpiar username del mensaje si está al inicio
     messageText = messageText.replace(new RegExp('^' + username + '\\s*', 'i'), '').trim();
 
@@ -161,8 +164,26 @@ setInterval(() => {
       tipAmount = parseInt(tipMatch[1]);
     }
 
-    // Determinar el usuario target (para secret chat usar el nombre del fan)
-    const targetUser = (chatType === 'secret' && secretFan) ? secretFan : username;
+    // Determinar el usuario target
+    let targetUser;
+    if (isModelMessage) {
+      console.log('🔍 Mensaje modelo:', messageText);
+
+      // Si es mensaje de la modelo, extraer @username del mensaje
+      const mentionMatch = messageText.match(/^@(\w+)/);
+      console.log('🔍 Match:', mentionMatch);
+      if (mentionMatch) {
+        targetUser = mentionMatch[1];
+      } else {
+        // Si no tiene @, saltar (no sabemos a quién responde)
+        msg.dataset.processed = 'true';
+        return;
+      }
+    } else if (chatType === 'secret' && secretFan) {
+      targetUser = secretFan;
+    } else {
+      targetUser = username;
+    }
 
     // Guardar en historial
     if (!currentHistory[targetUser]) {
@@ -190,6 +211,7 @@ setInterval(() => {
       }
 
       console.log(`💬 ${chatType.toUpperCase()} - ${isModelMessage ? 'Modelo' : 'Fan'} (${targetUser}): ${messageText}`);
+      console.log('📊 DEBUG - currentHistory después de guardar:', JSON.stringify(currentHistory, null, 2));
     }
 
     // Guardar tips
@@ -246,9 +268,15 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
     btn.textContent = '...';
 
     const getResponse = async () => {
+
+      console.log('📊 DEBUG - userHistory:', userHistory);
+      console.log('📊 DEBUG - freeHistory completo:', freeHistory);
+
       const userMessages = userHistory.messages || [];
       const userTips = userHistory.tips || [];
       let fullContext = [...userMessages, ...userTips];
+
+      console.log('📊 DEBUG - fullContext antes de enviar:', fullContext);
 
       // Si estamos en secret/private, incluir historial público si existe
       if (isPM && freeHistory[username]) {
