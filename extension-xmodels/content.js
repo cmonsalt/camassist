@@ -1,5 +1,19 @@
 console.log("CamAssist XModels loaded!");
 
+// Detectar si estamos en INBOX o STREAMING
+const isInbox = window.location.hostname === 'xmodels.ch' && window.location.pathname.includes('conversations');
+
+if (isInbox) {
+  initInbox();
+} else {
+  initStreaming();
+}
+
+// Si es inbox, no ejecutar el resto
+if (isInbox) {
+  // La función initInbox está al final del archivo
+}
+
 // Obtener token de chrome.storage si existe
 chrome.storage.local.get(['model_token'], (result) => {
   if (result.model_token) {
@@ -409,4 +423,141 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
   };
 
   container.appendChild(btn);
+}
+
+// ============================================
+// FUNCIÓN INBOX (mensajes offline)
+// ============================================
+function initInbox() {
+  console.log('📬 Iniciando modo INBOX');
+
+  let inboxHistory = [];
+
+  setInterval(() => {
+    const messages = document.querySelectorAll('li.message');
+
+    messages.forEach(msg => {
+      if (msg.dataset.processed) return;
+
+      const senderEl = msg.querySelector('.message-sender');
+      const contentEl = msg.querySelector('.message-content p');
+
+      if (!contentEl) {
+        msg.dataset.processed = 'true';
+        return;
+      }
+
+      const sender = senderEl ? senderEl.textContent.trim() : null;
+      const messageText = contentEl.textContent.trim();
+      const isModelMessage = msg.classList.contains('message-out');
+
+      if (!messageText) {
+        msg.dataset.processed = 'true';
+        return;
+      }
+
+      // Capturar fecha real buscando li.message-date anterior
+      let realTimestamp = Date.now();
+      let prevEl = msg.previousElementSibling;
+      while (prevEl) {
+        if (prevEl.classList.contains('message-date')) {
+          const dateText = prevEl.textContent.trim();
+          const parsed = Date.parse(dateText);
+          if (!isNaN(parsed)) {
+            realTimestamp = parsed;
+          }
+          break;
+        }
+        prevEl = prevEl.previousElementSibling;
+      }
+
+      inboxHistory.push({
+        type: isModelMessage ? 'model' : 'fan',
+        message: messageText,
+        timestamp: realTimestamp
+      });
+
+      if (inboxHistory.length > 70) inboxHistory.shift();
+
+      console.log(`💬 INBOX - ${isModelMessage ? 'Modelo' : 'Fan'}: ${messageText}`);
+
+      if (!isModelMessage && !msg.querySelector('.ai-btn')) {
+        const btn = document.createElement('button');
+        btn.textContent = '🤖';
+        btn.className = 'ai-btn';
+        btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px;';
+
+        btn.onclick = async () => {
+          btn.textContent = '...';
+
+          try {
+            const response = await fetch('https://camassist.vercel.app/api/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                token: localStorage.getItem('model_token') || 'demo_token',
+                platform: 'xmodels',
+                username: sender || 'Fan',
+                message: messageText,
+                context: inboxHistory.sort((a, b) => a.timestamp - b.timestamp).slice(-70),
+                isPM: true,
+                chatType: 'inbox'
+              })
+            });
+
+            const data = await response.json();
+            navigator.clipboard.writeText(data.suggestion);
+
+            const replyTextarea = document.querySelector('#reply-message textarea, textarea');
+            if (replyTextarea) {
+              replyTextarea.value = data.suggestion;
+            }
+
+            // Mostrar popup
+            const popup = document.createElement('div');
+            popup.id = 'ai-popup';
+            popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;';
+
+            let translationHtml = '';
+            if (data.translation) {
+              const suggestionClean = data.suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
+              const translationClean = data.translation.replace(/\s+/g, ' ').trim().toLowerCase();
+
+              if (suggestionClean !== translationClean) {
+                translationHtml = `<p style="background:#e8f4e8;padding:12px;border-radius:5px;color:#555;font-size:13px;margin-bottom:10px;"><strong>🇪🇸 Traducción:</strong><br>${data.translation}</p>`;
+              }
+            }
+
+            popup.innerHTML = `
+  <h3 style="margin:0 0 15px 0;color:#333;">📬 INBOX - @${sender || 'Fan'} ✅ Copiado!</h3>
+  <p style="background:#f0f0f0;padding:12px;border-radius:5px;color:#333;margin-bottom:10px;">${data.suggestion}</p>
+  ${translationHtml}
+  <button onclick="this.parentElement.remove()" style="padding:8px 15px;cursor:pointer;border:none;background:#EF4444;color:white;border-radius:5px;">❌ Cerrar</button>
+`;
+
+            const oldPopup = document.getElementById('ai-popup');
+            if (oldPopup) oldPopup.remove();
+
+            document.body.appendChild(popup);
+            btn.textContent = '✓';
+            setTimeout(() => btn.textContent = '🤖', 2000);
+
+          } catch (error) {
+            console.error('Error:', error);
+            btn.textContent = '!';
+            setTimeout(() => btn.textContent = '🤖', 2000);
+          }
+        };
+
+        msg.appendChild(btn);
+      }
+
+      msg.dataset.processed = 'true';
+    });
+  }, 2000);
+}
+
+function initStreaming() {
+  // El código de streaming ya se ejecuta automáticamente arriba
+  // Esta función existe solo para que no de error cuando se llama
 }

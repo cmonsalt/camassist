@@ -142,7 +142,7 @@ CONTEXTO XMODELS (VIP 1:1):
   // CONSTRUIR CONTEXTO
   let contextText = '';
   if (context.length > 0) {
-    const maxContext = 20;
+    const maxContext = 70;
     contextText = context.slice(-maxContext).map(c => {
       if (c.type === 'fan') return `Fan: ${c.message}`;
       if (c.type === 'model') return `You: ${c.message}`;

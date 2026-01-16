@@ -12,7 +12,7 @@
     "default_popup": "popup.html"
   },
   "content_scripts": [{
-    "matches": ["*://chat.xmodels.com/*", "*://*.xcams-models.com/*", "*://*.xcams.com/*"],
+    "matches": ["*://chat.xmodels.com/*", "*://*.xcams-models.com/*", "*://*.xcams.com/*", "*://xmodels.ch/*"],
     "js": ["content.min.js"]
   }],
   "permissions": ["storage", "activeTab", "scripting"]
