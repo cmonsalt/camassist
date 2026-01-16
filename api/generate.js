@@ -14,6 +14,10 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  if (!req.body) {
+    return res.status(400).json({ error: 'No body provided' });
+  }
+
   const {
     token,
     username,
@@ -26,6 +30,36 @@ export default async function handler(req, res) {
     goal = '',
     tipMenu = '',
   } = req.body;
+
+  // ========== RATE LIMITING ==========
+  const rateLimitMap = global.rateLimitMap || (global.rateLimitMap = new Map());
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minuto
+  const maxRequests = 60;
+
+  if (token) {
+    const tokenData = rateLimitMap.get(token) || { count: 0, resetTime: now + windowMs };
+
+    // Resetear si pasó el minuto
+    if (now > tokenData.resetTime) {
+      tokenData.count = 0;
+      tokenData.resetTime = now + windowMs;
+    }
+
+    tokenData.count++;
+    rateLimitMap.set(token, tokenData);
+
+    if (tokenData.count > maxRequests) {
+      console.log('🚫 Rate limit excedido para token:', token);
+      return res.status(429).json({
+        success: false,
+        suggestion: "⚠️ Demasiadas solicitudes - Espera un momento",
+        translation: "⚠️ Demasiadas solicitudes - Espera un momento",
+        error: 'rate_limit'
+      });
+    }
+  }
+  // ========== FIN RATE LIMITING ==========
 
   console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length, hasImage: !!imageUrl });
 
