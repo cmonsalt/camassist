@@ -58,18 +58,24 @@ console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTi
 // FUNCIÓN PARA DETECTAR PRIVATE SHOW
 // ============================================
 function isInPrivateShow() {
-  const pageText = document.body.innerText;
-
+  const pageHTML = document.body.innerHTML.toLowerCase();
+  
+  // Si el show ya terminó, NO estamos en private
+  if (pageHTML.includes('private show has finished') || 
+      pageHTML.includes('el espectáculo privado ha finalizado')) {
+    return false;
+  }
+  
   const privateIndicators = [
-    'Private Broadcasting',
-    'Private show has started',
-    'Exit Private Show',
-    'Radiodifusión privada',
-    'El espectáculo privado ha comenzado',
-    'Salir del show privado'
+    'private show has started',
+    'private broadcasting',
+    'exit private show',
+    'el espectáculo privado ha comenzado',
+    'radiodifusión privada',
+    'salir del show privado'
   ];
-
-  return privateIndicators.some(text => pageText.includes(text));
+  
+  return privateIndicators.some(text => pageHTML.includes(text));
 }
 
 
@@ -417,6 +423,11 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
         'Mensaje': item.type === 'tip' ? `${item.amount} tokens` : item.type === 'image' ? '[Imagen]' : (item.message ? item.message.substring(0, 50) + (item.message.length > 50 ? '...' : '') : ''),
         'Timestamp': new Date(item.timestamp).toLocaleTimeString()
       })));
+
+      // DEBUG Private Show
+      console.log('🔴 isInPrivateShow():', isInPrivateShow());
+      console.log('🔴 HTML includes "private show has started":', document.body.innerHTML.toLowerCase().includes('private show has started'));
+      console.log('🔴 HTML includes "private broadcasting":', document.body.innerHTML.toLowerCase().includes('private broadcasting'));
 
       const response = await fetch('https://camassist.vercel.app/api/generate', {
         method: 'POST',

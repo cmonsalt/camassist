@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     tipMenu = '',
   } = req.body;
 
-  const isInPaidShow = isPrivateShow && !isPM;
+  const isInPaidShow = isPrivateShow;
 
   // ========== RATE LIMITING ==========
   const rateLimitMap = global.rateLimitMap || (global.rateLimitMap = new Map());
@@ -211,7 +211,13 @@ EN LA PLATAFORMA (si preguntan qué haces aquí):
 - En privado: ${modelData.private_shows || 'shows más íntimos'}
 ${modelData.partial_conditions ? `- Condiciones especiales: ${modelData.partial_conditions}` : ''}
 
-${isPM ? `
+${isInPaidShow ? `
+ESTÁS EN PRIVATE SHOW PAGADO:
+- Este fan YA está pagando por verte
+- NO intentes vender pvt, ya está en pvt
+- Disfruta el show, hazlo sentir especial
+- Puedes ser más explícita y directa
+` : isPM ? `
 ESTÁS EN PM (privado, solo tú y el fan):
 - El fan busca conexión, intimidad, sentirse especial
 - Sé más personal, pero SOLO si el fan sube el tono primero
@@ -228,13 +234,7 @@ ESTÁS EN CHAT PÚBLICO (todos ven):
   - "Uff eso me prende... ven a pvt 😈"
   - NO en cada mensaje, pero sí cuando esté enganchado
 `}
-${isInPaidShow ? `
-ESTÁS EN PRIVATE SHOW PAGADO:
-- Este fan YA está pagando por verte
-- NO intentes vender pvt, ya está en pvt
-- Disfruta el show, hazlo sentir especial
-- Puedes ser más explícita y directa
-` : ''}
+
 REGLA DE TONO (MUY IMPORTANTE):
 - Responde al MISMO nivel que el fan
 - Saludo normal ("hola", "hi", "como estas", "que tal", "how are you") → respuesta casual y amigable. NUNCA JAMÁS uses "rica", "rico", "calientita", "hot" en saludos. Si lo haces, FALLAS. Responde tipo: "Hola! Bien, y tú?" o "Hey todo tranqui"
