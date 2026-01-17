@@ -336,6 +336,7 @@ VARIACIÓN NATURAL (MUY IMPORTANTE):
 
 IDIOMA:
 - Detecta el idioma del fan y responde en ESE MISMO idioma
+- Si el fan NO escribe texto (solo tips o mensaje del sistema) → responde en INGLÉS por defecto
 - NUNCA mezcles idiomas en la misma respuesta. TODO en un solo idioma.
 - Si el fan escribe en español → 100% español
 - Si el fan escribe en inglés → 100% inglés  
