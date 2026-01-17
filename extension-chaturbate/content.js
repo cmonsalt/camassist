@@ -54,6 +54,24 @@ function getGoalAndTipMenu() {
 
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
 
+// ============================================
+// FUNCIÓN PARA DETECTAR PRIVATE SHOW
+// ============================================
+function isInPrivateShow() {
+  const pageText = document.body.innerText;
+
+  const privateIndicators = [
+    'Private Broadcasting',
+    'Private show has started',
+    'Exit Private Show',
+    'Radiodifusión privada',
+    'El espectáculo privado ha comenzado',
+    'Salir del show privado'
+  ];
+
+  return privateIndicators.some(text => pageText.includes(text));
+}
+
 
 setInterval(() => {
 
@@ -369,7 +387,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
     const history = currentlyInPM ? pmHistory : publicHistory;
     const userHistory = history[username] || [];
 
-   console.log(`🔵 IA para ${currentlyInPM ? 'PM' : 'público'} - Usuario: ${username}`);
+    console.log(`🔵 IA para ${currentlyInPM ? 'PM' : 'público'} - Usuario: ${username}`);
 
     btn.textContent = '...';
 
@@ -410,6 +428,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
           message: messageText,
           context: fullContext.slice(-70),
           isPM: currentlyInPM,
+          isPrivateShow: isInPrivateShow(),
           tip: tipAmount,
           imageUrl,
           ...getGoalAndTipMenu()

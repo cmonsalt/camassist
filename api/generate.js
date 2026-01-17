@@ -25,11 +25,14 @@ export default async function handler(req, res) {
     tip = 0,
     context = [],
     isPM = false,
+    isPrivateShow = false,
     imageUrl = null,
     platform = 'unknown',
     goal = '',
     tipMenu = '',
   } = req.body;
+
+  const isInPaidShow = isPrivateShow && !isPM;
 
   // ========== RATE LIMITING ==========
   const rateLimitMap = global.rateLimitMap || (global.rateLimitMap = new Map());
@@ -225,6 +228,13 @@ ESTÁS EN CHAT PÚBLICO (todos ven):
   - "Uff eso me prende... ven a pvt 😈"
   - NO en cada mensaje, pero sí cuando esté enganchado
 `}
+${isInPaidShow ? `
+ESTÁS EN PRIVATE SHOW PAGADO:
+- Este fan YA está pagando por verte
+- NO intentes vender pvt, ya está en pvt
+- Disfruta el show, hazlo sentir especial
+- Puedes ser más explícita y directa
+` : ''}
 REGLA DE TONO (MUY IMPORTANTE):
 - Responde al MISMO nivel que el fan
 - Saludo normal ("hola", "hi", "como estas", "que tal", "how are you") → respuesta casual y amigable. NUNCA JAMÁS uses "rica", "rico", "calientita", "hot" en saludos. Si lo haces, FALLAS. Responde tipo: "Hola! Bien, y tú?" o "Hey todo tranqui"
