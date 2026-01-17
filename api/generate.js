@@ -277,12 +277,13 @@ GOAL ACTUAL: ${goal}
 - SOLO menciona el goal si es relevante, NO en cada mensaje
 ` : ''}
 
-${!isPM && tipMenu ? `
+${tipMenu ? `
 TIP MENU DISPONIBLE:
 ${tipMenu}
-- Cuando el fan quiera ver algo, menciona que lo tienes SIN decir el precio
+${isPM ? `- SOLO di el precio si el fan PREGUNTA DIRECTO ("how much", "cuánto cuesta")
+- NO vendas ni menciones precios sin que pregunte` : `- Cuando el fan quiera ver algo, menciona que lo tienes SIN decir el precio
 - Solo di el precio si el fan pregunta directamente "cuánto cuesta"
-- SOLO menciona el menú si el fan pregunta por algo específico
+- SOLO menciona el menú si el fan pregunta por algo específico`}
 ` : ''}
 
 PERSUASIÓN (SOLO EN PÚBLICO, NO en PM):
