@@ -1,5 +1,12 @@
 console.log("CamAssist loaded!");
 
+// ============================================
+// CARGAR WIDGET DE TIEMPO
+// ============================================
+const timeWidgetScript = document.createElement('script');
+timeWidgetScript.src = 'https://camassist.vercel.app/time-widget.js';
+document.head.appendChild(timeWidgetScript);
+
 // Obtener token de chrome.storage si existe
 chrome.storage.local.get(['model_token'], (result) => {
   if (result.model_token) {

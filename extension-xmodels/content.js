@@ -1,5 +1,12 @@
 console.log("CamAssist XModels loaded!");
 
+// ============================================
+// CARGAR WIDGET DE TIEMPO
+// ============================================
+const timeWidgetScript = document.createElement('script');
+timeWidgetScript.src = 'https://camassist.vercel.app/time-widget.js';
+document.head.appendChild(timeWidgetScript);
+
 // Detectar si estamos en INBOX o STREAMING
 const isInbox = window.location.hostname === 'xmodels.ch' && window.location.pathname.includes('conversations');
 
