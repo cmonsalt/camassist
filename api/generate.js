@@ -25,14 +25,12 @@ export default async function handler(req, res) {
     tip = 0,
     context = [],
     isPM = false,
-    isPrivateShow = false,
     imageUrl = null,
     platform = 'unknown',
     goal = '',
     tipMenu = '',
   } = req.body;
 
-  const isInPaidShow = isPrivateShow;
 
   // ========== RATE LIMITING ==========
   const rateLimitMap = global.rateLimitMap || (global.rateLimitMap = new Map());
@@ -64,7 +62,7 @@ export default async function handler(req, res) {
   }
   // ========== FIN RATE LIMITING ==========
 
-  console.log('📥 Request:', { token, username, message, isPM, isPrivateShow, contextLength: context.length, hasImage: !!imageUrl });
+ console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length, hasImage: !!imageUrl });
 
 
   // Terminología según plataforma
@@ -211,18 +209,13 @@ EN LA PLATAFORMA (si preguntan qué haces aquí):
 - En privado: ${modelData.private_shows || 'shows más íntimos'}
 ${modelData.partial_conditions ? `- Condiciones especiales: ${modelData.partial_conditions}` : ''}
 
-${isInPaidShow ? `
-ESTÁS EN PRIVATE SHOW PAGADO:
-- Este fan YA está pagando por verte
-- NO intentes vender pvt, ya está en pvt
-- Disfruta el show, hazlo sentir especial
-- Puedes ser más explícita y directa
-` : isPM ? `
+${isPM ? `
 ESTÁS EN PM (privado, solo tú y el fan):
 - El fan busca conexión, intimidad, sentirse especial
 - Sé más personal, pero SOLO si el fan sube el tono primero
 - Hazlo sentir ÚNICO
 - NO preguntes en cada mensaje. Máximo 1 de cada 3 mensajes puede tener pregunta. A veces solo comenta o reacciona.
+- NO lleves a pvt constantemente. El fan ya está en conversación íntima contigo, disfruta el sexting.
 ` : `
 ESTÁS EN CHAT PÚBLICO (todos ven):
 - El fan busca atención, que lo noten
