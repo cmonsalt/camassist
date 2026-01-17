@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CamAssist - Tiempo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: white;
+      padding: 16px;
+      min-width: 280px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    
+    .header h2 {
+      font-size: 14px;
+      color: #888;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    
+    .status-offline { background: #444; }
+    .status-working { background: #10b981; }
+    .status-on_break { background: #f59e0b; }
+    
+    .timer {
+      text-align: center;
+      margin: 20px 0;
+    }
+    
+    .timer-value {
+      font-size: 48px;
+      font-weight: 700;
+      font-family: monospace;
+    }
+    
+    .timer-label {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 16px 0;
+      padding: 12px;
+      background: #252540;
+      border-radius: 8px;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .stat-label {
+      font-size: 10px;
+      color: #888;
+    }
+    
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    button {
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    button:hover {
+      transform: scale(1.02);
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-primary {
+      background: #8b5cf6;
+      color: white;
+    }
+    
+    .btn-warning {
+      background: #f59e0b;
+      color: black;
+    }
+    
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+    
+    .message {
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+    
+    .message-success { background: #10b98133; color: #10b981; }
+    .message-error { background: #ef444433; color: #ef4444; }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #333;
+      border-radius: 3px;
+      margin-top: 12px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #8b5cf6, #10b981);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="loading">Cargando...</div>
+  </div>
+
+  <script>
+    const API_BASE = 'https://camassist.vercel.app/api/time';
+    let token = null;
+    let currentStatus = null;
+    let timerInterval = null;
+    let checkInTime = null;
+    let totalWorkedMinutes = 0;
+
+    // Obtener token de la URL o localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    token = urlParams.get('token') || localStorage.getItem('model_token');
+
+    if (!token) {
+      document.getElementById('app').innerHTML = `
+        <div class="message message-error">
+          Token no encontrado. Configura tu token primero.
+        </div>
+      `;
+    } else {
+      loadStatus();
+    }
+
+    async function loadStatus() {
+      try {
+        const res = await fetch(`${API_BASE}/status?token=${token}`);
+        const data = await res.json();
+
+        if (!data.success) {
+          throw new Error(data.error);
+        }
+
+        currentStatus = data.status;
+        checkInTime = data.checkInTime;
+        totalWorkedMinutes = data.totalWorkedMinutes;
+        
+        render(data);
+        startTimer();
+
+      } catch (error) {
+        document.getElementById('app').innerHTML = `
+          <div class="message message-error">${error.message}</div>
+        `;
+      }
+    }
+
+    function render(data) {
+      const statusLabels = {
+        'offline': '⚫ Offline',
+        'working': '🟢 Trabajando',
+        'on_break': '🟡 En Break'
+      };
+
+      const progressPercent = Math.min((data.totalWorkedMinutes / (data.settings.min_hours_daily * 60)) * 100, 100);
+
+      document.getElementById('app').innerHTML = `
+        <div class="header">
+          <h2>⏰ Control de Tiempo</h2>
+          <div class="status-badge status-${data.status}">
+            ${statusLabels[data.status]}
+          </div>
+        </div>
+
+        <div class="timer">
+          <div class="timer-value" id="timer">00:00:00</div>
+          <div class="timer-label">Tiempo trabajado hoy</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${progressPercent}%"></div>
+          </div>
+          <div class="timer-label" style="margin-top:4px">
+            Meta: ${data.settings.min_hours_daily}h (${Math.round(progressPercent)}%)
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-value">${data.totalBreakMinutes}m</div>
+            <div class="stat-label">Break</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">${data.breaksToday}/${data.settings.max_breaks_per_shift}</div>
+            <div class="stat-label">Breaks usados</div>
+          </div>
+        </div>
+
+        <div id="message"></div>
+
+        <div class="actions">
+          ${renderButtons(data.status, data.breaksToday >= data.settings.max_breaks_per_shift)}
+        </div>
+      `;
+    }
+
+    function renderButtons(status, breaksExhausted) {
+      if (status === 'offline') {
+        return `
+          <button class="btn-success" onclick="doAction('check_in')">
+            ▶️ Iniciar Turno
+          </button>
+        `;
+      }
+
+      if (status === 'working') {
+        return `
+          <button class="btn-warning" onclick="doAction('break_start')" ${breaksExhausted ? 'disabled' : ''}>
+            ☕ Tomar Break
+          </button>
+          <button class="btn-danger" onclick="doAction('check_out')">
+            ⏹️ Terminar Turno
+          </button>
+        `;
+      }
+
+      if (status === 'on_break') {
+        return `
+          <button class="btn-success" onclick="doAction('break_end')">
+            🔥 Volver al Trabajo
+          </button>
+        `;
+      }
+
+      return '';
+    }
+
+    async function doAction(entry_type) {
+      try {
+        const res = await fetch(`${API_BASE}/entry`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, entry_type })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+          showMessage(data.error, 'error');
+          return;
+        }
+
+        showMessage(data.message, 'success');
+        setTimeout(loadStatus, 500);
+
+      } catch (error) {
+        showMessage('Error de conexión', 'error');
+      }
+    }
+
+    function showMessage(text, type) {
+      const msgEl = document.getElementById('message');
+      if (msgEl) {
+        msgEl.innerHTML = `<div class="message message-${type}">${text}</div>`;
+        setTimeout(() => msgEl.innerHTML = '', 3000);
+      }
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        if (currentStatus === 'working' && checkInTime) {
+          const now = Date.now();
+          const start = new Date(checkInTime).getTime();
+          const elapsed = now - start;
+          updateTimerDisplay(elapsed);
+        }
+      }, 1000);
+
+      // Actualizar inmediatamente
+      if (currentStatus === 'working' && checkInTime) {
+        const elapsed = Date.now() - new Date(checkInTime).getTime();
+        updateTimerDisplay(elapsed);
+      } else {
+        updateTimerDisplay(totalWorkedMinutes * 60 * 1000);
+      }
+    }
+
+    function updateTimerDisplay(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      const timerEl = document.getElementById('timer');
+      if (timerEl) {
+        timerEl.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+      }
+    }
+
+    function pad(n) {
+      return n.toString().padStart(2, '0');
+    }
+  </script>
+</body>
+</html>
