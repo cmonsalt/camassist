@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CamAssist - Streamate</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 320px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1c2e 0%, #2d2f45 100%);
+      color: #fff;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+    }
+
+    .logo {
+      font-size: 32px;
+    }
+
+    .title {
+      flex: 1;
+    }
+
+    .title h1 {
+      font-size: 18px;
+      font-weight: 600;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .title p {
+      font-size: 11px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .platform-badge {
+      background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+      color: #000;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #444;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
+      font-size: 13px;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    input[type="text"]::placeholder {
+      color: #666;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-size: 12px;
+    }
+
+    .status.connected {
+      background: rgba(72, 187, 120, 0.2);
+      border: 1px solid rgba(72, 187, 120, 0.3);
+      color: #68d391;
+    }
+
+    .status.disconnected {
+      background: rgba(245, 101, 101, 0.2);
+      border: 1px solid rgba(245, 101, 101, 0.3);
+      color: #fc8181;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status.connected .status-dot {
+      background: #68d391;
+      box-shadow: 0 0 8px #68d391;
+    }
+
+    .status.disconnected .status-dot {
+      background: #fc8181;
+      box-shadow: 0 0 8px #fc8181;
+    }
+
+    .info {
+      margin-top: 15px;
+      padding: 12px;
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 8px;
+      border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .info h3 {
+      font-size: 12px;
+      color: #667eea;
+      margin-bottom: 8px;
+    }
+
+    .info ul {
+      list-style: none;
+      font-size: 11px;
+      color: #aaa;
+    }
+
+    .info li {
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info li::before {
+      content: '•';
+      color: #667eea;
+    }
+
+    .footer {
+      margin-top: 15px;
+      text-align: center;
+      font-size: 10px;
+      color: #666;
+    }
+
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+    }
+
+    .message {
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 12px;
+      display: none;
+    }
+
+    .message.success {
+      display: block;
+      background: rgba(72, 187, 120, 0.2);
+      color: #68d391;
+    }
+
+    .message.error {
+      display: block;
+      background: rgba(245, 101, 101, 0.2);
+      color: #fc8181;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🤖</div>
+    <div class="title">
+      <h1>CamAssist</h1>
+      <p>AI Chat Assistant</p>
+    </div>
+    <span class="platform-badge">STREAMATE</span>
+  </div>
+
+  <div class="form-group">
+    <label for="token">Token de Modelo</label>
+    <input type="text" id="token" placeholder="mdl_nombre_modelo_xxxxx">
+  </div>
+
+  <button class="btn btn-primary" id="saveBtn">
+    <span>💾</span> Guardar Token
+  </button>
+
+  <div class="message" id="message"></div>
+
+  <div class="status disconnected" id="status">
+    <div class="status-dot"></div>
+    <span>No conectado</span>
+  </div>
+
+  <div class="info">
+    <h3>📋 Cómo usar</h3>
+    <ul>
+      <li>Ingresa tu token de modelo</li>
+      <li>Haz click en 🤖 junto al chat</li>
+      <li>Obtén sugerencias de respuesta</li>
+      <li>Copia, inserta o envía directamente</li>
+    </ul>
+  </div>
+
+  <div class="info" style="margin-top: 10px;">
+    <h3>💡 Modos de Streamate</h3>
+    <ul>
+      <li><strong>FREE:</strong> Persuade a Private/Exclusive</li>
+      <li><strong>PAGADO:</strong> Disfruta, no vende más</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <p>Powered by <a href="https://camassist.co" target="_blank">CamAssist.co</a></p>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

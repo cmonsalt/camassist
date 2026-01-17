@@ -75,6 +75,31 @@ export default async function handler(req, res) {
   };
   const currencyTerm = platformTerms[platform.toLowerCase()] || 'tips';
 
+  // Contexto específico para Streamate
+  if (platform.toLowerCase() === 'streamate') {
+    if (isPM) {
+      // isPM = true significa GUEST o PAID (la extensión envía isPM para ambos)
+      platformContext = `
+CONTEXTO STREAMATE (HUÉSPED o PAGADO):
+- Si es HUÉSPED: es 1:1 pero gratis, crea conexión, sexting suave
+- Si es PAGADO: el fan paga POR MINUTO, ya está generando dinero
+- NO vendas ni menciones Private/Exclusive
+- Hazlo sentir especial, disfruta la conversación
+- Terminología: "Private" o "Exclusive" (NO "pvt")
+`;
+    } else {
+      platformContext = `
+CONTEXTO STREAMATE (CHAT PÚBLICO - TODOS):
+- NO puedes mostrar desnudez en público (regla de Streamate)
+- Objetivo: llevar al fan a Private o Exclusive
+- Private = varios pueden espiar, Exclusive = solo él (más caro)
+- Crea deseo, curiosidad, hazlo querer más
+- Terminología: "Private" o "Exclusive" (NO "pvt")
+- Moneda: GOLD (1 gold ≈ $1 USD)
+`;
+    }
+  }
+
   // Contexto específico para XModels
   let platformContext = '';
   if (platform.toLowerCase() === 'xmodels') {

@@ -1,0 +1,218 @@
+/* CamAssist - Streamate Extension Styles */
+
+/* ============ BOTÓN DE ACTIVACIÓN ============ */
+.camassist-trigger-btn {
+  position: absolute;
+  right: 50px;
+  bottom: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.camassist-trigger-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+}
+
+.camassist-trigger-btn.camassist-loading {
+  animation: camassist-pulse 1s infinite;
+  pointer-events: none;
+}
+
+@keyframes camassist-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.95); }
+}
+
+/* ============ CAJA DE SUGERENCIA ============ */
+#camassist-suggestion {
+  background: linear-gradient(135deg, #1a1c2e 0%, #2d2f45 100%);
+  border: 1px solid #667eea;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  animation: camassist-slideIn 0.3s ease;
+  z-index: 9999;
+}
+
+@keyframes camassist-slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.camassist-suggestion-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.camassist-logo {
+  font-weight: bold;
+  color: #667eea;
+  font-size: 14px;
+}
+
+.camassist-username {
+  color: #aaa;
+  font-size: 12px;
+  flex: 1;
+}
+
+.camassist-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.camassist-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.camassist-suggestion-text {
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  word-wrap: break-word;
+}
+
+.camassist-suggestion-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.camassist-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.camassist-btn-copy {
+  background: #4a5568;
+  color: #fff;
+}
+
+.camassist-btn-copy:hover {
+  background: #5a6578;
+}
+
+.camassist-btn-insert {
+  background: #3182ce;
+  color: #fff;
+}
+
+.camassist-btn-insert:hover {
+  background: #4192de;
+}
+
+.camassist-btn-send {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.camassist-btn-send:hover {
+  background: linear-gradient(135deg, #7688f4 0%, #8655b2 100%);
+}
+
+/* ============ NOTIFICACIONES ============ */
+#camassist-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 99999;
+  animation: camassist-fadeIn 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes camassist-fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.camassist-notification-success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+}
+
+.camassist-notification-error {
+  background: linear-gradient(135deg, #fc8181 0%, #f56565 100%);
+  color: white;
+}
+
+.camassist-notification-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+/* ============ MODO OSCURO ADAPTACIÓN ============ */
+@media (prefers-color-scheme: dark) {
+  #camassist-suggestion {
+    background: linear-gradient(135deg, #1a1c2e 0%, #2d2f45 100%);
+  }
+}
+
+/* ============ INDICADOR DE ESTADO ============ */
+.camassist-status-indicator {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #48bb78;
+  box-shadow: 0 0 10px #48bb78;
+  z-index: 99999;
+}
+
+.camassist-status-indicator.disabled {
+  background: #f56565;
+  box-shadow: 0 0 10px #f56565;
+}

@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "CamAssist - Streamate",
+  "version": "1.0.0",
+  "description": "AI Chat Assistant for Streamate Models",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://performerclient.streamatemodels.com/*",
+    "https://camassist.co/*",
+    "https://www.camassist.co/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://performerclient.streamatemodels.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
