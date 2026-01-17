@@ -64,7 +64,7 @@ export default async function handler(req, res) {
   }
   // ========== FIN RATE LIMITING ==========
 
-  console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length, hasImage: !!imageUrl });
+  console.log('📥 Request:', { token, username, message, isPM, isPrivateShow, contextLength: context.length, hasImage: !!imageUrl });
 
 
   // Terminología según plataforma
