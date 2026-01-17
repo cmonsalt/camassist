@@ -54,30 +54,6 @@ function getGoalAndTipMenu() {
 
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
 
-// ============================================
-// FUNCIÓN PARA DETECTAR PRIVATE SHOW
-// ============================================
-function isInPrivateShow() {
-  const pageHTML = document.body.innerHTML.toLowerCase();
-  
-  // Si el show ya terminó, NO estamos en private
-  if (pageHTML.includes('private show has finished') || 
-      pageHTML.includes('el espectáculo privado ha finalizado')) {
-    return false;
-  }
-  
-  const privateIndicators = [
-    'private show has started',
-    'private broadcasting',
-    'exit private show',
-    'el espectáculo privado ha comenzado',
-    'radiodifusión privada',
-    'salir del show privado'
-  ];
-  
-  return privateIndicators.some(text => pageHTML.includes(text));
-}
-
 
 setInterval(() => {
 
@@ -393,7 +369,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
     const history = currentlyInPM ? pmHistory : publicHistory;
     const userHistory = history[username] || [];
 
-    console.log(`🔵 IA para ${currentlyInPM ? 'PM' : 'público'} - Usuario: ${username}`);
+   console.log(`🔵 IA para ${currentlyInPM ? 'PM' : 'público'} - Usuario: ${username}`);
 
     btn.textContent = '...';
 
@@ -424,11 +400,6 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
         'Timestamp': new Date(item.timestamp).toLocaleTimeString()
       })));
 
-      // DEBUG Private Show
-      console.log('🔴 isInPrivateShow():', isInPrivateShow());
-      console.log('🔴 HTML includes "private show has started":', document.body.innerHTML.toLowerCase().includes('private show has started'));
-      console.log('🔴 HTML includes "private broadcasting":', document.body.innerHTML.toLowerCase().includes('private broadcasting'));
-
       const response = await fetch('https://camassist.vercel.app/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -439,7 +410,6 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
           message: messageText,
           context: fullContext.slice(-70),
           isPM: currentlyInPM,
-          isPrivateShow: isInPrivateShow(),
           tip: tipAmount,
           imageUrl,
           ...getGoalAndTipMenu()
