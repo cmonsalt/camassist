@@ -1,11 +1,30 @@
 console.log("CamAssist loaded!");
 
 // ============================================
-// CARGAR WIDGET DE TIEMPO
+// WIDGET DE TIEMPO
 // ============================================
-const timeWidgetScript = document.createElement('script');
-timeWidgetScript.src = 'https://camassist.vercel.app/time-widget.js';
-document.head.appendChild(timeWidgetScript);
+(function() {
+  if (document.getElementById('camassist-time-btn')) return;
+
+  const token = localStorage.getItem('model_token') || '';
+
+  const timeBtn = document.createElement('button');
+  timeBtn.id = 'camassist-time-btn';
+  timeBtn.innerHTML = '⏰';
+  timeBtn.style.cssText = 'position:fixed;bottom:80px;right:20px;width:50px;height:50px;border-radius:50%;background:#8b5cf6;color:white;border:none;font-size:24px;cursor:pointer;z-index:9999;box-shadow:0 4px 12px rgba(139,92,246,0.4);';
+
+  const popup = document.createElement('div');
+  popup.id = 'camassist-time-popup';
+  popup.style.cssText = 'display:none;position:fixed;bottom:140px;right:20px;width:300px;height:420px;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.3);z-index:9999;';
+  popup.innerHTML = `<iframe src="https://camassist.vercel.app/time-widget.html?token=${token}" style="width:100%;height:100%;border:none;"></iframe>`;
+
+  timeBtn.onclick = (e) => { e.stopPropagation(); popup.style.display = popup.style.display === 'none' ? 'block' : 'none'; };
+  document.addEventListener('click', (e) => { if (!popup.contains(e.target) && e.target !== timeBtn) popup.style.display = 'none'; });
+
+  document.body.appendChild(timeBtn);
+  document.body.appendChild(popup);
+  console.log('⏰ Time Widget listo');
+})();
 
 // Obtener token de chrome.storage si existe
 chrome.storage.local.get(['model_token'], (result) => {
