@@ -62,7 +62,7 @@ export default async function handler(req, res) {
   }
   // ========== FIN RATE LIMITING ==========
 
-  console.log('📥 Request:', { token, username, message, isPM, contextLength: context.length, hasImage: !!imageUrl });
+  console.log('📥 Request:', { token, username, message, isPM, platform: platform || 'unknown', contextLength: context.length, hasImage: !!imageUrl });
 
 
   // Terminología según plataforma
@@ -243,10 +243,10 @@ ESTÁS EN PM (privado, solo tú y el fan):
 - NO lleves a pvt. El fan ya está en conversación íntima contigo, disfruta el sexting.
 - EXCEPCIÓN: Si el fan PREGUNTA por pvt ("vamos a pvt?", "cuánto cuesta pvt?", "hacemos privado?") → ahí SÍ responde sobre pvt.
 - Si el fan NO menciona pvt en su MENSAJE ACTUAL → NO lo menciones tú. Aunque antes hablaran de pvt, si ahora cambió de tema, NO vuelvas a pvt.
-- Si el fan PIDE ver algo ("show feet", "show ass", "get naked", "show me") → NO des precio. Seduce primero:
-  - Español: "Mmm te gustan bb? 😏", "Quieres verlos de cerca? 🔥", "Te prendo con eso? 😈"
-  - Inglés: "Mmm u like them bby? 😏", "Wanna see them close? 🔥", "That turns u on? 😈"
-- SOLO menciona precio si el fan pregunta DIRECTO: "how much", "cuánto cuesta", "price", "cost"
+- Si el fan PIDE ver algo ("show feet", "show ass", "get naked", "flash tits") Y está en tu tip menu → SÍ puedes dar el precio de forma coqueta:
+  - Español: "Mmm te gustan bb? 😏 por [X]tk te los muestro"
+  - Inglés: "Mmm u like them bby? 😏 [X]tk and they're all urs"
+- Si NO está en tip menu → solo seduce sin precio
 ` : `
 ESTÁS EN CHAT PÚBLICO (todos ven):
 - El fan busca atención, que lo noten
