@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CamAssist - IA para Modelos Webcam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <!-- HERO -->
+    <section class="gradient-bg min-h-screen flex items-center justify-center px-4 py-16">
+        <div class="max-w-4xl mx-auto text-center text-white">
+            <div class="text-6xl mb-6">🤖</div>
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6">
+                Más privados.<br>Más ganancias.<br>Menos esfuerzo.
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 opacity-90">
+                IA que responde a tus fans como si fuera la modelo.<br>
+                Persuade, seduce y convierte fans en privados.
+            </p>
+            <div class="bg-white/20 backdrop-blur-sm rounded-2xl p-6 mb-8 inline-block">
+                <p class="text-3xl font-bold">+50% más privados</p>
+                <p class="text-lg opacity-80">Respuestas perfectas en cualquier idioma</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="https://wa.me/573027063148?text=Hola,%20quiero%20info%20de%20CamAssist"
+                    class="bg-white text-purple-600 px-8 py-4 rounded-full font-bold text-lg hover:shadow-xl transition">
+                    💬 Escribir por WhatsApp
+                </a>
+                <a href="#como-funciona"
+                    class="border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition">
+                    Ver cómo funciona
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUÉ HACE LA IA -->
+    <section class="py-20 px-4 bg-white">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">¿Qué hace la IA?</h2>
+            <p class="text-gray-600 mb-12">No es un bot genérico. Es tu copiloto inteligente.</p>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-purple-50 rounded-2xl p-8 text-left">
+                    <div class="text-4xl mb-4">🧠</div>
+                    <h3 class="text-xl font-bold mb-3">Lee TODO el chat</h3>
+                    <p class="text-gray-700">Entiende el contexto completo de la conversación. No responde genérico, responde con sentido.</p>
+                </div>
+                <div class="bg-pink-50 rounded-2xl p-8 text-left">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h3 class="text-xl font-bold mb-3">Persuade, no vende</h3>
+                    <p class="text-gray-700">Seduce al fan, crea deseo. Hace que ÉL pida el privado, no que la modelo lo ruegue.</p>
+                </div>
+                <div class="bg-blue-50 rounded-2xl p-8 text-left">
+                    <div class="text-4xl mb-4">🌍</div>
+                    <h3 class="text-xl font-bold mb-3">Cualquier idioma</h3>
+                    <p class="text-gray-700">Inglés, italiano, alemán, portugués, francés... Responde perfecto como si fuera nativa.</p>
+                </div>
+                <div class="bg-green-50 rounded-2xl p-8 text-left">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h3 class="text-xl font-bold mb-3">3 segundos</h3>
+                    <p class="text-gray-700">Más rápido que cualquier monitora. El fan no espera, el fan convierte.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROBLEMA / SOLUCIÓN -->
+    <section class="py-20 px-4 bg-gray-50">
+        <div class="max-w-4xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-12">
+                <div class="bg-red-50 rounded-2xl p-8">
+                    <div class="text-4xl mb-4">😫</div>
+                    <h3 class="text-xl font-bold text-red-600 mb-4">Sin CamAssist</h3>
+                    <ul class="space-y-3 text-gray-700">
+                        <li>❌ "come pvt bb" y el fan se va</li>
+                        <li>❌ Pierdes fans porque no respondes rápido</li>
+                        <li>❌ No sabes qué decir en otros idiomas</li>
+                        <li>❌ Respuestas genéricas que no enganchan</li>
+                        <li>❌ Los privados se te escapan</li>
+                    </ul>
+                </div>
+                <div class="bg-green-50 rounded-2xl p-8">
+                    <div class="text-4xl mb-4">🤩</div>
+                    <h3 class="text-xl font-bold text-green-600 mb-4">Con CamAssist</h3>
+                    <ul class="space-y-3 text-gray-700">
+                        <li>✅ Respuestas que enamoran al fan</li>
+                        <li>✅ 3 segundos y ya está respondido</li>
+                        <li>✅ Perfecto en inglés, italiano, alemán...</li>
+                        <li>✅ Lee el contexto, responde con sentido</li>
+                        <li>✅ Convierte más fans en privados</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CÓMO FUNCIONA -->
+    <section id="como-funciona" class="py-20 px-4 bg-white">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">¿Cómo funciona?</h2>
+            <p class="text-gray-600 mb-12">Tan fácil como 1, 2, 3</p>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-lg">
+                    <div
+                        class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
+                        1</div>
+                    <h3 class="text-xl font-bold mb-3">Fan te escribe</h3>
+                    <p class="text-gray-600">Un fan te manda mensaje en el chat público o privado</p>
+                </div>
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-lg">
+                    <div
+                        class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
+                        2</div>
+                    <h3 class="text-xl font-bold mb-3">Click en 🤖</h3>
+                    <p class="text-gray-600">Haces click en el botón de IA que aparece al lado del mensaje</p>
+                </div>
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-lg">
+                    <div
+                        class="w-16 h-16 gradient-bg rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
+                        3</div>
+                    <h3 class="text-xl font-bold mb-3">Copia y envía</h3>
+                    <p class="text-gray-600">La respuesta se copia automática. Solo pegas y listo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- RESULTADOS REALES -->
+    <section class="py-20 px-4 bg-gray-50">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Resultados reales</h2>
+            <p class="text-gray-600 mb-12">Lo que nuestros clientes están logrando</p>
+
+            <div class="grid md:grid-cols-4 gap-6 mb-12">
+                <div class="bg-white rounded-2xl p-8 shadow-lg">
+                    <p class="text-4xl font-extrabold gradient-text">+50%</p>
+                    <p class="text-gray-700">más privados</p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-lg">
+                    <p class="text-4xl font-extrabold gradient-text">3 seg</p>
+                    <p class="text-gray-700">tiempo de respuesta</p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-lg">
+                    <p class="text-4xl font-extrabold gradient-text">+30%</p>
+                    <p class="text-gray-700">más ganancias</p>
+                </div>
+                <div class="bg-white rounded-2xl p-8 shadow-lg">
+                    <p class="text-4xl font-extrabold gradient-text">5+</p>
+                    <p class="text-gray-700">idiomas</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIOS -->
+    <section class="py-20 px-4 bg-white">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Lo que dicen nuestros clientes</h2>
+            <p class="text-gray-600 mb-12">Studios reales en Colombia</p>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Testimonio 1 -->
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-lg text-left">
+                    <div class="flex items-center mb-4">
+                        <div
+                            class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            P</div>
+                        <div>
+                            <p class="font-bold">PkStudioAgency</p>
+                            <p class="text-sm text-gray-500">Medellín</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"Una modelo tuvo un privado de una hora. Dice que sin la IA no hubiera aguantado 1 hora de conversación. El fan quedó encantado."</p>
+                    <div class="mt-4 text-yellow-500">⭐⭐⭐⭐⭐</div>
+                </div>
+
+                <!-- Testimonio 2 -->
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-lg text-left">
+                    <div class="flex items-center mb-4">
+                        <div
+                            class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            L</div>
+                        <div>
+                            <p class="font-bold">Luxurystudioweb</p>
+                            <p class="text-sm text-gray-500">Medellín - 25 modelos</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"Ya tenemos varias modelos usando la IA. Han aumentado los privados y las chicas están contentas porque el chat ya no las agota."</p>
+                    <div class="mt-4 text-yellow-500">⭐⭐⭐⭐⭐</div>
+                </div>
+
+                <!-- Testimonio 3 -->
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-lg text-left">
+                    <div class="flex items-center mb-4">
+                        <div
+                            class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            E</div>
+                        <div>
+                            <p class="font-bold">Emma</p>
+                            <p class="text-sm text-gray-500">Modelo Independiente</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"Trabajo sola y el chat me agotaba. Ahora la IA responde por mí, me enfoco en el show y las ganancias llegan solas."</p>
+                    <div class="mt-4 text-yellow-500">⭐⭐⭐⭐⭐</div>
+                </div>
+
+                <!-- Testimonio 4 -->
+                <div class="bg-gray-50 rounded-2xl p-8 shadow-lg text-left">
+                    <div class="flex items-center mb-4">
+                        <div
+                            class="w-12 h-12 gradient-bg rounded-full flex items-center justify-center text-white font-bold mr-4">
+                            K</div>
+                        <div>
+                            <p class="font-bold">Kassandra</p>
+                            <p class="text-sm text-gray-500">Modelo</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">"Un fan me escribió en italiano y yo no tenía idea. La IA respondió perfecto y terminó en un privado de 30 minutos."</p>
+                    <div class="mt-4 text-yellow-500">⭐⭐⭐⭐⭐</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PLATAFORMAS -->
+    <section class="py-20 px-4 bg-gray-50">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Funciona con</h2>
+            <p class="text-gray-600 mb-12">Las plataformas más populares</p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white rounded-2xl px-6 py-6 shadow-lg">
+                    <p class="text-xl font-bold text-orange-500">Chaturbate</p>
+                    <p class="text-sm text-gray-500 mt-1">tokens</p>
+                    <p class="text-xs text-green-600 mt-2">✅ Disponible</p>
+                </div>
+                <div class="bg-white rounded-2xl px-6 py-6 shadow-lg">
+                    <p class="text-xl font-bold text-pink-500">StripChat</p>
+                    <p class="text-sm text-gray-500 mt-1">tokens</p>
+                    <p class="text-xs text-green-600 mt-2">✅ Disponible</p>
+                </div>
+                <div class="bg-white rounded-2xl px-6 py-6 shadow-lg">
+                    <p class="text-xl font-bold text-blue-500">XModels</p>
+                    <p class="text-sm text-gray-500 mt-1">credits</p>
+                    <p class="text-xs text-green-600 mt-2">✅ Disponible</p>
+                </div>
+                <div class="bg-white rounded-2xl px-6 py-6 shadow-lg opacity-70">
+                    <p class="text-xl font-bold text-purple-500">Streamate</p>
+                    <p class="text-sm text-gray-500 mt-1">gold</p>
+                    <p class="text-xs text-yellow-600 mt-2">🔜 Próximamente</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DIFERENCIADOR -->
+    <section class="py-20 px-4 bg-white">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">¿Por qué CamAssist?</h2>
+            <p class="text-gray-600 mb-12">No somos un traductor. Somos tu copiloto inteligente.</p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="py-4 px-4"></th>
+                            <th class="py-4 px-4 text-center">❌ Traductor</th>
+                            <th class="py-4 px-4 text-center gradient-text font-bold">✅ CamAssist</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-100">
+                            <td class="py-4 px-4 font-medium">Lee el contexto del chat</td>
+                            <td class="py-4 px-4 text-center text-red-500">❌</td>
+                            <td class="py-4 px-4 text-center text-green-500">✅</td>
+                        </tr>
+                        <tr class="border-b border-gray-100">
+                            <td class="py-4 px-4 font-medium">Respuestas persuasivas</td>
+                            <td class="py-4 px-4 text-center text-red-500">❌</td>
+                            <td class="py-4 px-4 text-center text-green-500">✅</td>
+                        </tr>
+                        <tr class="border-b border-gray-100">
+                            <td class="py-4 px-4 font-medium">Personalidad de la modelo</td>
+                            <td class="py-4 px-4 text-center text-red-500">❌</td>
+                            <td class="py-4 px-4 text-center text-green-500">✅</td>
+                        </tr>
+                        <tr class="border-b border-gray-100">
+                            <td class="py-4 px-4 font-medium">Sabe cuándo vender y cuándo seducir</td>
+                            <td class="py-4 px-4 text-center text-red-500">❌</td>
+                            <td class="py-4 px-4 text-center text-green-500">✅</td>
+                        </tr>
+                        <tr class="border-b border-gray-100">
+                            <td class="py-4 px-4 font-medium">Diferencia público vs privado</td>
+                            <td class="py-4 px-4 text-center text-red-500">❌</td>
+                            <td class="py-4 px-4 text-center text-green-500">✅</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRECIOS -->
+    <section class="py-20 px-4 bg-gray-50">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Precios simples</h2>
+            <p class="text-gray-600 mb-12">Sin sorpresas, sin contratos</p>
+
+            <div class="max-w-md mx-auto">
+                <div class="bg-white rounded-2xl p-8 shadow-lg border-2 border-purple-500">
+                    <div class="bg-purple-100 text-purple-700 text-sm font-bold px-4 py-1 rounded-full inline-block mb-4">14 DÍAS GRATIS</div>
+                    <h3 class="text-xl font-bold mb-2">Todas las plataformas</h3>
+                    <p class="text-gray-500 mb-4">Chaturbate, StripChat, XModels y más</p>
+                    <p class="text-5xl font-extrabold gradient-text mb-2">$20<span class="text-lg text-gray-500">/mes</span></p>
+                    <p class="text-gray-600 mb-6">por modelo</p>
+                    
+                    <div class="text-left bg-gray-50 rounded-xl p-4 mb-6">
+                        <p class="font-bold mb-2">Incluye:</p>
+                        <ul class="space-y-2 text-gray-700 text-sm">
+                            <li>✅ Respuestas ilimitadas</li>
+                            <li>✅ Todos los idiomas</li>
+                            <li>✅ Chat público + PM + Privado</li>
+                            <li>✅ Personalidad de la modelo</li>
+                            <li>✅ Soporte por WhatsApp</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-sm text-purple-600 bg-purple-50 rounded-xl p-4">
+                        <p class="font-bold">💰 Descuentos por volumen:</p>
+                        <p>4-7 modelos: 10% off</p>
+                        <p>8+ modelos: 15% off</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="gradient-bg py-20 px-4">
+        <div class="max-w-4xl mx-auto text-center text-white">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">¿Listo para aumentar tus privados?</h2>
+            <p class="text-xl mb-8 opacity-90">Prueba gratis por 14 días. Sin tarjeta. Sin compromiso.</p>
+            <a href="https://wa.me/573027063148?text=Hola,%20quiero%20probar%20CamAssist%2014%20días%20gratis"
+                class="inline-block bg-white text-purple-600 px-10 py-5 rounded-full font-bold text-xl hover:shadow-xl transition">
+                💬 Quiero probarlo gratis
+            </a>
+            <p class="mt-6 opacity-70">Respondemos en menos de 1 hora</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 text-white py-12 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="text-4xl mb-4">🤖</div>
+            <p class="text-xl font-bold mb-2">CamAssist</p>
+            <p class="text-gray-400 mb-6">IA para modelos webcam</p>
+            <div class="flex justify-center gap-6 mb-6">
+                <a href="https://www.instagram.com/camassist.co" class="text-gray-400 hover:text-white transition">Instagram</a>
+                <a href="https://www.tiktok.com/@camassist.co" class="text-gray-400 hover:text-white transition">TikTok</a>
+                <a href="https://wa.me/573027063148?text=Hola,%20quiero%20info%20de%20CamAssist" class="text-gray-400 hover:text-white transition">WhatsApp</a>
+            </div>
+            <p class="text-gray-500 text-sm">© 2026 CamAssist. Medellín, Colombia.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
