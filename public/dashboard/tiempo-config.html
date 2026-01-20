@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuración Tiempo - CamAssist</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-50">
     <div class="flex h-screen">
         <!-- Sidebar -->
@@ -17,16 +19,20 @@
                 </div>
 
                 <nav class="space-y-2">
-                    <a href="/dashboard/index.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <a href="/dashboard/index.html"
+                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">📊</span> Dashboard
                     </a>
-                    <a href="/dashboard/modelos.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <a href="/dashboard/modelos.html"
+                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">👥</span> Modelos
                     </a>
-                    <a href="/dashboard/tiempo.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <a href="/dashboard/tiempo.html"
+                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">⏰</span> Tiempo
                     </a>
-                    <a href="/dashboard/tiempo-config.html" class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
+                    <a href="/dashboard/tiempo-config.html"
+                        class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
                         <span class="mr-3">⚙️</span> Config Tiempo
                     </a>
                 </nav>
@@ -37,7 +43,8 @@
                     <div class="text-white/60">Studio</div>
                     <div class="font-semibold" id="studioName">Mi Studio</div>
                 </div>
-                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
+                <button onclick="logout()"
+                    class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
                     <span class="mr-2">🚪</span> Salir
                 </button>
             </div>
@@ -56,14 +63,14 @@
                     <!-- Horas de trabajo -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">🕐 Horas de Trabajo</h2>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Horas mínimas diarias
                                 </label>
                                 <input type="number" id="minHoursDaily" min="1" max="12" step="0.5"
-                                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
                                 <p class="text-xs text-gray-500 mt-1">Meta de horas que debe cumplir cada modelo</p>
                             </div>
                         </div>
@@ -72,21 +79,21 @@
                     <!-- Breaks -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">☕ Configuración de Breaks</h2>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Breaks máximos por turno
                                 </label>
                                 <input type="number" id="maxBreaksPerShift" min="0" max="10"
-                                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Duración máxima de break (minutos)
                                 </label>
                                 <input type="number" id="maxBreakMinutes" min="5" max="60"
-                                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
                             </div>
                         </div>
                     </div>
@@ -94,7 +101,7 @@
                     <!-- Días de trabajo -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">📅 Días de Trabajo</h2>
-                        
+
                         <div class="flex flex-wrap gap-3">
                             <label class="flex items-center">
                                 <input type="checkbox" id="day_mon" class="mr-2 w-4 h-4 text-purple-600 rounded">
@@ -132,7 +139,7 @@
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">🌐 Plataformas</h2>
                         <p class="text-sm text-gray-600 mb-4">Selecciona las plataformas que usa tu studio</p>
-                        
+
                         <div id="platformsContainer" class="grid grid-cols-2 md:grid-cols-3 gap-3">
                             <!-- Se llena dinámicamente -->
                         </div>
@@ -141,21 +148,22 @@
                     <!-- Opciones adicionales -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">🔧 Opciones Adicionales</h2>
-                        
+
                         <div class="space-y-4">
                             <label class="flex items-center">
                                 <input type="checkbox" id="trackFollowers" class="mr-3 w-5 h-5 text-purple-600 rounded">
                                 <div>
                                     <span class="font-medium">Rastrear seguidores</span>
-                                    <p class="text-xs text-gray-500">Registrar inicio/fin de seguidores por plataforma</p>
+                                    <p class="text-xs text-gray-500">Registrar inicio/fin de seguidores por plataforma
+                                    </p>
                                 </div>
                             </label>
                         </div>
                     </div>
 
                     <!-- Botón guardar -->
-                    <button onclick="saveSettings()" 
-                            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-[1.01] transition-all duration-200 text-lg">
+                    <button onclick="saveSettings()"
+                        class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-[1.01] transition-all duration-200 text-lg">
                         💾 Guardar Configuración
                     </button>
 
@@ -169,7 +177,7 @@
 
     <script>
         const API_BASE = 'https://camassist.vercel.app/api';
-        
+
         // Auth check
         const studioId = localStorage.getItem('studio_id');
         const studioName = localStorage.getItem('studio_name');
@@ -193,9 +201,9 @@
                     availablePlatforms = data.available_platforms;
 
                     // Fill form
-                    document.getElementById('minHoursDaily').value = settings.min_hours_daily || 6;
-                    document.getElementById('maxBreaksPerShift').value = settings.max_breaks_per_shift || 3;
-                    document.getElementById('maxBreakMinutes').value = settings.max_break_minutes || 15;
+                    document.getElementById('minHoursDaily').value = settings.min_hours_daily ?? 6;
+                    document.getElementById('maxBreaksPerShift').value = settings.max_breaks_per_shift ?? 3;
+                    document.getElementById('maxBreakMinutes').value = settings.max_break_minutes ?? 15;
                     document.getElementById('trackFollowers').checked = settings.track_followers ?? true;
 
                     // Working days
@@ -214,7 +222,7 @@
 
         function renderPlatforms(selectedPlatforms) {
             const container = document.getElementById('platformsContainer');
-            
+
             container.innerHTML = availablePlatforms.map(platform => {
                 const isChecked = selectedPlatforms.includes(platform.id);
                 return `
@@ -297,4 +305,5 @@
         }
     </script>
 </body>
+
 </html>
