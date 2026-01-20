@@ -403,7 +403,10 @@
         }
 
         function formatTime(isoString) {
-            const date = new Date(isoString);
+            if (!isoString) return '-';
+            // Agregar Z si no la tiene para forzar interpretación UTC
+            const utcString = isoString.endsWith('Z') ? isoString : isoString + 'Z';
+            const date = new Date(utcString);
             return date.toLocaleTimeString('es-CO', {
                 hour: '2-digit',
                 minute: '2-digit',
