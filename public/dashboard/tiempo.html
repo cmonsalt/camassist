@@ -95,6 +95,10 @@
                             class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
                             🔄 Actualizar
                         </button>
+                        <button onclick="exportCSV()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2">
+                            <span>📥</span> Exportar
+                        </button>
                     </div>
                 </div>
 
@@ -558,6 +562,73 @@
             localStorage.removeItem('studio_id');
             localStorage.removeItem('studio_name');
             window.location.href = '/dashboard/login.html';
+        }
+
+        function exportCSV() {
+            if (!modelsData || modelsData.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+
+            // Encabezados
+            const headers = [
+                'Fecha',
+                'Modelo',
+                'Inicio Conexión',
+                'Fin Conexión',
+                'Tiempo Real',
+                'Estado',
+                'Minutos Pendientes',
+                'Breaks',
+                'Tiempo Break',
+                'Ganancias',
+                'Observaciones'
+            ];
+
+            // Filas de datos
+            const rows = modelsData.map(model => {
+                // Calcular ganancias por plataforma
+                const earningsStr = model.earnings && model.earnings.length > 0
+                    ? model.earnings.map(e => `${e.platform}: ${e.earnings} ${e.currency_type}`).join(' | ')
+                    : '0';
+
+                return [
+                    document.getElementById('selectedDate').value,
+                    model.name,
+                    model.checkInTime ? formatTime(model.checkInTime) : '-',
+                    model.checkOutTime ? formatTime(model.checkOutTime) : '-',
+                    `${Math.floor(model.totalWorkedMinutes / 60)}h ${model.totalWorkedMinutes % 60}m`,
+                    model.compliance || '-',
+                    model.minutesPending || 0,
+                    model.breaksCount || 0,
+                    `${model.totalBreakMinutes || 0}m`,
+                    earningsStr,
+                    model.dayNote?.note || ''
+                ];
+            });
+
+            // Construir CSV
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                // Escapar comas y comillas en los valores
+                const escapedRow = row.map(val => {
+                    const str = String(val);
+                    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                        return `"${str.replace(/"/g, '""')}"`;
+                    }
+                    return str;
+                });
+                csv += escapedRow.join(',') + '\n';
+            });
+
+            // Descargar
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `reporte_${document.getElementById('selectedDate').value}.csv`;
+            link.click();
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
