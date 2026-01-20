@@ -96,6 +96,7 @@ export default async function handler(req, res) {
       model: model.name,
       status,
       checkInTime,
+      currentBreakStart: currentBreakStart ? currentBreakStart.toISOString() : null,
       totalWorkedMinutes: Math.floor(totalWorkedMs / 60000),
       totalBreakMinutes: Math.floor(totalBreakMs / 60000),
       breaksToday,
