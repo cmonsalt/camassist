@@ -267,9 +267,9 @@
 
             const settings = {
                 studio_id: studioId,
-                min_hours_daily: parseFloat(document.getElementById('minHoursDaily').value) || 6,
-                max_breaks_per_shift: parseInt(document.getElementById('maxBreaksPerShift').value) || 3,
-                max_break_minutes: parseInt(document.getElementById('maxBreakMinutes').value) || 15,
+                min_hours_daily: parseFloat(document.getElementById('minHoursDaily').value) ?? 6,
+                max_breaks_per_shift: parseInt(document.getElementById('maxBreaksPerShift').value) ?? 3,
+                max_break_minutes: parseInt(document.getElementById('maxBreakMinutes').value) ?? 15,
                 working_days: workingDays,
                 platforms: platforms,
                 track_followers: document.getElementById('trackFollowers').checked,
