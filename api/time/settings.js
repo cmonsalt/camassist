@@ -89,7 +89,7 @@ export default async function handler(req, res) {
           studio_id,
           min_hours_daily: min_hours_daily ?? 6,
           max_break_minutes: max_break_minutes ?? 15,
-          max_breaks_per_shift: max_breaks_per_shift ?? 3,
+          max_breaks_per_shift: max_breaks_per_shift !== undefined ? max_breaks_per_shift : 3,
           working_days: working_days ?? 'mon,tue,wed,thu,fri,sat',
           platforms: platforms ?? ['chaturbate', 'stripchat'],
           track_followers: track_followers ?? true,
