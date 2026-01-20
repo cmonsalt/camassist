@@ -335,10 +335,11 @@
                         <td class="px-6 py-4 text-center">${statusBadge}</td>
                         <td class="px-6 py-4 text-center text-sm">${checkIn}</td>
                         <td class="px-6 py-4 text-center text-sm">${checkOut}</td>
-                        <td class="px-6 py-4 text-center">
-                            <span class="font-mono font-medium">${workedTime}</span>
-                            <div class="text-xs text-gray-500">${model.breaksCount} breaks (${model.totalBreakMinutes}m)</div>
-                        </td>
+                       <td class="px-6 py-4 text-center">
+    <span class="font-mono font-medium">${workedTime}</span>
+    <div class="text-xs text-gray-500">${model.breaksCount} breaks (${model.totalBreakMinutes}m)</div>
+    ${model.minutesPending > 0 ? `<div class="text-xs text-red-500">Faltan: ${model.minutesPending}m</div>` : ''}
+</td>
                         <td class="px-6 py-4">
                             <div class="w-full bg-gray-200 rounded-full h-2">
                                 <div class="h-2 rounded-full ${model.progressPercent >= 100 ? 'bg-green-500' : 'bg-purple-500'}" 
@@ -582,6 +583,9 @@
                 'Breaks',
                 'Tiempo Break',
                 'Ganancias',
+                'Seguidores Inicio',
+                'Seguidores Fin',
+                'Seguidores Ganados',
                 'Observaciones'
             ];
 
@@ -591,6 +595,11 @@
                 const earningsStr = model.earnings && model.earnings.length > 0
                     ? model.earnings.map(e => `${e.platform}: ${e.earnings} ${e.currency_type}`).join(' | ')
                     : '0';
+
+                // Calcular seguidores totales (suma de todas las plataformas)
+                const followersStart = model.earnings?.reduce((sum, e) => sum + (e.followers_start || 0), 0) || 0;
+                const followersEnd = model.earnings?.reduce((sum, e) => sum + (e.followers_end || 0), 0) || 0;
+                const followersGained = followersEnd - followersStart;
 
                 return [
                     document.getElementById('selectedDate').value,
@@ -603,6 +612,9 @@
                     model.breaksCount || 0,
                     `${model.totalBreakMinutes || 0}m`,
                     earningsStr,
+                    followersStart,
+                    followersEnd,
+                    followersGained,
                     model.dayNote?.note || ''
                 ];
             });
