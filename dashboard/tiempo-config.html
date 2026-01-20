@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración Tiempo - CamAssist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gradient-to-b from-purple-600 to-pink-600 text-white flex flex-col">
+            <div class="p-6">
+                <div class="flex items-center mb-8">
+                    <span class="text-3xl mr-3">🤖</span>
+                    <h1 class="text-xl font-bold">CamAssist</h1>
+                </div>
+
+                <nav class="space-y-2">
+                    <a href="/dashboard/index.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                        <span class="mr-3">📊</span> Dashboard
+                    </a>
+                    <a href="/dashboard/modelos.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                        <span class="mr-3">👥</span> Modelos
+                    </a>
+                    <a href="/dashboard/tiempo.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                        <span class="mr-3">⏰</span> Tiempo
+                    </a>
+                    <a href="/dashboard/tiempo-config.html" class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
+                        <span class="mr-3">⚙️</span> Config Tiempo
+                    </a>
+                </nav>
+            </div>
+
+            <div class="mt-auto p-6 border-t border-white/10">
+                <div class="text-sm mb-4">
+                    <div class="text-white/60">Studio</div>
+                    <div class="font-semibold" id="studioName">Mi Studio</div>
+                </div>
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-2">🚪</span> Salir
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <div class="p-8 max-w-3xl">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800">⚙️ Configuración de Tiempo</h1>
+                    <p class="text-gray-600">Personaliza las reglas de tiempo y asistencia para tu studio</p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Horas de trabajo -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">🕐 Horas de Trabajo</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Horas mínimas diarias
+                                </label>
+                                <input type="number" id="minHoursDaily" min="1" max="12" step="0.5"
+                                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <p class="text-xs text-gray-500 mt-1">Meta de horas que debe cumplir cada modelo</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Breaks -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">☕ Configuración de Breaks</h2>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Breaks máximos por turno
+                                </label>
+                                <input type="number" id="maxBreaksPerShift" min="1" max="10"
+                                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Duración máxima de break (minutos)
+                                </label>
+                                <input type="number" id="maxBreakMinutes" min="5" max="60"
+                                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Días de trabajo -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">📅 Días de Trabajo</h2>
+                        
+                        <div class="flex flex-wrap gap-3">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="day_mon" class="mr-2 w-4 h-4 text-purple-600 rounded">
+                                <span>Lunes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="day_tue" class="mr-2 w-4 h-4 text-purple-600 rounded">
+                                <span>Martes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="day_wed" class="mr-2 w-4 h-4 text-purple-600 rounded">
+                                <span>Miércoles</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="day_thu" class="mr-2 w-4 h-4 text-purple-600 rounded">
+                                <span>Jueves</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="day_fri" class="mr-2 w-4 h-4 text-purple-600 rounded">
+                                <span>Viernes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="day_sat" class="mr-2 w-4 h-4 text-purple-600 rounded">
+                                <span>Sábado</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="day_sun" class="mr-2 w-4 h-4 text-purple-600 rounded">
+                                <span>Domingo</span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Los días marcados se consideran días laborales</p>
+                    </div>
+
+                    <!-- Plataformas -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">🌐 Plataformas</h2>
+                        <p class="text-sm text-gray-600 mb-4">Selecciona las plataformas que usa tu studio</p>
+                        
+                        <div id="platformsContainer" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <!-- Se llena dinámicamente -->
+                        </div>
+                    </div>
+
+                    <!-- Opciones adicionales -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">🔧 Opciones Adicionales</h2>
+                        
+                        <div class="space-y-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="trackFollowers" class="mr-3 w-5 h-5 text-purple-600 rounded">
+                                <div>
+                                    <span class="font-medium">Rastrear seguidores</span>
+                                    <p class="text-xs text-gray-500">Registrar inicio/fin de seguidores por plataforma</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Botón guardar -->
+                    <button onclick="saveSettings()" 
+                            class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-4 rounded-xl hover:shadow-lg transform hover:scale-[1.01] transition-all duration-200 text-lg">
+                        💾 Guardar Configuración
+                    </button>
+
+                    <p id="saveMessage" class="text-center text-green-600 hidden">
+                        ✅ Configuración guardada correctamente
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'https://camassist.vercel.app/api';
+        
+        // Auth check
+        const studioId = localStorage.getItem('studio_id');
+        const studioName = localStorage.getItem('studio_name');
+        if (!studioId) {
+            window.location.href = '/dashboard/login.html';
+        }
+        document.getElementById('studioName').textContent = studioName || 'Mi Studio';
+
+        let availablePlatforms = [];
+
+        // Load settings on start
+        loadSettings();
+
+        async function loadSettings() {
+            try {
+                const response = await fetch(`${API_BASE}/time/settings?studio_id=${studioId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    const settings = data.settings;
+                    availablePlatforms = data.available_platforms;
+
+                    // Fill form
+                    document.getElementById('minHoursDaily').value = settings.min_hours_daily || 6;
+                    document.getElementById('maxBreaksPerShift').value = settings.max_breaks_per_shift || 3;
+                    document.getElementById('maxBreakMinutes').value = settings.max_break_minutes || 15;
+                    document.getElementById('trackFollowers').checked = settings.track_followers ?? true;
+
+                    // Working days
+                    const workingDays = (settings.working_days || 'mon,tue,wed,thu,fri,sat').split(',');
+                    ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].forEach(day => {
+                        document.getElementById(`day_${day}`).checked = workingDays.includes(day);
+                    });
+
+                    // Platforms
+                    renderPlatforms(settings.platforms || ['chaturbate', 'stripchat']);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderPlatforms(selectedPlatforms) {
+            const container = document.getElementById('platformsContainer');
+            
+            container.innerHTML = availablePlatforms.map(platform => {
+                const isChecked = selectedPlatforms.includes(platform.id);
+                return `
+                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 ${isChecked ? 'border-purple-500 bg-purple-50' : ''}">
+                        <input type="checkbox" id="platform_${platform.id}" 
+                               ${isChecked ? 'checked' : ''} 
+                               class="mr-3 w-4 h-4 text-purple-600 rounded"
+                               onchange="updatePlatformStyle(this)">
+                        <div>
+                            <span class="font-medium">${platform.name}</span>
+                            <span class="text-xs text-gray-500 block">${platform.currency}</span>
+                        </div>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function updatePlatformStyle(checkbox) {
+            const label = checkbox.closest('label');
+            if (checkbox.checked) {
+                label.classList.add('border-purple-500', 'bg-purple-50');
+            } else {
+                label.classList.remove('border-purple-500', 'bg-purple-50');
+            }
+        }
+
+        async function saveSettings() {
+            // Gather working days
+            const workingDays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+                .filter(day => document.getElementById(`day_${day}`).checked)
+                .join(',');
+
+            // Gather platforms
+            const platforms = availablePlatforms
+                .filter(p => document.getElementById(`platform_${p.id}`).checked)
+                .map(p => p.id);
+
+            if (platforms.length === 0) {
+                alert('Debes seleccionar al menos una plataforma');
+                return;
+            }
+
+            const settings = {
+                studio_id: studioId,
+                min_hours_daily: parseFloat(document.getElementById('minHoursDaily').value) || 6,
+                max_breaks_per_shift: parseInt(document.getElementById('maxBreaksPerShift').value) || 3,
+                max_break_minutes: parseInt(document.getElementById('maxBreakMinutes').value) || 15,
+                working_days: workingDays,
+                platforms: platforms,
+                track_followers: document.getElementById('trackFollowers').checked,
+                timezone: 'America/Bogota'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/time/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const msg = document.getElementById('saveMessage');
+                    msg.classList.remove('hidden');
+                    setTimeout(() => msg.classList.add('hidden'), 3000);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('studio_id');
+            localStorage.removeItem('studio_name');
+            window.location.href = '/dashboard/login.html';
+        }
+    </script>
+</body>
+</html>

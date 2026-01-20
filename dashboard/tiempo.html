@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiempo y Asistencia - CamAssist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-working { background: #10b981; }
+        .status-on_break { background: #f59e0b; }
+        .status-offline { background: #6b7280; }
+        .skeleton { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background: #e5e7eb; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gradient-to-b from-purple-600 to-pink-600 text-white flex flex-col">
+            <div class="p-6">
+                <div class="flex items-center mb-8">
+                    <span class="text-3xl mr-3">🤖</span>
+                    <h1 class="text-xl font-bold">CamAssist</h1>
+                </div>
+
+                <nav class="space-y-2">
+                    <a href="/dashboard/index.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                        <span class="mr-3">📊</span> Dashboard
+                    </a>
+                    <a href="/dashboard/modelos.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                        <span class="mr-3">👥</span> Modelos
+                    </a>
+                    <a href="/dashboard/tiempo.html" class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
+                        <span class="mr-3">⏰</span> Tiempo
+                    </a>
+                </nav>
+            </div>
+
+            <div class="mt-auto p-6 border-t border-white/10">
+                <div class="text-sm mb-4">
+                    <div class="text-white/60">Studio</div>
+                    <div class="font-semibold" id="studioName">Mi Studio</div>
+                </div>
+                <button onclick="logout()" class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-2">🚪</span> Salir
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <div class="p-8">
+                <!-- Header -->
+                <div class="mb-8 flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">⏰ Tiempo y Asistencia</h1>
+                        <p class="text-gray-600">Control de horas, ganancias y asistencia</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <input type="date" id="selectedDate" class="px-4 py-2 border rounded-lg" onchange="loadData()">
+                        <button onclick="loadData()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                            🔄 Actualizar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+                        <div class="text-3xl mb-1">👥</div>
+                        <div class="text-2xl font-bold text-gray-800" id="totalModels">-</div>
+                        <div class="text-xs text-gray-500">Total</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+                        <div class="text-3xl mb-1">🟢</div>
+                        <div class="text-2xl font-bold text-green-600" id="onlineCount">-</div>
+                        <div class="text-xs text-gray-500">Online</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+                        <div class="text-3xl mb-1">🟡</div>
+                        <div class="text-2xl font-bold text-yellow-600" id="breakCount">-</div>
+                        <div class="text-xs text-gray-500">En Break</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+                        <div class="text-3xl mb-1">⚫</div>
+                        <div class="text-2xl font-bold text-gray-600" id="offlineCount">-</div>
+                        <div class="text-xs text-gray-500">Offline</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+                        <div class="text-3xl mb-1">✅</div>
+                        <div class="text-2xl font-bold text-green-600" id="cumpleCount">-</div>
+                        <div class="text-xs text-gray-500">Cumplen</div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-4 text-center">
+                        <div class="text-3xl mb-1">💰</div>
+                        <div class="text-2xl font-bold text-purple-600" id="totalEarnings">-</div>
+                        <div class="text-xs text-gray-500">Ganancias</div>
+                    </div>
+                </div>
+
+                <!-- Models Table -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-6 border-b">
+                        <h2 class="text-xl font-semibold text-gray-800">📋 Detalle por Modelo</h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modelo</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Entrada</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Salida</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Tiempo</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Progreso</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Cumple</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Ganancias</th>
+                                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modelsTableBody" class="divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="9" class="px-6 py-8 text-center text-gray-500">
+                                        <div class="skeleton h-8 w-full rounded mb-2"></div>
+                                        <div class="skeleton h-8 w-full rounded mb-2"></div>
+                                        <div class="skeleton h-8 w-full rounded"></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal para ingresar ganancias -->
+    <div id="earningsModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-xl font-bold mb-4">💰 Ingresar Ganancias</h3>
+            <p class="text-gray-600 mb-4">Modelo: <strong id="modalModelName">-</strong></p>
+            
+            <input type="hidden" id="modalModelId">
+            
+            <div id="platformInputs" class="space-y-4 mb-6">
+                <!-- Se llena dinámicamente -->
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="saveEarnings()" class="flex-1 bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700">
+                    💾 Guardar
+                </button>
+                <button onclick="closeEarningsModal()" class="flex-1 bg-gray-200 py-3 rounded-lg font-semibold hover:bg-gray-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar nota -->
+    <div id="noteModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-xl font-bold mb-4">📝 Agregar Nota</h3>
+            <p class="text-gray-600 mb-4">Modelo: <strong id="noteModalModelName">-</strong></p>
+            
+            <input type="hidden" id="noteModalModelId">
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de nota</label>
+                <select id="noteType" class="w-full px-4 py-2 border rounded-lg">
+                    <option value="day_off">🌙 Día libre (Domingo)</option>
+                    <option value="holiday">🎉 Festivo / Integración</option>
+                    <option value="medical">🏥 Motivo médico</option>
+                    <option value="permission">📋 Permiso personal</option>
+                    <option value="late">⏰ Llegó tarde</option>
+                    <option value="early_leave">🚪 Se fue temprano</option>
+                    <option value="absent">❌ Inasistencia</option>
+                    <option value="other">📌 Otro</option>
+                </select>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Observación (opcional)</label>
+                <textarea id="noteText" class="w-full px-4 py-2 border rounded-lg" rows="3" placeholder="Ej: Se fue temprano por cita médica"></textarea>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="saveNote()" class="flex-1 bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700">
+                    💾 Guardar
+                </button>
+                <button onclick="closeNoteModal()" class="flex-1 bg-gray-200 py-3 rounded-lg font-semibold hover:bg-gray-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://camassist.vercel.app/api';
+        
+        // Auth check
+        const studioId = localStorage.getItem('studio_id');
+        const studioName = localStorage.getItem('studio_name');
+        if (!studioId) {
+            window.location.href = '/dashboard/login.html';
+        }
+        document.getElementById('studioName').textContent = studioName || 'Mi Studio';
+
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('selectedDate').value = today;
+
+        let studioSettings = {};
+        let modelsData = [];
+
+        // Load data on start
+        loadData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
+
+        async function loadData() {
+            const date = document.getElementById('selectedDate').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/time/studio-view?studio_id=${studioId}&date=${date}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    studioSettings = data.settings;
+                    modelsData = data.models;
+                    
+                    // Update summary
+                    document.getElementById('totalModels').textContent = data.summary.totalModels;
+                    document.getElementById('onlineCount').textContent = data.summary.online;
+                    document.getElementById('breakCount').textContent = data.summary.onBreak;
+                    document.getElementById('offlineCount').textContent = data.summary.offline;
+                    document.getElementById('cumpleCount').textContent = data.summary.cumpliendo;
+                    document.getElementById('totalEarnings').textContent = data.summary.totalEarnings.toLocaleString();
+
+                    // Render table
+                    renderModelsTable(data.models);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function renderModelsTable(models) {
+            const tbody = document.getElementById('modelsTableBody');
+            
+            if (models.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="px-6 py-8 text-center text-gray-500">
+                            No hay modelos registrados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = models.map(model => {
+                const statusBadge = getStatusBadge(model.status);
+                const checkIn = model.checkInTime ? formatTime(model.checkInTime) : '-';
+                const checkOut = model.checkOutTime ? formatTime(model.checkOutTime) : '-';
+                const workedTime = formatMinutes(model.totalWorkedMinutes);
+                const complianceBadge = getComplianceBadge(model.compliance, model.dayNote);
+                
+                return `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                                    <span class="text-purple-600 font-semibold">${model.name.charAt(0)}</span>
+                                </div>
+                                <div>
+                                    <div class="font-medium text-gray-900">${model.name}</div>
+                                    ${model.dayNote ? `<div class="text-xs text-gray-500">${getNoteLabel(model.dayNote.note_type)}</div>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center">${statusBadge}</td>
+                        <td class="px-6 py-4 text-center text-sm">${checkIn}</td>
+                        <td class="px-6 py-4 text-center text-sm">${checkOut}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="font-mono font-medium">${workedTime}</span>
+                            <div class="text-xs text-gray-500">${model.breaksCount} breaks (${model.totalBreakMinutes}m)</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full ${model.progressPercent >= 100 ? 'bg-green-500' : 'bg-purple-500'}" 
+                                     style="width: ${model.progressPercent}%"></div>
+                            </div>
+                            <div class="text-xs text-center text-gray-500 mt-1">${model.progressPercent}%</div>
+                        </td>
+                        <td class="px-6 py-4 text-center">${complianceBadge}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="font-medium">${model.totalEarnings.toLocaleString()}</span>
+                            ${model.earnings.length > 0 ? `
+                                <div class="text-xs text-gray-500">
+                                    ${model.earnings.map(e => `${e.platform}: ${e.earnings}`).join(', ')}
+                                </div>
+                            ` : ''}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <div class="flex justify-center gap-2">
+                                <button onclick="openEarningsModal('${model.id}', '${model.name}')" 
+                                        class="text-purple-600 hover:text-purple-800" title="Ingresar ganancias">
+                                    💰
+                                </button>
+                                <button onclick="openNoteModal('${model.id}', '${model.name}')" 
+                                        class="text-gray-600 hover:text-gray-800" title="Agregar nota">
+                                    📝
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function getStatusBadge(status) {
+            const badges = {
+                'working': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">🟢 Online</span>',
+                'on_break': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">🟡 Break</span>',
+                'offline': '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">⚫ Offline</span>'
+            };
+            return badges[status] || badges['offline'];
+        }
+
+        function getComplianceBadge(compliance, dayNote) {
+            if (dayNote) {
+                return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">📝 ${getNoteLabel(dayNote.note_type)}</span>`;
+            }
+            if (!compliance) return '<span class="text-gray-400">-</span>';
+            if (compliance === 'CUMPLE') {
+                return '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">✅ Cumple</span>';
+            }
+            return '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">❌ No cumple</span>';
+        }
+
+        function getNoteLabel(noteType) {
+            const labels = {
+                'day_off': 'Día libre',
+                'holiday': 'Festivo',
+                'medical': 'Médico',
+                'permission': 'Permiso',
+                'late': 'Tarde',
+                'early_leave': 'Salió temprano',
+                'absent': 'Inasistencia',
+                'other': 'Otro'
+            };
+            return labels[noteType] || noteType;
+        }
+
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function formatMinutes(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours}h ${mins}m`;
+        }
+
+        // === EARNINGS MODAL ===
+        function openEarningsModal(modelId, modelName) {
+            document.getElementById('modalModelId').value = modelId;
+            document.getElementById('modalModelName').textContent = modelName;
+            
+            // Get platforms from settings
+            const platforms = studioSettings.platforms || ['chaturbate', 'stripchat'];
+            
+            // Find existing earnings for this model
+            const model = modelsData.find(m => m.id === modelId);
+            const existingEarnings = model ? model.earnings : [];
+
+            // Build platform inputs
+            const inputsHtml = platforms.map(platform => {
+                const existing = existingEarnings.find(e => e.platform === platform);
+                const currencyMap = {
+                    chaturbate: 'tokens', stripchat: 'tokens', xmodels: 'credits',
+                    streamate: 'gold', flirt4free: 'credits', cam4: 'gold'
+                };
+                const currency = currencyMap[platform] || 'tokens';
+                
+                return `
+                    <div class="border rounded-lg p-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2 capitalize">${platform}</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-gray-500">Ganancias (${currency})</label>
+                                <input type="number" id="earnings_${platform}" value="${existing?.earnings || 0}" 
+                                       class="w-full px-3 py-2 border rounded-lg" min="0">
+                            </div>
+                            ${studioSettings.track_followers ? `
+                            <div>
+                                <label class="text-xs text-gray-500">Seguidores (inicio)</label>
+                                <input type="number" id="followers_start_${platform}" value="${existing?.followers_start || 0}" 
+                                       class="w-full px-3 py-2 border rounded-lg" min="0">
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Seguidores (fin)</label>
+                                <input type="number" id="followers_end_${platform}" value="${existing?.followers_end || 0}" 
+                                       class="w-full px-3 py-2 border rounded-lg" min="0">
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('platformInputs').innerHTML = inputsHtml;
+            document.getElementById('earningsModal').classList.remove('hidden');
+            document.getElementById('earningsModal').classList.add('flex');
+        }
+
+        function closeEarningsModal() {
+            document.getElementById('earningsModal').classList.add('hidden');
+            document.getElementById('earningsModal').classList.remove('flex');
+        }
+
+        async function saveEarnings() {
+            const modelId = document.getElementById('modalModelId').value;
+            const date = document.getElementById('selectedDate').value;
+            const platforms = studioSettings.platforms || ['chaturbate', 'stripchat'];
+
+            for (const platform of platforms) {
+                const earnings = parseFloat(document.getElementById(`earnings_${platform}`).value) || 0;
+                const followers_start = studioSettings.track_followers ? 
+                    parseInt(document.getElementById(`followers_start_${platform}`).value) || 0 : 0;
+                const followers_end = studioSettings.track_followers ? 
+                    parseInt(document.getElementById(`followers_end_${platform}`).value) || 0 : 0;
+
+                try {
+                    await fetch(`${API_BASE}/time/earnings`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model_id: modelId,
+                            studio_id: studioId,
+                            date,
+                            platform,
+                            earnings,
+                            followers_start,
+                            followers_end
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error saving earnings:', error);
+                }
+            }
+
+            closeEarningsModal();
+            loadData();
+        }
+
+        // === NOTE MODAL ===
+        function openNoteModal(modelId, modelName) {
+            document.getElementById('noteModalModelId').value = modelId;
+            document.getElementById('noteModalModelName').textContent = modelName;
+            document.getElementById('noteType').value = 'day_off';
+            document.getElementById('noteText').value = '';
+            
+            document.getElementById('noteModal').classList.remove('hidden');
+            document.getElementById('noteModal').classList.add('flex');
+        }
+
+        function closeNoteModal() {
+            document.getElementById('noteModal').classList.add('hidden');
+            document.getElementById('noteModal').classList.remove('flex');
+        }
+
+        async function saveNote() {
+            const modelId = document.getElementById('noteModalModelId').value;
+            const date = document.getElementById('selectedDate').value;
+            const noteType = document.getElementById('noteType').value;
+            const note = document.getElementById('noteText').value;
+
+            try {
+                await fetch(`${API_BASE}/time/day-note`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model_id: modelId,
+                        studio_id: studioId,
+                        date,
+                        note_type: noteType,
+                        note
+                    })
+                });
+
+                closeNoteModal();
+                loadData();
+            } catch (error) {
+                console.error('Error saving note:', error);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('studio_id');
+            localStorage.removeItem('studio_name');
+            window.location.href = '/dashboard/login.html';
+        }
+    </script>
+</body>
+</html>
