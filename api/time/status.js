@@ -68,12 +68,15 @@ export default async function handler(req, res) {
       }
 
       // Si está trabajando, calcular tiempo actual
+
       if (status === 'working' && checkInTime) {
         totalWorkedMs = Date.now() - new Date(checkInTime).getTime() - totalBreakMs;
       }
 
-      // Si está en break, agregar break actual
-      if (status === 'on_break' && currentBreakStart) {
+      // Si está en break, calcular tiempo trabajado HASTA el inicio del break
+      if (status === 'on_break' && checkInTime && currentBreakStart) {
+        totalWorkedMs = currentBreakStart.getTime() - new Date(checkInTime).getTime() - totalBreakMs;
+        // Agregar el break actual al total de breaks
         totalBreakMs += Date.now() - currentBreakStart.getTime();
       }
     }
