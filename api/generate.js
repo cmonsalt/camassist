@@ -157,7 +157,7 @@ CONTEXTO XMODELS (VIP 1:1):
 
       const { data: model, error } = await supabase
         .from('models')
-        .select('*')
+        .select('*, studios(name)')
         .eq('token', token)
         .single();
 
@@ -184,7 +184,8 @@ CONTEXTO XMODELS (VIP 1:1):
         }
 
         modelData = { ...modelData, ...model };
-        console.log('✅ Modelo encontrado:', modelData.name);
+        const studioName = model.studios?.name || 'Sin studio';
+        console.log('✅ Modelo encontrado:', modelData.name, '| Studio:', studioName);
       } else {
         console.log('🚫 Token inválido o no encontrado');
         return res.status(401).json({
