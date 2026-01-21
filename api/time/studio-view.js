@@ -46,15 +46,17 @@ export default async function handler(req, res) {
 
     if (modelsError) throw modelsError;
 
-    // 3. Obtener entradas de tiempo de HOY para todas las modelos
-    const today = new Date(date);
-    today.setHours(0, 0, 0, 0);
+    // 3. Obtener entradas de tiempo del DÍA SELECCIONADO
+    // Calcular inicio y fin del día en Colombia (UTC-5)
+    const dateStart = new Date(date + 'T00:00:00-05:00'); // Medianoche Colombia
+    const dateEnd = new Date(date + 'T23:59:59.999-05:00'); // Fin del día Colombia
 
     const { data: allEntries } = await supabase
       .from('time_entries')
       .select('*')
       .eq('studio_id', studio_id)
-      .gte('created_at', today.toISOString())
+      .gte('created_at', dateStart.toISOString())
+      .lte('created_at', dateEnd.toISOString())
       .order('created_at', { ascending: true });
 
     // 4. Obtener ganancias de HOY
@@ -75,7 +77,7 @@ export default async function handler(req, res) {
     const modelsData = models.map(model => {
       // Filtrar entradas de este modelo
       const entries = (allEntries || []).filter(e => e.model_id === model.id);
-      
+
       // Calcular estado y tiempo
       let status = 'offline';
       let checkInTime = null;
