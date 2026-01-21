@@ -122,9 +122,12 @@ export default async function handler(req, res) {
       const totalWorkedMinutes = Math.floor(totalWorkedMs / 60000);
       const totalBreakMinutes = Math.floor(totalBreakMs / 60000);
       const minMinutesRequired = studioSettings.min_hours_daily * 60;
-      const minutesPending = Math.max(0, minMinutesRequired - totalWorkedMinutes);
-      const compliance = totalWorkedMinutes >= minMinutesRequired ? 'CUMPLE' : 'NO CUMPLE';
-      const progressPercent = Math.min(100, Math.round((totalWorkedMinutes / minMinutesRequired) * 100));
+
+      // Tiempo total del turno (incluyendo breaks) para evaluar cumplimiento
+      const totalShiftMinutes = totalWorkedMinutes + totalBreakMinutes;
+      const minutesPending = Math.max(0, minMinutesRequired - totalShiftMinutes);
+      const compliance = totalShiftMinutes >= minMinutesRequired ? 'CUMPLE' : 'NO CUMPLE';
+      const progressPercent = Math.min(100, Math.round((totalShiftMinutes / minMinutesRequired) * 100));
 
       // Ganancias del día
       const earnings = (allEarnings || []).filter(e => e.model_id === model.id);
