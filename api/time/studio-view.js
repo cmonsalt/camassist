@@ -123,8 +123,13 @@ export default async function handler(req, res) {
       const totalBreakMinutes = Math.floor(totalBreakMs / 60000);
       const minMinutesRequired = studioSettings.min_hours_daily * 60;
 
-      // Tiempo total del turno (incluyendo breaks) para evaluar cumplimiento
-      const totalShiftMinutes = totalWorkedMinutes + totalBreakMinutes;
+      // Calcular exceso de break
+      const maxBreakMinutes = studioSettings.max_break_minutes || 15;
+      const breakExcessMinutes = Math.max(0, totalBreakMinutes - maxBreakMinutes);
+      const effectiveBreakMinutes = Math.min(totalBreakMinutes, maxBreakMinutes);
+
+      // Tiempo para cumplimiento = trabajado + break permitido (exceso NO cuenta)
+      const totalShiftMinutes = totalWorkedMinutes + effectiveBreakMinutes;
       const minutesPending = Math.max(0, minMinutesRequired - totalShiftMinutes);
       const compliance = totalShiftMinutes >= minMinutesRequired ? 'CUMPLE' : 'NO CUMPLE';
       const progressPercent = Math.min(100, Math.round((totalShiftMinutes / minMinutesRequired) * 100));
@@ -144,6 +149,7 @@ export default async function handler(req, res) {
         checkOutTime,
         totalWorkedMinutes,
         totalBreakMinutes,
+        breakExcessMinutes,
         breaksCount,
         compliance: checkInTime ? compliance : null,
         minutesPending: checkInTime ? minutesPending : null,

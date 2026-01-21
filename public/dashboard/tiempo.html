@@ -337,7 +337,7 @@
                         <td class="px-6 py-4 text-center text-sm">${checkOut}</td>
                        <td class="px-6 py-4 text-center">
     <span class="font-mono font-medium">${workedTime}</span>
-    <div class="text-xs text-gray-500">${model.breaksCount} breaks (${model.totalBreakMinutes}m)</div>
+    <div class="text-xs text-gray-500">${model.breaksCount} breaks (${model.totalBreakMinutes}m)${model.breakExcessMinutes > 0 ? ` <span class="text-red-500">⚠️ +${model.breakExcessMinutes}m</span>` : ''}</div>
     ${model.minutesPending > 0 ? `<div class="text-xs text-red-500">Faltan: ${model.minutesPending}m</div>` : ''}
 </td>
                         <td class="px-6 py-4">
@@ -582,6 +582,7 @@
                 'Minutos Pendientes',
                 'Breaks',
                 'Tiempo Break',
+                'Exceso Break',
                 'Ganancias',
                 'Seguidores Inicio',
                 'Seguidores Fin',
@@ -611,6 +612,7 @@
                     model.minutesPending || 0,
                     model.breaksCount || 0,
                     `${model.totalBreakMinutes || 0}m`,
+                    `${model.breakExcessMinutes || 0}m`,
                     earningsStr,
                     followersStart,
                     followersEnd,
