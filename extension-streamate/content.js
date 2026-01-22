@@ -8,6 +8,7 @@
   const CONFIG = {
     API_URL: 'https://www.camassist.co/api/generate',
     PLATFORM: 'streamate',
+    VERSION: '1.0.1',
     CURRENCY: 'gold',
     SELECTORS: {
       // Chat container
@@ -225,7 +226,8 @@
       context: buildContext(),
       contextLength: CONFIG.MAX_CONTEXT_MESSAGES,
       hasImage: false,
-      platform: CONFIG.PLATFORM
+      platform: CONFIG.PLATFORM,
+      version: CONFIG.VERSION 
     };
 
     try {

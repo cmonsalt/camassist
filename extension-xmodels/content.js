@@ -331,6 +331,7 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
           platform: 'xmodels',
+          version: '1.0.4', 
           username,
           message: messageText,
           context: fullContext.slice(-70),
@@ -511,6 +512,7 @@ function initInbox() {
               body: JSON.stringify({
                 token: localStorage.getItem('model_token') || 'demo_token',
                 platform: 'xmodels',
+                version: '1.0.4', 
                 username: sender || 'Fan',
                 message: messageText,
                 context: inboxHistory.sort((a, b) => a.timestamp - b.timestamp).slice(-70),

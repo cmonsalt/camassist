@@ -27,6 +27,7 @@ export default async function handler(req, res) {
     isPM = false,
     imageUrl = null,
     platform = 'unknown',
+    version = 'sin version',
     goal = '',
     tipMenu = '',
   } = req.body;
@@ -62,7 +63,7 @@ export default async function handler(req, res) {
   }
   // ========== FIN RATE LIMITING ==========
 
-  console.log('📥 Request:', { token, username, message, isPM, platform: platform || 'unknown', contextLength: context.length, hasImage: !!imageUrl });
+  console.log('📥 Request:', { token, username, message, isPM, platform: platform || 'unknown',version, contextLength: context.length, hasImage: !!imageUrl });
 
 
   // Terminología según plataforma
