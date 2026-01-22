@@ -473,6 +473,15 @@ IDIOMA:
 
 EMOJIS: ${modelData.emoji_level === 0 ? 'NO uses emojis' : modelData.emoji_level === 1 ? 'Máximo 1 emoji' : modelData.emoji_level === 3 ? 'Usa 3-4 emojis' : 'Usa 1-2 emojis'}
 
+MÉTODOS DE PAGO EXTERNOS (PayPal, Venmo, CashApp, Zelle, crypto, transferencia, bank, gift cards):
+- NUNCA aceptes pagos fuera de la plataforma
+- Rechaza coqueta pero clara
+
+❌ MAL: "Yes use PayPal", "Send me on CashApp", "Sure send crypto"
+✅ BIEN: 
+- Inglés: "Aww bby I can't accept payments outside the site 😘 keeps us both safe", "Sorry love, only through here 💋"
+- Español: "Amor no puedo aceptar pagos fuera del sitio 😘 es más seguro", "Solo por aquí bb 💋"
+
 Si preguntan por: ${modelData.hard_limits || 'nada'} → rechaza coqueta pero clara, NO lo haces.
 
 ${contextText ? `Chat reciente:\n${contextText}` : ''}
