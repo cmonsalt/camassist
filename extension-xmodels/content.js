@@ -98,7 +98,7 @@ function getGoalInfo() {
 // ============================================
 // PROCESAR MENSAJES
 // ============================================
-setInterval(() => {
+function processAllMessages() {
   const chatInfo = detectChatType();
   const chatType = chatInfo.type;
   const secretFan = chatInfo.fanName;
@@ -257,8 +257,10 @@ setInterval(() => {
     msg.dataset.processed = 'true';
   });
 
-}, 2000);
+}
 
+// Ejecutar cada 2 segundos
+setInterval(processAllMessages, 2000);
 // ============================================
 // FUNCIÓN PARA AGREGAR BOTÓN IA
 // ============================================
@@ -269,6 +271,11 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
   btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px;';
 
   btn.onclick = async () => {
+    // Forzar procesamiento de mensajes antes de enviar
+    if (typeof processAllMessages === 'function') {
+      processAllMessages();
+    }
+
     // Determinar historial según tipo
     let history;
     if (chatType === 'secret') {

@@ -3,7 +3,7 @@ console.log("CamAssist StripChat loaded!");
 // ============================================
 // WIDGET DE TIEMPO
 // ============================================
-(function() {
+(function () {
   if (document.getElementById('camassist-time-btn')) return;
 
   const token = localStorage.getItem('model_token') || '';
@@ -84,7 +84,7 @@ function getGoalAndTipMenu() {
 
 let messageCounter = 0;
 
-setInterval(() => {
+function processAllMessages() {
 
   // ============================================
   // 1. DETECTAR MENSAJES DE CHAT PÚBLICO
@@ -143,11 +143,15 @@ setInterval(() => {
         publicHistory[targetUsername] = { messages: [], tips: [] };
       }
 
-      const msgId = messageCounter++;
+      const msgId = parseInt(msg.getAttribute('data-message-id')) || messageCounter++;
 
-      // Verificar si ya existe este mensaje (evitar duplicados)
-      const exists = publicHistory[targetUsername].messages.some(item => item.timestamp === msgId);
-      if (!exists) {
+      // Evitar duplicados consecutivos (mismo mensaje justo antes)
+      const lastMsg = publicHistory[targetUsername].messages.slice(-1)[0];
+      const isDuplicate = lastMsg &&
+        lastMsg.message === messageText &&
+        lastMsg.type === (isModelMessage ? 'model' : 'fan');
+
+      if (!isDuplicate) {
         publicHistory[targetUsername].messages.push({
           type: isModelMessage ? 'model' : 'fan',
           message: messageText,
@@ -176,7 +180,7 @@ setInterval(() => {
       if (!publicHistory[username]) {
         publicHistory[username] = { messages: [], tips: [] };
       }
-      const msgId = messageCounter++;
+      const msgId = parseInt(msg.getAttribute('data-message-id')) || Date.now();
       const isDuplicate = publicHistory[username].tips.some(item =>
         item.type === 'tip' && item.timestamp === msgId
       );
@@ -256,7 +260,7 @@ setInterval(() => {
         pmHistory[targetUser] = { messages: [], tips: [] };
       }
       const tipAmount = parseInt(tipMatch[1]);
-      const msgId = messageCounter++;
+      const msgId = parseInt(tip.closest('[data-message-id]')?.getAttribute('data-message-id')) || Date.now();
       pmHistory[targetUser].tips.push({ type: 'tip', amount: tipAmount, timestamp: msgId });
       if (pmHistory[targetUser].tips.length > 5) {
         pmHistory[targetUser].tips.shift();
@@ -283,7 +287,7 @@ setInterval(() => {
     if (!pmHistory[targetUser]) {
       pmHistory[targetUser] = { messages: [], tips: [] };
     }
-    const msgId = messageCounter++;
+    const msgId = parseInt(imgMsg.closest('[data-message-id]')?.getAttribute('data-message-id')) || Date.now();
     pmHistory[targetUser].messages.push({
       type: 'fan',
       message: '[Imagen enviada]',
@@ -346,7 +350,7 @@ setInterval(() => {
           pmHistory[targetUser] = { messages: [], tips: [] };
         }
         const tipAmount = parseInt(tipMatch[1]);
-        const msgId = messageCounter++;
+        const msgId = parseInt(msg.getAttribute('data-message-id')) || Date.now();
         const exists = pmHistory[targetUser].tips.some(item => item.timestamp === msgId && item.type === 'tip');
         if (!exists) {
           pmHistory[targetUser].tips.push({ type: 'tip', amount: tipAmount, timestamp: msgId });
@@ -368,11 +372,15 @@ setInterval(() => {
       pmHistory[targetUser] = { messages: [], tips: [] };
     }
 
-    const msgId = messageCounter++;
+    const msgId = parseInt(msg.getAttribute('data-message-id')) || messageCounter++;
 
-    // Verificar si ya existe este mensaje (evitar duplicados)
-    const exists = pmHistory[targetUser].messages.some(item => item.timestamp === msgId);
-    if (!exists) {
+    // Evitar duplicados consecutivos (mismo mensaje justo antes)
+    const lastMsg = pmHistory[targetUser].messages.slice(-1)[0];
+    const isDuplicate = lastMsg &&
+      lastMsg.message === messageText &&
+      lastMsg.type === (isModelMessage ? 'model' : 'fan');
+
+    if (!isDuplicate) {
       pmHistory[targetUser].messages.push({
         type: isModelMessage ? 'model' : 'fan',
         message: messageText,
@@ -392,7 +400,10 @@ setInterval(() => {
     }
   });
 
-}, 2000);
+}
+
+// Ejecutar cada 2 segundos
+setInterval(processAllMessages, 2000);
 
 // ============================================
 // FUNCIÓN PARA AGREGAR BOTÓN IA
@@ -409,6 +420,11 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
   }
 
   btn.onclick = async () => {
+    // Forzar procesamiento de mensajes antes de enviar
+    if (typeof processAllMessages === 'function') {
+      processAllMessages();
+    }
+
     const history = context === 'pm' ? pmHistory : publicHistory;
     const userHistory = history[username] || [];
 

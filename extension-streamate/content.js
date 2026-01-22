@@ -27,7 +27,7 @@
       tabGuest: '[class*="Huésped"]'
     },
     DEBOUNCE_MS: 500,
-    MAX_CONTEXT_MESSAGES: 20
+    MAX_CONTEXT_MESSAGES: 70
   };
 
   // ============ ESTADO ============

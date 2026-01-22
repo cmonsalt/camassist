@@ -3,7 +3,7 @@ console.log("CamAssist loaded!");
 // ============================================
 // WIDGET DE TIEMPO
 // ============================================
-(function() {
+(function () {
   if (document.getElementById('camassist-time-btn')) return;
 
   const token = localStorage.getItem('model_token') || '';
@@ -81,7 +81,7 @@ function getGoalAndTipMenu() {
 console.log('⏰ Extension cargada en:', new Date(extensionStartTime).toLocaleTimeString());
 
 
-setInterval(() => {
+function processAllMessages() {
 
   // ============================================
   // ============================================
@@ -373,7 +373,10 @@ setInterval(() => {
     }
   });
 
-}, 2000);
+}
+
+// Ejecutar cada 2 segundos
+setInterval(processAllMessages, 2000);
 
 // ============================================
 // FUNCIÓN PARA AGREGAR BOTÓN IA
@@ -387,6 +390,11 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
     : 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px';
 
   btn.onclick = async () => {
+    // Forzar procesamiento de mensajes antes de enviar
+    if (typeof processAllMessages === 'function') {
+      processAllMessages();
+    }
+
     // Detectar pestaña activa AL MOMENTO del click
     const pmTab = document.querySelector('#pm-tab-default');
     const currentlyInPM = pmTab && pmTab.classList.contains('active');
@@ -395,7 +403,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
     const history = currentlyInPM ? pmHistory : publicHistory;
     const userHistory = history[username] || [];
 
-   console.log(`🔵 IA para ${currentlyInPM ? 'PM' : 'público'} - Usuario: ${username}`);
+    console.log(`🔵 IA para ${currentlyInPM ? 'PM' : 'público'} - Usuario: ${username}`);
 
     btn.textContent = '...';
 
