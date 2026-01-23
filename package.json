@@ -10,7 +10,8 @@
     "ofuscar": "npm run ofuscar:cb && npm run ofuscar:sc && npm run ofuscar:xm && echo '🎉 Todo listo!'"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0"
+    "@supabase/supabase-js": "^2.39.0",
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
     "javascript-obfuscator": "^4.1.1"

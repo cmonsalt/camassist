@@ -89,16 +89,44 @@
                         <h1 class="text-3xl font-bold text-gray-800">⏰ Tiempo y Asistencia</h1>
                         <p class="text-gray-600">Control de horas, ganancias y asistencia</p>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <input type="date" id="selectedDate" class="px-4 py-2 border rounded-lg" onchange="loadData()">
-                        <button onclick="loadData()"
-                            class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                            🔄 Actualizar
-                        </button>
-                        <button onclick="exportCSV()"
-                            class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2">
-                            <span>📥</span> Exportar
-                        </button>
+                    <div class="flex flex-col gap-4">
+                        <!-- Fila 1: Ver día específico -->
+                        <div class="flex items-center gap-4">
+                            <label class="text-sm text-gray-600">Ver día:</label>
+                            <input type="date" id="selectedDate" class="px-4 py-2 border rounded-lg"
+                                onchange="loadData()">
+                            <button onclick="loadData()"
+                                class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                                🔄 Actualizar
+                            </button>
+                        </div>
+
+                        <!-- Fila 2: Exportar reporte por rango -->
+                        <div class="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm flex-wrap">
+                            <span class="text-sm font-medium text-gray-700">📊 Reporte:</span>
+                            <div class="flex items-center gap-2">
+                                <label class="text-xs text-gray-500">Desde:</label>
+                                <input type="date" id="fechaInicio" class="px-3 py-2 border rounded-lg text-sm">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <label class="text-xs text-gray-500">Hasta:</label>
+                                <input type="date" id="fechaFin" class="px-3 py-2 border rounded-lg text-sm">
+                            </div>
+                            <button onclick="exportExcel()"
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                                📥 Excel
+                            </button>
+                            <div class="flex gap-2">
+                                <button onclick="setRangoHoy()"
+                                    class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg">Hoy</button>
+                                <button onclick="setRangoSemana()"
+                                    class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg">Semana</button>
+                                <button onclick="setRangoQuincena()"
+                                    class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg">Quincena</button>
+                                <button onclick="setRangoMes()"
+                                    class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-lg">Mes</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -270,6 +298,99 @@
 
         // Auto-refresh every 30 seconds
         setInterval(loadData, 30000);
+
+        // Inicializar fechas de reporte
+        initReportDates();
+
+        function initReportDates() {
+            const today = new Date().toLocaleDateString('en-CA');
+            const firstOfMonth = new Date();
+            firstOfMonth.setDate(1);
+            document.getElementById('fechaInicio').value = firstOfMonth.toLocaleDateString('en-CA');
+            document.getElementById('fechaFin').value = today;
+        }
+
+        function setRangoHoy() {
+            const today = new Date().toLocaleDateString('en-CA');
+            document.getElementById('fechaInicio').value = today;
+            document.getElementById('fechaFin').value = today;
+        }
+
+        function setRangoSemana() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+            document.getElementById('fechaInicio').value = monday.toLocaleDateString('en-CA');
+            document.getElementById('fechaFin').value = today.toLocaleDateString('en-CA');
+        }
+
+        function setRangoQuincena() {
+            const today = new Date();
+            const day = today.getDate();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            let inicio, fin;
+            if (day <= 15) {
+                inicio = new Date(year, month, 1);
+                fin = new Date(year, month, 15);
+            } else {
+                inicio = new Date(year, month, 16);
+                fin = new Date(year, month + 1, 0);
+            }
+            document.getElementById('fechaInicio').value = inicio.toLocaleDateString('en-CA');
+            document.getElementById('fechaFin').value = fin.toLocaleDateString('en-CA');
+        }
+
+        function setRangoMes() {
+            const today = new Date();
+            const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            document.getElementById('fechaInicio').value = firstOfMonth.toLocaleDateString('en-CA');
+            document.getElementById('fechaFin').value = lastOfMonth.toLocaleDateString('en-CA');
+        }
+
+        async function exportExcel() {
+            const fechaInicio = document.getElementById('fechaInicio').value;
+            const fechaFin = document.getElementById('fechaFin').value;
+
+            if (!fechaInicio || !fechaFin) {
+                alert('Selecciona las fechas del reporte');
+                return;
+            }
+            if (fechaInicio > fechaFin) {
+                alert('La fecha de inicio debe ser anterior a la fecha fin');
+                return;
+            }
+
+            const btn = event.target.closest('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ Generando...';
+            btn.disabled = true;
+
+            try {
+                const url = `${API_BASE}/time/report?studio_id=${studioId}&fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+                const response = await fetch(url);
+
+                if (!response.ok) throw new Error('Error generando reporte');
+
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `Reporte_Tiempo_${fechaInicio}_${fechaFin}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(downloadUrl);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al generar el reporte');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
 
         async function loadData() {
             const date = document.getElementById('selectedDate').value;
@@ -565,85 +686,85 @@
             window.location.href = '/dashboard/login.html';
         }
 
-        function exportCSV() {
-            if (!modelsData || modelsData.length === 0) {
-                alert('No hay datos para exportar');
-                return;
-            }
+        // function exportCSV() {
+        //     if (!modelsData || modelsData.length === 0) {
+        //         alert('No hay datos para exportar');
+        //         return;
+        //     }
 
-            // Encabezados
-            const headers = [
-                'Fecha',
-                'Modelo',
-                'Inicio Conexión',
-                'Fin Conexión',
-                'Tiempo Real',
-                'Estado',
-                'Minutos Pendientes',
-                'Breaks',
-                'Tiempo Break',
-                'Exceso Break',
-                'Ganancias',
-                'Seguidores Inicio',
-                'Seguidores Fin',
-                'Seguidores Ganados',
-                'Observaciones'
-            ];
+        //     // Encabezados
+        //     const headers = [
+        //         'Fecha',
+        //         'Modelo',
+        //         'Inicio Conexión',
+        //         'Fin Conexión',
+        //         'Tiempo Real',
+        //         'Estado',
+        //         'Minutos Pendientes',
+        //         'Breaks',
+        //         'Tiempo Break',
+        //         'Exceso Break',
+        //         'Ganancias',
+        //         'Seguidores Inicio',
+        //         'Seguidores Fin',
+        //         'Seguidores Ganados',
+        //         'Observaciones'
+        //     ];
 
-            // Filas de datos
-            const rows = modelsData.map(model => {
-                // Calcular ganancias por plataforma
-                const earningsStr = model.earnings && model.earnings.length > 0
-                    ? model.earnings.map(e => `${e.platform}: ${e.earnings} ${e.currency_type}`).join(' | ')
-                    : '0';
+        //     // Filas de datos
+        //     const rows = modelsData.map(model => {
+        //         // Calcular ganancias por plataforma
+        //         const earningsStr = model.earnings && model.earnings.length > 0
+        //             ? model.earnings.map(e => `${e.platform}: ${e.earnings} ${e.currency_type}`).join(' | ')
+        //             : '0';
 
-                // Calcular seguidores totales (suma de todas las plataformas)
-                const followersStart = model.earnings?.reduce((sum, e) => sum + (e.followers_start || 0), 0) || 0;
-                const followersEnd = model.earnings?.reduce((sum, e) => sum + (e.followers_end || 0), 0) || 0;
-                const followersGained = followersEnd - followersStart;
+        //         // Calcular seguidores totales (suma de todas las plataformas)
+        //         const followersStart = model.earnings?.reduce((sum, e) => sum + (e.followers_start || 0), 0) || 0;
+        //         const followersEnd = model.earnings?.reduce((sum, e) => sum + (e.followers_end || 0), 0) || 0;
+        //         const followersGained = followersEnd - followersStart;
 
-                return [
-                    document.getElementById('selectedDate').value,
-                    model.name,
-                    model.checkInTime ? formatTime(model.checkInTime) : '-',
-                    model.checkOutTime ? formatTime(model.checkOutTime) : '-',
-                    `${Math.floor(model.totalWorkedMinutes / 60)}h ${model.totalWorkedMinutes % 60}m`,
-                    model.compliance || '-',
-                    model.minutesPending || 0,
-                    model.breaksCount || 0,
-                    `${model.totalBreakMinutes || 0}m`,
-                    `${model.breakExcessMinutes || 0}m`,
-                    earningsStr,
-                    followersStart,
-                    followersEnd,
-                    followersGained,
-                    model.dayNote?.note || ''
-                ];
-            });
+        //         return [
+        //             document.getElementById('selectedDate').value,
+        //             model.name,
+        //             model.checkInTime ? formatTime(model.checkInTime) : '-',
+        //             model.checkOutTime ? formatTime(model.checkOutTime) : '-',
+        //             `${Math.floor(model.totalWorkedMinutes / 60)}h ${model.totalWorkedMinutes % 60}m`,
+        //             model.compliance || '-',
+        //             model.minutesPending || 0,
+        //             model.breaksCount || 0,
+        //             `${model.totalBreakMinutes || 0}m`,
+        //             `${model.breakExcessMinutes || 0}m`,
+        //             earningsStr,
+        //             followersStart,
+        //             followersEnd,
+        //             followersGained,
+        //             model.dayNote?.note || ''
+        //         ];
+        //     });
 
-            // Construir CSV
-            let csv = headers.join(',') + '\n';
-            rows.forEach(row => {
-                // Escapar comas y comillas en los valores
-                const escapedRow = row.map(val => {
-                    const str = String(val);
-                    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-                        return `"${str.replace(/"/g, '""')}"`;
-                    }
-                    return str;
-                });
-                csv += escapedRow.join(',') + '\n';
-            });
+        //     // Construir CSV
+        //     let csv = headers.join(',') + '\n';
+        //     rows.forEach(row => {
+        //         // Escapar comas y comillas en los valores
+        //         const escapedRow = row.map(val => {
+        //             const str = String(val);
+        //             if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        //                 return `"${str.replace(/"/g, '""')}"`;
+        //             }
+        //             return str;
+        //         });
+        //         csv += escapedRow.join(',') + '\n';
+        //     });
 
-            // Descargar
-            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `reporte_${document.getElementById('selectedDate').value}.csv`;
-            link.click();
-            URL.revokeObjectURL(url);
-        }
+        //     // Descargar
+        //     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        //     const url = URL.createObjectURL(blob);
+        //     const link = document.createElement('a');
+        //     link.href = url;
+        //     link.download = `reporte_${document.getElementById('selectedDate').value}.csv`;
+        //     link.click();
+        //     URL.revokeObjectURL(url);
+        // }
     </script>
 </body>
 
