@@ -69,7 +69,15 @@ export default async function handler(req, res) {
       .gte('date', fecha_inicio)
       .lte('date', fecha_fin);
 
-    // 6. Procesar datos por modelo y por día
+    // 6. Obtener notas del rango
+    const { data: allNotes } = await supabase
+      .from('day_notes')
+      .select('*')
+      .eq('studio_id', studio_id)
+      .gte('date', fecha_inicio)
+      .lte('date', fecha_fin);
+
+    // 7. Procesar datos por modelo y por día
     const reportData = [];
     const modelTotals = {};
 
@@ -89,7 +97,8 @@ export default async function handler(req, res) {
         totalBreakMinutes: 0,
         daysWorked: 0,
         daysCompliant: 0,
-        totalEarnings: 0
+        totalEarnings: 0,
+        totalFollowersGained: 0
       };
 
       for (const date of dates) {
@@ -102,8 +111,6 @@ export default async function handler(req, res) {
           new Date(e.created_at) >= dayStart &&
           new Date(e.created_at) <= dayEnd
         );
-
-        if (entries.length === 0) continue;
 
         // Calcular tiempos
         let checkInTime = null;
@@ -142,14 +149,31 @@ export default async function handler(req, res) {
         const totalShiftMinutes = totalWorkedMinutes + effectiveBreakMinutes;
         const isCompliant = totalShiftMinutes >= minMinutesRequired;
 
+        // Minutos pendientes
+        const minutesPending = Math.max(0, minMinutesRequired - totalShiftMinutes);
+
+        // Exceso de break
+        const breakExcessMinutes = Math.max(0, totalBreakMinutes - maxBreakMinutes);
+
         // Ganancias del día
         const dayEarnings = (allEarnings || []).find(e => 
           e.model_id === model.id && e.date === date
         );
-        const earnings = dayEarnings ? (dayEarnings.tokens || 0) : 0;
+        const earnings = dayEarnings ? (dayEarnings.tokens || dayEarnings.earnings || 0) : 0;
 
-        // Solo agregar si trabajó ese día
-        if (checkInTime) {
+        // Seguidores
+        const followersStart = dayEarnings?.followers_start || 0;
+        const followersEnd = dayEarnings?.followers_end || 0;
+        const followersGained = followersEnd - followersStart;
+
+        // Nota del día
+        const dayNote = (allNotes || []).find(n => 
+          n.model_id === model.id && n.date === date
+        );
+        const observacion = dayNote ? `${getNoteLabel(dayNote.note_type)}${dayNote.note ? ': ' + dayNote.note : ''}` : '';
+
+        // Solo agregar si trabajó ese día O tiene nota
+        if (checkInTime || dayNote) {
           reportData.push({
             modelo: model.name,
             fecha: date,
@@ -157,23 +181,32 @@ export default async function handler(req, res) {
             checkOut: checkOutTime ? formatTime(checkOutTime) : '-',
             horasTrabajadas: formatMinutes(totalWorkedMinutes),
             horasDecimal: (totalWorkedMinutes / 60).toFixed(2),
+            minPendientes: minutesPending,
             breaks: breaksCount,
             minBreak: totalBreakMinutes,
-            cumplimiento: isCompliant ? 'Sí' : 'No',
-            ganancias: earnings
+            excesoBreak: breakExcessMinutes,
+            cumplimiento: checkInTime ? (isCompliant ? 'Sí' : 'No') : '-',
+            ganancias: earnings,
+            segInicio: followersStart,
+            segFin: followersEnd,
+            segGanados: followersGained,
+            observacion: observacion
           });
 
           // Acumular totales
-          modelTotals[model.id].totalWorkedMinutes += totalWorkedMinutes;
-          modelTotals[model.id].totalBreakMinutes += totalBreakMinutes;
-          modelTotals[model.id].daysWorked++;
-          if (isCompliant) modelTotals[model.id].daysCompliant++;
-          modelTotals[model.id].totalEarnings += earnings;
+          if (checkInTime) {
+            modelTotals[model.id].totalWorkedMinutes += totalWorkedMinutes;
+            modelTotals[model.id].totalBreakMinutes += totalBreakMinutes;
+            modelTotals[model.id].daysWorked++;
+            if (isCompliant) modelTotals[model.id].daysCompliant++;
+            modelTotals[model.id].totalEarnings += earnings;
+            modelTotals[model.id].totalFollowersGained += followersGained;
+          }
         }
       }
     }
 
-    // 7. Crear Excel
+    // 8. Crear Excel
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'CamAssist';
     workbook.created = new Date();
@@ -182,18 +215,18 @@ export default async function handler(req, res) {
     const sheetDetalle = workbook.addWorksheet('Detalle Diario');
 
     // Encabezado
-    sheetDetalle.mergeCells('A1:J1');
+    sheetDetalle.mergeCells('A1:P1');
     sheetDetalle.getCell('A1').value = `Reporte de Tiempo - ${studio?.name || 'Studio'}`;
     sheetDetalle.getCell('A1').font = { bold: true, size: 16, color: { argb: 'FF9333EA' } };
     sheetDetalle.getCell('A1').alignment = { horizontal: 'center' };
 
-    sheetDetalle.mergeCells('A2:J2');
+    sheetDetalle.mergeCells('A2:P2');
     sheetDetalle.getCell('A2').value = `Período: ${fecha_inicio} al ${fecha_fin}`;
     sheetDetalle.getCell('A2').font = { size: 12, color: { argb: 'FF666666' } };
     sheetDetalle.getCell('A2').alignment = { horizontal: 'center' };
 
     // Headers de tabla
-    const headers = ['Modelo', 'Fecha', 'Entrada', 'Salida', 'Horas Trabajadas', 'Horas (decimal)', 'Breaks', 'Min Break', 'Cumplió', 'Ganancias'];
+    const headers = ['Modelo', 'Fecha', 'Entrada', 'Salida', 'Horas Trabajadas', 'Horas (decimal)', 'Min Pendientes', 'Breaks', 'Min Break', 'Exceso Break', 'Cumplió', 'Ganancias', 'Seg Inicio', 'Seg Fin', 'Seg Ganados', 'Observaciones'];
     sheetDetalle.addRow([]);
     const headerRow = sheetDetalle.addRow(headers);
     headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -213,41 +246,53 @@ export default async function handler(req, res) {
         row.checkOut,
         row.horasTrabajadas,
         parseFloat(row.horasDecimal),
+        row.minPendientes,
         row.breaks,
         row.minBreak,
+        row.excesoBreak,
         row.cumplimiento,
-        row.ganancias
+        row.ganancias,
+        row.segInicio,
+        row.segFin,
+        row.segGanados,
+        row.observacion
       ]);
 
       // Color según cumplimiento
       if (row.cumplimiento === 'No') {
-        dataRow.getCell(9).font = { color: { argb: 'FFDC2626' } };
-      } else {
-        dataRow.getCell(9).font = { color: { argb: 'FF16A34A' } };
+        dataRow.getCell(11).font = { color: { argb: 'FFDC2626' } };
+      } else if (row.cumplimiento === 'Sí') {
+        dataRow.getCell(11).font = { color: { argb: 'FF16A34A' } };
+      }
+
+      // Color rojo si hay exceso de break
+      if (row.excesoBreak > 0) {
+        dataRow.getCell(10).font = { color: { argb: 'FFDC2626' } };
       }
     });
 
     // Ajustar anchos
     sheetDetalle.columns = [
       { width: 20 }, { width: 12 }, { width: 10 }, { width: 10 },
-      { width: 15 }, { width: 12 }, { width: 8 }, { width: 10 },
-      { width: 10 }, { width: 12 }
+      { width: 15 }, { width: 12 }, { width: 12 }, { width: 8 }, 
+      { width: 10 }, { width: 12 }, { width: 10 }, { width: 12 },
+      { width: 10 }, { width: 10 }, { width: 12 }, { width: 30 }
     ];
 
     // === HOJA 2: Resumen por modelo ===
     const sheetResumen = workbook.addWorksheet('Resumen por Modelo');
 
-    sheetResumen.mergeCells('A1:G1');
+    sheetResumen.mergeCells('A1:I1');
     sheetResumen.getCell('A1').value = `Resumen por Modelo - ${studio?.name || 'Studio'}`;
     sheetResumen.getCell('A1').font = { bold: true, size: 16, color: { argb: 'FF9333EA' } };
     sheetResumen.getCell('A1').alignment = { horizontal: 'center' };
 
-    sheetResumen.mergeCells('A2:G2');
+    sheetResumen.mergeCells('A2:I2');
     sheetResumen.getCell('A2').value = `Período: ${fecha_inicio} al ${fecha_fin}`;
     sheetResumen.getCell('A2').font = { size: 12, color: { argb: 'FF666666' } };
     sheetResumen.getCell('A2').alignment = { horizontal: 'center' };
 
-    const resumenHeaders = ['Modelo', 'Días Trabajados', 'Días Cumplió', 'Total Horas', 'Promedio/Día', 'Total Break', 'Ganancias'];
+    const resumenHeaders = ['Modelo', 'Días Trabajados', 'Días Cumplió', '% Cumplimiento', 'Total Horas', 'Promedio/Día', 'Total Break', 'Ganancias', 'Seg Ganados'];
     sheetResumen.addRow([]);
     const resumenHeaderRow = sheetResumen.addRow(resumenHeaders);
     resumenHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -262,26 +307,31 @@ export default async function handler(req, res) {
     let totalHorasGeneral = 0;
     let totalDiasGeneral = 0;
     let totalGananciasGeneral = 0;
+    let totalSeguidoresGeneral = 0;
 
     Object.values(modelTotals).forEach(model => {
       if (model.daysWorked > 0) {
         const totalHoras = (model.totalWorkedMinutes / 60).toFixed(2);
         const promedioHoras = (model.totalWorkedMinutes / model.daysWorked / 60).toFixed(2);
         const totalBreakHoras = (model.totalBreakMinutes / 60).toFixed(2);
+        const cumplimientoPct = Math.round((model.daysCompliant / model.daysWorked) * 100);
 
         sheetResumen.addRow([
           model.name,
           model.daysWorked,
           model.daysCompliant,
+          `${cumplimientoPct}%`,
           parseFloat(totalHoras),
           parseFloat(promedioHoras),
           parseFloat(totalBreakHoras),
-          model.totalEarnings
+          model.totalEarnings,
+          model.totalFollowersGained
         ]);
 
         totalHorasGeneral += model.totalWorkedMinutes;
         totalDiasGeneral += model.daysWorked;
         totalGananciasGeneral += model.totalEarnings;
+        totalSeguidoresGeneral += model.totalFollowersGained;
       }
     });
 
@@ -291,10 +341,12 @@ export default async function handler(req, res) {
       'TOTAL',
       totalDiasGeneral,
       '-',
+      '-',
       (totalHorasGeneral / 60).toFixed(2),
       '-',
       '-',
-      totalGananciasGeneral
+      totalGananciasGeneral,
+      totalSeguidoresGeneral
     ]);
     totalRow.font = { bold: true };
     totalRow.fill = {
@@ -304,11 +356,11 @@ export default async function handler(req, res) {
     };
 
     sheetResumen.columns = [
-      { width: 20 }, { width: 15 }, { width: 12 }, { width: 12 },
-      { width: 12 }, { width: 12 }, { width: 12 }
+      { width: 20 }, { width: 15 }, { width: 12 }, { width: 14 },
+      { width: 12 }, { width: 12 }, { width: 12 }, { width: 12 }, { width: 12 }
     ];
 
-    // 8. Generar buffer y enviar
+    // 9. Generar buffer y enviar
     const buffer = await workbook.xlsx.writeBuffer();
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -335,4 +387,18 @@ function formatMinutes(minutes) {
   const hours = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return `${hours}h ${mins}m`;
+}
+
+function getNoteLabel(noteType) {
+  const labels = {
+    'day_off': 'Día libre',
+    'holiday': 'Festivo',
+    'medical': 'Médico',
+    'permission': 'Permiso',
+    'late': 'Tarde',
+    'early_leave': 'Salió temprano',
+    'absent': 'Inasistencia',
+    'other': 'Otro'
+  };
+  return labels[noteType] || noteType;
 }
