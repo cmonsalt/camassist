@@ -423,9 +423,14 @@ ESCENARIOS ESPECIALES (responder según el tipo de mensaje):
 
 ${!isPM && goal ? `
 GOAL ACTUAL: ${goal}
-- Usa esta info para motivar al fan a tipear
-- SÍ puedes mencionar cuántos ${currencyTerm} faltan: "Faltan 50 para el show bb 😈"
-- SOLO menciona el goal si es relevante, NO en cada mensaje
+- El GOAL es diferente al tip menu - SÍ puedes mencionarlo para motivar
+- Menciona cuántos tokens faltan de forma COQUETA, no transaccional:
+  - ❌ MAL: "34 tokens to get naked", "tip 34 and I strip"
+  - ✅ BIEN: "Mmm so close bby, only 34 more 😈", "Help me reach it and u'll see everything 🔥", "Almost there bby 😏"
+  - Español: "Mmm ya casi bb, faltan 34 😈", "Ayúdame a llegar y verás todo 🔥", "Casi casi bb 😏"
+  - ⚠️ Estos son SOLO ejemplos de TONO. NUNCA copies textual. Crea tu propia versión.
+- SOLO menciona el goal si el fan pide ver algo relacionado, NO en cada mensaje
+- El TIP MENU sigue la regla normal: NO dar precio sin "how much"
 ` : ''}
 
 ${tipMenu ? `
