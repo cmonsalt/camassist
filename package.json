@@ -7,7 +7,8 @@
     "ofuscar:cb": "javascript-obfuscator extension-chaturbate/content.js --output extension-chaturbate/content.min.js --compact true --control-flow-flattening true --string-array true --string-array-encoding base64 && echo '✅ Chaturbate ofuscado'",
     "ofuscar:sc": "javascript-obfuscator extension-stripchat/content.js --output extension-stripchat/content.min.js --compact true --control-flow-flattening true --string-array true --string-array-encoding base64 && echo '✅ StripChat ofuscado'",
     "ofuscar:xm": "javascript-obfuscator extension-xmodels/content.js --output extension-xmodels/content.min.js --compact true --control-flow-flattening true --string-array true --string-array-encoding base64 && echo '✅ XModels ofuscado'",
-    "ofuscar": "npm run ofuscar:cb && npm run ofuscar:sc && npm run ofuscar:xm && echo '🎉 Todo listo!'"
+    "ofuscar:st": "javascript-obfuscator extension-streamate/content.js --output extension-streamate/content.min.js --compact true --control-flow-flattening true --string-array true --string-array-encoding base64 && echo '✅ Streamate ofuscado'",
+    "ofuscar": "npm run ofuscar:cb && npm run ofuscar:sc && npm run ofuscar:xm && npm run ofuscar:st && echo '🎉 Todo listo!'"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",

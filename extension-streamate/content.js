@@ -1,489 +1,423 @@
 // CamAssist - Streamate Extension
-// SMConnect Interface
+// Reescrita para funcionar igual que CB/SC/XModels
 
 (function() {
   'use strict';
 
+  console.log('🤖 CamAssist Streamate v1.1.0 cargando...');
+
   // ============ CONFIGURACIÓN ============
   const CONFIG = {
-    API_URL: 'https://www.camassist.co/api/generate',
+    API_URL: 'https://camassist.vercel.app/api/generate',
     PLATFORM: 'streamate',
-    VERSION: '1.0.1',
+    VERSION: '1.1.0',
     CURRENCY: 'gold',
-    SELECTORS: {
-      // Chat container
-      chatContainer: '[data-ta-locator="ChatDisplay__Message"]',
-      // Mensajes
-      messageWrapper: '[data-ta-locator="ChatDisplay__Message"]',
-      messageAudience: '[data-ta-locator="PerformerMessage__Audience"]',
-      messageText: '[data-ta-locator="PerformerMessage__Message"]',
-      translation: 'span.translation',
-      // Input
-      chatInput: '#message_text_input, [data-ta-locator="ChatTools__ChatInputText"]',
-      // Header para detectar modo
-      headerMode: '[class*="ChatHeader"], [class*="header"]',
-      // Pestañas
-      tabAll: '[class*="Todos"]',
-      tabPaid: '[class*="Pagado"]',
-      tabGuest: '[class*="Huésped"]'
-    },
-    DEBOUNCE_MS: 500,
     MAX_CONTEXT_MESSAGES: 70
   };
 
-  // ============ ESTADO ============
-  let state = {
-    token: null,
-    isEnabled: true,
-    lastProcessedMessage: null,
-    processing: false,
-    observer: null,
-    buttonInjected: false
-  };
+  // ============ HISTORIAL POR FAN ============
+  const fanHistory = {};  // { username: { messages: [], tips: [] } }
 
-  // ============ UTILIDADES ============
-  function log(message, data = '') {
-    console.log(`[CamAssist Streamate] ${message}`, data);
+  // ============ TOKEN ============
+  let modelToken = null;
+
+  // Cargar token desde localStorage primero (por si el popup ya lo guardó)
+  modelToken = localStorage.getItem('model_token');
+  if (modelToken) {
+    console.log('🔑 Token cargado desde localStorage:', modelToken.substring(0, 15) + '...');
   }
 
-  function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }
+  // Cargar token desde chrome.storage
+  chrome.storage.local.get(['model_token'], (result) => {
+    if (result.model_token) {
+      modelToken = result.model_token;
+      localStorage.setItem('model_token', modelToken); // Sync con localStorage
+      console.log('🔑 Token cargado desde storage:', modelToken.substring(0, 15) + '...');
+    }
+  });
 
-  // ============ DETECTAR MODO (ALL vs GUEST vs PAID) ============
+  // Escuchar cambios de token
+  chrome.storage.onChanged.addListener((changes, namespace) => {
+    if (namespace === 'local' && changes.model_token) {
+      modelToken = changes.model_token.newValue;
+      localStorage.setItem('model_token', modelToken);
+      console.log('🔑 Token actualizado');
+    }
+  });
+
+  // ============ DETECTAR MODO (FREE vs PAID) ============
   function detectChatMode() {
-    // Método 1: Leer el placeholder/label del input
-    const input = document.querySelector(CONFIG.SELECTORS.chatInput);
-    if (input) {
-      const parent = input.closest('div');
-      const inputArea = parent?.parentElement;
-      const text = inputArea?.textContent || '';
-      
-      if (text.includes('Pagado') || text.includes('Paid')) {
-        return 'PAID';
-      }
-      if (text.includes('Huésped') || text.includes('Guest')) {
-        return 'GUEST';
-      }
-      if (text.includes('Todos') || text.includes('All')) {
-        return 'ALL';
-      }
+    // Buscar en el área del input
+    const inputArea = document.querySelector('[class*="TextInput-container"]');
+    if (inputArea) {
+      const text = inputArea.textContent.toLowerCase();
+      if (text.includes('pagado') || text.includes('paid')) return 'PAID';
+      if (text.includes('huésped') || text.includes('guest')) return 'GUEST';
     }
 
-    // Método 2: Buscar texto en el área del input
-    const inputWrapper = document.querySelector('[class*="TextInput-container"]');
-    if (inputWrapper) {
-      const labels = inputWrapper.querySelectorAll('span, div');
-      for (const label of labels) {
-        const txt = label.textContent.toLowerCase();
-        if (txt.includes('pagado') || txt.includes('paid')) return 'PAID';
-        if (txt.includes('huésped') || txt.includes('guest')) return 'GUEST';
-        if (txt.includes('todos') || txt.includes('all')) return 'ALL';
-      }
-    }
-
-    // Método 3: Buscar en el header
-    const header = document.body.textContent;
-    if (header.includes('Sesión Pagada') || header.includes('Private') || header.includes('Exclusive')) {
+    // Buscar en el header
+    const headerText = document.body.textContent;
+    if (headerText.includes('Sesión Pagada') || headerText.includes('Private') || headerText.includes('Exclusive')) {
       return 'PAID';
     }
 
-    // Default: ALL (público)
-    return 'ALL';
+    // Default: FREE (público)
+    return 'FREE';
   }
 
-  // ============ EXTRAER MENSAJES DEL CHAT ============
-  function extractChatMessages() {
-    const messages = [];
+  // ============ OBTENER USERNAME DE LA MODELO ============
+  function getModelUsername() {
+    // Buscar en el header donde dice el nombre de la modelo
+    const headerEl = document.querySelector('[class*="header"] [class*="name"], [class*="performer"]');
+    if (headerEl) return headerEl.textContent.trim();
+    
+    // Fallback: buscar en la URL o título
+    const urlMatch = window.location.href.match(/performer\/(\w+)/i);
+    if (urlMatch) return urlMatch[1];
+    
+    return 'Model';
+  }
+
+  // ============ PROCESAR TODOS LOS MENSAJES ============
+  function processAllMessages() {
     const chatContainer = document.querySelector('[id*="scroll-target"]')?.parentElement;
-    
-    if (!chatContainer) {
-      log('Chat container not found');
-      return messages;
-    }
+    if (!chatContainer) return;
 
+    // Buscar todos los mensajes
     const messageElements = chatContainer.querySelectorAll('[data-ta-locator*="Message"]');
-    
-    messageElements.forEach(el => {
+
+    messageElements.forEach(msg => {
+      if (msg.dataset.processed) return;
+
       try {
-        // Buscar nombre del usuario
-        const audienceEl = el.querySelector('[data-ta-locator="PerformerMessage__Audience"]');
-        const messageEl = el.querySelector('[data-ta-locator="PerformerMessage__Message"]');
-        
-        if (messageEl) {
-          let username = '';
-          let messageText = '';
-          
-          // Extraer username
-          if (audienceEl) {
-            username = audienceEl.textContent.replace(/^A\s*/, '').trim();
-          }
-          
-          // Extraer mensaje (sin traducción)
-          const fullText = messageEl.textContent;
-          const translationEl = messageEl.querySelector('.translation, [class*="translation"]');
-          
-          if (translationEl) {
-            // Remover traducción del texto
-            messageText = fullText.replace(translationEl.textContent, '').trim();
-          } else {
-            messageText = fullText.trim();
-          }
-          
-          // Determinar si es mensaje del fan o de la modelo
-          const isModelMessage = el.textContent.startsWith('A ') && audienceEl;
-          
-          if (username && messageText) {
-            messages.push({
-              username: username,
-              message: messageText,
-              isModel: isModelMessage
-            });
-          }
+        // Buscar elementos del mensaje
+        const audienceEl = msg.querySelector('[data-ta-locator="PerformerMessage__Audience"]');
+        const messageEl = msg.querySelector('[data-ta-locator="PerformerMessage__Message"]');
+
+        if (!messageEl) {
+          msg.dataset.processed = 'true';
+          return;
         }
+
+        // Extraer username
+        let username = '';
+        if (audienceEl) {
+          // El formato es "A username" - removemos el "A "
+          username = audienceEl.textContent.replace(/^A\s*/i, '').trim();
+        }
+
+        // Extraer mensaje (sin traducción)
+        let messageText = '';
+        const fullText = messageEl.textContent;
+        const translationEl = messageEl.querySelector('.translation, [class*="translation"]');
         
+        if (translationEl) {
+          messageText = fullText.replace(translationEl.textContent, '').trim();
+        } else {
+          messageText = fullText.trim();
+        }
+
+        if (!username || !messageText) {
+          msg.dataset.processed = 'true';
+          return;
+        }
+
+        // Detectar si es mensaje de la modelo (empieza con "A " y tiene audienceEl)
+        // En Streamate, los mensajes de la modelo hacia fans empiezan con "A fanname"
+        const isModelMessage = msg.textContent.trim().startsWith('A ') && audienceEl;
+
         // Detectar tips de GOLD
-        const text = el.textContent;
-        const goldMatch = text.match(/(\d+\.?\d*)\s*GOLD\s*desde\s*(\w+)/i);
-        if (goldMatch) {
-          messages.push({
-            username: goldMatch[2],
-            message: `ha dado ${goldMatch[1]} GOLD de propina`,
-            isModel: false,
-            isTip: true
-          });
+        const isTip = messageText.toLowerCase().includes('gold') && /\d+/.test(messageText);
+        let tipAmount = 0;
+        if (isTip) {
+          const match = messageText.match(/(\d+\.?\d*)\s*gold/i);
+          if (match) tipAmount = parseFloat(match[1]);
         }
+
+        msg.dataset.processed = 'true';
+
+        // Inicializar historial del usuario
+        if (!fanHistory[username]) {
+          fanHistory[username] = { messages: [], tips: [] };
+        }
+
+        // Guardar en historial
+        if (isTip && tipAmount > 0) {
+          fanHistory[username].tips.push({
+            type: 'tip',
+            amount: tipAmount,
+            timestamp: Date.now()
+          });
+          console.log(`💰 Tip de ${username}: ${tipAmount} GOLD`);
+        } else {
+          fanHistory[username].messages.push({
+            type: isModelMessage ? 'model' : 'fan',
+            message: messageText,
+            timestamp: Date.now()
+          });
+
+          // Mantener últimos 70 mensajes
+          if (fanHistory[username].messages.length > 70) {
+            fanHistory[username].messages.shift();
+          }
+
+          console.log(`💬 ${isModelMessage ? 'Modelo→' : 'Fan'} ${username}: ${messageText.substring(0, 50)}...`);
+        }
+
+        // Agregar botón IA solo en mensajes de fans (no modelo, no tips puros)
+        if (!isModelMessage && messageText && !msg.querySelector('.ai-btn')) {
+          if (!isTip || (isTip && messageText.length > 20)) { // Tips con mensaje personalizado
+            addAIButton(msg, username, messageText);
+          }
+        }
+
       } catch (err) {
-        // Ignorar errores de parsing
+        console.error('Error procesando mensaje:', err);
+        msg.dataset.processed = 'true';
       }
     });
-
-    return messages.slice(-CONFIG.MAX_CONTEXT_MESSAGES);
   }
 
-  // ============ OBTENER ÚLTIMO MENSAJE DEL FAN ============
-  function getLastFanMessage() {
-    const messages = extractChatMessages();
-    
-    // Filtrar solo mensajes de fans (no modelo, no tips de sistema)
-    const fanMessages = messages.filter(m => !m.isModel && !m.isTip && m.message);
-    
-    if (fanMessages.length === 0) return null;
-    
-    const lastMsg = fanMessages[fanMessages.length - 1];
-    return {
-      username: lastMsg.username,
-      message: lastMsg.message
+  // ============ AGREGAR BOTÓN IA ============
+  function addAIButton(container, username, messageText) {
+    const btn = document.createElement('button');
+    btn.textContent = '🤖';
+    btn.className = 'ai-btn';
+    btn.style.cssText = `
+      background: #8B5CF6;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      margin-left: 8px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 12px;
+      vertical-align: middle;
+    `;
+
+    btn.onclick = async () => {
+      console.log(`🔵 IA para ${username}: "${messageText.substring(0, 30)}..."`);
+      btn.textContent = '...';
+
+      try {
+        const response = await getAIResponse(username, messageText);
+        
+        if (response) {
+          // Copiar al portapapeles
+          navigator.clipboard.writeText(response.suggestion);
+          
+          // Mostrar popup
+          showPopup(username, response.suggestion, response.translation);
+          
+          btn.textContent = '✓';
+          setTimeout(() => btn.textContent = '🤖', 2000);
+        } else {
+          btn.textContent = '!';
+          setTimeout(() => btn.textContent = '🤖', 2000);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        btn.textContent = '!';
+        setTimeout(() => btn.textContent = '🤖', 2000);
+      }
     };
+
+    // Insertar botón después del mensaje
+    const messageEl = container.querySelector('[data-ta-locator="PerformerMessage__Message"]');
+    if (messageEl) {
+      messageEl.style.display = 'inline';
+      messageEl.after(btn);
+    } else {
+      container.appendChild(btn);
+    }
   }
 
-  // ============ CONSTRUIR CONTEXTO ============
-  function buildContext() {
-    const messages = extractChatMessages();
-    const context = [];
-    
-    messages.forEach(m => {
-      if (m.isTip) {
-        context.push(`[TIP] ${m.username}: ${m.message}`);
-      } else if (m.isModel) {
-        context.push(`You: ${m.message}`);
-      } else {
-        context.push(`${m.username}: ${m.message}`);
-      }
-    });
-    
-    return context.join('\n');
-  }
-
-  // ============ LLAMAR A LA API ============
-  async function callAPI(username, message) {
-    if (!state.token) {
-      log('No token configured');
-      showNotification('Token no configurado. Abre el popup de la extensión.', 'error');
+  // ============ LLAMAR API ============
+  async function getAIResponse(username, message) {
+    if (!modelToken) {
+      alert('⚠️ Token no configurado. Abre el popup de la extensión.');
       return null;
     }
 
     const mode = detectChatMode();
-    const isPaid = mode === 'PAID';
-    const isGuest = mode === 'GUEST';
-    const treatAsPM = isPaid || isGuest;
+    const isPaid = mode === 'PAID' || mode === 'GUEST';
+
+    // Construir contexto
+    const userHistory = fanHistory[username] || { messages: [], tips: [] };
+    let fullContext = [...userHistory.messages, ...userHistory.tips];
+    fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
+
+    console.log('📚 Historial enviado:', fullContext.length, 'items');
+
+    const response = await fetch(CONFIG.API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: modelToken,
+        platform: CONFIG.PLATFORM,
+        version: CONFIG.VERSION,
+        username: username,
+        message: message,
+        context: fullContext.slice(-CONFIG.MAX_CONTEXT_MESSAGES),
+        isPM: isPaid, // PAID/GUEST = como PM (no vender agresivo)
+        chatType: mode.toLowerCase()
+      })
+    });
+
+    const data = await response.json();
     
-    log(`Mode detected: ${mode}, treatAsPM: ${treatAsPM}`);
-
-    const payload = {
-      token: state.token,
-      username: username,
-      message: message,
-      isPM: treatAsPM, // PAGADO o HUÉSPED = como PM (no vender agresivo)
-      context: buildContext(),
-      contextLength: CONFIG.MAX_CONTEXT_MESSAGES,
-      hasImage: false,
-      platform: CONFIG.PLATFORM,
-      version: CONFIG.VERSION 
-    };
-
-    try {
-      const response = await fetch(CONFIG.API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      return data.response;
-    } catch (error) {
-      log('API Error:', error);
-      showNotification('Error al conectar con CamAssist', 'error');
+    if (data.success) {
+      return {
+        suggestion: data.suggestion,
+        translation: data.translation
+      };
+    } else {
+      console.error('API Error:', data.error);
       return null;
     }
   }
 
-  // ============ MOSTRAR SUGERENCIA ============
-  function showSuggestion(suggestion, username) {
-    // Remover sugerencia anterior si existe
-    removeSuggestion();
+  // ============ MOSTRAR POPUP ============
+  function showPopup(username, suggestion, translation) {
+    // Remover popup anterior
+    const oldPopup = document.getElementById('ai-popup');
+    if (oldPopup) oldPopup.remove();
 
-    const input = document.querySelector(CONFIG.SELECTORS.chatInput);
-    if (!input) return;
+    const mode = detectChatMode();
+    const modeLabel = {
+      'FREE': '🌐 FREE',
+      'GUEST': '👤 GUEST',
+      'PAID': '💰 PAID'
+    };
 
-    const container = input.closest('div');
-    if (!container) return;
+    const popup = document.createElement('div');
+    popup.id = 'ai-popup';
+    popup.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border: 2px solid #8B5CF6;
+      z-index: 99999;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      max-width: 450px;
+      font-family: Arial, sans-serif;
+    `;
 
-    const suggestionBox = document.createElement('div');
-    suggestionBox.id = 'camassist-suggestion';
-    suggestionBox.innerHTML = `
-      <div class="camassist-suggestion-header">
-        <span class="camassist-logo">🤖 CamAssist</span>
-        <span class="camassist-username">para ${username}</span>
-        <button class="camassist-close" title="Cerrar">×</button>
-      </div>
-      <div class="camassist-suggestion-text">${suggestion}</div>
-      <div class="camassist-suggestion-actions">
-        <button class="camassist-btn camassist-btn-copy" title="Copiar">📋 Copiar</button>
-        <button class="camassist-btn camassist-btn-insert" title="Insertar">✍️ Insertar</button>
-        <button class="camassist-btn camassist-btn-send" title="Enviar">🚀 Enviar</button>
+    // Traducción (si es diferente)
+    let translationHtml = '';
+    if (translation) {
+      const suggestionClean = suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
+      const translationClean = translation.replace(/\s+/g, ' ').trim().toLowerCase();
+      
+      if (suggestionClean !== translationClean) {
+        translationHtml = `
+          <p style="background:#e8f4e8;padding:12px;border-radius:5px;color:#555;font-size:13px;margin-bottom:10px;">
+            <strong>🇪🇸 Traducción:</strong><br>${translation}
+          </p>
+        `;
+      }
+    }
+
+    popup.innerHTML = `
+      <h3 style="margin:0 0 15px 0;color:#333;">
+        ${modeLabel[mode] || mode} - @${username} ✅ Copiado!
+      </h3>
+      <p id="ai-response" style="background:#f0f0f0;padding:12px;border-radius:5px;color:#333;margin-bottom:10px;">
+        ${suggestion}
+      </p>
+      ${translationHtml}
+      <div style="display:flex;gap:10px;">
+        <button id="btn-regen" style="padding:8px 15px;cursor:pointer;border:none;background:#10B981;color:white;border-radius:5px;">
+          🔄 Regenerar
+        </button>
+        <button id="btn-insert" style="padding:8px 15px;cursor:pointer;border:none;background:#3B82F6;color:white;border-radius:5px;">
+          ✍️ Insertar
+        </button>
+        <button id="btn-close" style="padding:8px 15px;cursor:pointer;border:none;background:#EF4444;color:white;border-radius:5px;">
+          ❌ Cerrar
+        </button>
       </div>
     `;
 
-    // Insertar antes del input
-    container.parentElement.insertBefore(suggestionBox, container);
+    document.body.appendChild(popup);
 
     // Event listeners
-    suggestionBox.querySelector('.camassist-close').addEventListener('click', removeSuggestion);
+    popup.querySelector('#btn-close').onclick = () => popup.remove();
     
-    suggestionBox.querySelector('.camassist-btn-copy').addEventListener('click', () => {
-      navigator.clipboard.writeText(suggestion);
-      showNotification('Copiado!', 'success');
-    });
-
-    suggestionBox.querySelector('.camassist-btn-insert').addEventListener('click', () => {
+    popup.querySelector('#btn-insert').onclick = () => {
       insertTextToInput(suggestion);
-      removeSuggestion();
-    });
+      popup.remove();
+    };
 
-    suggestionBox.querySelector('.camassist-btn-send').addEventListener('click', () => {
-      insertTextToInput(suggestion);
-      sendMessage();
-      removeSuggestion();
-    });
-  }
-
-  function removeSuggestion() {
-    const existing = document.getElementById('camassist-suggestion');
-    if (existing) existing.remove();
+    popup.querySelector('#btn-regen').onclick = async () => {
+      const btn = popup.querySelector('#btn-regen');
+      btn.disabled = true;
+      btn.textContent = '⏳...';
+      
+      const newResponse = await getAIResponse(username, fanHistory[username]?.messages.slice(-1)[0]?.message || '');
+      
+      if (newResponse) {
+        popup.querySelector('#ai-response').textContent = newResponse.suggestion;
+        navigator.clipboard.writeText(newResponse.suggestion);
+      }
+      
+      btn.disabled = false;
+      btn.textContent = '🔄 Regenerar';
+    };
   }
 
   // ============ INSERTAR TEXTO EN INPUT ============
   function insertTextToInput(text) {
-    const input = document.querySelector(CONFIG.SELECTORS.chatInput);
+    const input = document.querySelector('#message_text_input, [data-ta-locator="ChatTools__ChatInputText"]');
     if (!input) return;
 
-    // Simular input de usuario
     input.focus();
     input.value = text;
     
     // Disparar eventos para React
-    const inputEvent = new Event('input', { bubbles: true });
-    input.dispatchEvent(inputEvent);
-    
-    const changeEvent = new Event('change', { bubbles: true });
-    input.dispatchEvent(changeEvent);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
-  // ============ ENVIAR MENSAJE ============
-  function sendMessage() {
-    const input = document.querySelector(CONFIG.SELECTORS.chatInput);
-    if (!input || !input.value) return;
-
-    // Simular Enter
-    const enterEvent = new KeyboardEvent('keydown', {
-      key: 'Enter',
-      code: 'Enter',
-      keyCode: 13,
-      which: 13,
-      bubbles: true
-    });
-    input.dispatchEvent(enterEvent);
-  }
-
-  // ============ NOTIFICACIONES ============
-  function showNotification(message, type = 'info') {
-    const existing = document.getElementById('camassist-notification');
-    if (existing) existing.remove();
-
-    const notification = document.createElement('div');
-    notification.id = 'camassist-notification';
-    notification.className = `camassist-notification camassist-notification-${type}`;
-    notification.textContent = message;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-      notification.remove();
-    }, 3000);
-  }
-
-  // ============ BOTÓN DE ACTIVACIÓN ============
-  function injectActivationButton() {
-    if (state.buttonInjected) return;
-
-    const input = document.querySelector(CONFIG.SELECTORS.chatInput);
-    if (!input) return;
-
-    const container = input.closest('div');
-    if (!container) return;
-
-    const button = document.createElement('button');
-    button.id = 'camassist-trigger';
-    button.innerHTML = '🤖';
-    button.title = 'Obtener sugerencia de CamAssist';
-    button.className = 'camassist-trigger-btn';
-
-    button.addEventListener('click', async () => {
-      if (state.processing) return;
-      
-      state.processing = true;
-      button.classList.add('camassist-loading');
-      
-      const lastMsg = getLastFanMessage();
-      if (lastMsg) {
-        const suggestion = await callAPI(lastMsg.username, lastMsg.message);
-        if (suggestion) {
-          showSuggestion(suggestion, lastMsg.username);
-        }
-      } else {
-        showNotification('No hay mensajes de fans para responder', 'error');
+  // ============ ESTILOS ============
+  function injectStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
+      .ai-btn {
+        transition: all 0.2s;
       }
-      
-      state.processing = false;
-      button.classList.remove('camassist-loading');
-    });
-
-    // Insertar el botón
-    const inputWrapper = container.parentElement;
-    if (inputWrapper) {
-      inputWrapper.style.position = 'relative';
-      inputWrapper.appendChild(button);
-      state.buttonInjected = true;
-      log('Activation button injected');
-    }
-  }
-
-  // ============ OBSERVER PARA NUEVOS MENSAJES ============
-  function setupObserver() {
-    const chatArea = document.querySelector('[id*="scroll-target"]')?.parentElement;
-    
-    if (!chatArea) {
-      log('Chat area not found, retrying...');
-      setTimeout(setupObserver, 2000);
-      return;
-    }
-
-    if (state.observer) {
-      state.observer.disconnect();
-    }
-
-    state.observer = new MutationObserver(debounce((mutations) => {
-      if (!state.isEnabled) return;
-
-      const lastMsg = getLastFanMessage();
-      if (lastMsg && lastMsg.message !== state.lastProcessedMessage) {
-        log('New message detected:', lastMsg);
-        // Auto-sugerir si está habilitado
-        // Por ahora solo actualizamos el estado
-        state.lastProcessedMessage = lastMsg.message;
+      .ai-btn:hover {
+        background: #7C3AED !important;
+        transform: scale(1.1);
       }
-    }, CONFIG.DEBOUNCE_MS));
-
-    state.observer.observe(chatArea, {
-      childList: true,
-      subtree: true
-    });
-
-    log('Observer started');
-  }
-
-  // ============ CARGAR TOKEN ============
-  async function loadToken() {
-    return new Promise((resolve) => {
-      chrome.storage.sync.get(['modelToken'], (result) => {
-        if (result.modelToken) {
-          state.token = result.modelToken;
-          log('Token loaded:', state.token.substring(0, 10) + '...');
-        }
-        resolve();
-      });
-    });
-  }
-
-  // ============ ESCUCHAR CAMBIOS DE TOKEN ============
-  function listenForTokenChanges() {
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-      if (namespace === 'sync' && changes.modelToken) {
-        state.token = changes.modelToken.newValue;
-        log('Token updated');
-        showNotification('Token actualizado', 'success');
+      #ai-popup {
+        animation: fadeIn 0.2s ease;
       }
-    });
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      }
+    `;
+    document.head.appendChild(style);
   }
 
   // ============ INICIALIZACIÓN ============
-  async function init() {
-    log('Initializing CamAssist for Streamate...');
-
-    await loadToken();
-    listenForTokenChanges();
-
-    // Esperar a que cargue el chat
-    const waitForChat = setInterval(() => {
-      const input = document.querySelector(CONFIG.SELECTORS.chatInput);
-      if (input) {
-        clearInterval(waitForChat);
-        log('Chat found, injecting...');
-        injectActivationButton();
-        setupObserver();
-        showNotification('CamAssist activo 🤖', 'success');
-      }
-    }, 1000);
-
-    // Timeout después de 30 segundos
-    setTimeout(() => {
-      clearInterval(waitForChat);
-    }, 30000);
+  function init() {
+    console.log('🤖 CamAssist Streamate iniciando...');
+    
+    injectStyles();
+    
+    // Procesar mensajes cada 2 segundos
+    setInterval(processAllMessages, 2000);
+    
+    // Procesar inmediatamente
+    setTimeout(processAllMessages, 1000);
+    
+    console.log('✅ CamAssist Streamate activo');
   }
 
   // ============ INICIAR ============

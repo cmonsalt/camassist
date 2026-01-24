@@ -1,64 +1,90 @@
-// CamAssist - Streamate Extension Popup
-
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async () => {
   const tokenInput = document.getElementById('token');
   const saveBtn = document.getElementById('saveBtn');
-  const statusDiv = document.getElementById('status');
-  const messageDiv = document.getElementById('message');
+  const status = document.getElementById('status');
+  const modelName = document.getElementById('modelName');
 
   // Cargar token guardado
-  chrome.storage.sync.get(['modelToken'], function(result) {
-    if (result.modelToken) {
-      tokenInput.value = result.modelToken;
-      updateStatus(true);
+  chrome.storage.local.get(['model_token', 'model_name'], (result) => {
+    if (result.model_token) {
+      tokenInput.value = result.model_token;
+      if (result.model_name) {
+        showConnected(result.model_name);
+      } else {
+        verifyToken(result.model_token);
+      }
     }
   });
 
   // Guardar token
-  saveBtn.addEventListener('click', function() {
+  saveBtn.addEventListener('click', async () => {
     const token = tokenInput.value.trim();
     
     if (!token) {
-      showMessage('Por favor ingresa un token válido', 'error');
+      alert('Por favor ingresa tu token');
       return;
     }
 
-    if (!token.startsWith('mdl_')) {
-      showMessage('El token debe comenzar con "mdl_"', 'error');
-      return;
-    }
+    saveBtn.textContent = '⏳ Verificando...';
+    saveBtn.disabled = true;
 
-    chrome.storage.sync.set({ modelToken: token }, function() {
-      showMessage('Token guardado correctamente', 'success');
-      updateStatus(true);
+    const verified = await verifyToken(token);
+    
+    if (verified) {
+      // Guardar en chrome.storage
+      chrome.storage.local.set({ model_token: token });
       
-      // Notificar al content script
-      chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-        if (tabs[0] && tabs[0].url.includes('streamatemodels.com')) {
-          chrome.tabs.sendMessage(tabs[0].id, { action: 'tokenUpdated', token: token });
+      // Guardar en localStorage de la página activa (Streamate)
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) {
+          chrome.scripting.executeScript({
+            target: { tabId: tabs[0].id },
+            func: (tk) => localStorage.setItem('model_token', tk),
+            args: [token]
+          });
         }
       });
-    });
-  });
-
-  // Guardar con Enter
-  tokenInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      saveBtn.click();
+      
+      alert('✅ Token guardado! Recarga la página de Streamate.');
     }
+
+    saveBtn.textContent = '💾 Guardar Token';
+    saveBtn.disabled = false;
   });
 
-  function updateStatus(connected) {
-    statusDiv.className = 'status ' + (connected ? 'connected' : 'disconnected');
-    statusDiv.querySelector('span').textContent = connected ? 'Conectado' : 'No conectado';
+  async function verifyToken(token) {
+    try {
+      const response = await fetch('https://camassist.vercel.app/api/verify-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        showConnected(data.model_name);
+        chrome.storage.local.set({ model_name: data.model_name });
+        return true;
+      } else {
+        showDisconnected('Token inválido');
+        return false;
+      }
+    } catch (error) {
+      showDisconnected('Error de conexión');
+      return false;
+    }
   }
 
-  function showMessage(text, type) {
-    messageDiv.textContent = text;
-    messageDiv.className = 'message ' + type;
-    
-    setTimeout(function() {
-      messageDiv.className = 'message';
-    }, 3000);
+  function showConnected(name) {
+    status.className = 'status connected';
+    status.textContent = '✅ Conectado';
+    modelName.textContent = `Modelo: ${name}`;
+  }
+
+  function showDisconnected(msg) {
+    status.className = 'status disconnected';
+    status.textContent = `⚠️ ${msg}`;
+    modelName.textContent = '';
   }
 });
