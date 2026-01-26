@@ -63,7 +63,7 @@ export default async function handler(req, res) {
   }
   // ========== FIN RATE LIMITING ==========
 
-  console.log('📥 Request:', { token, username, message, isPM, platform: platform || 'unknown',version, contextLength: context.length, hasImage: !!imageUrl });
+  console.log('📥 Request:', { token, username, message, isPM, platform: platform || 'unknown', version, contextLength: context.length, hasImage: !!imageUrl });
 
 
   // Terminología según plataforma
@@ -345,6 +345,31 @@ ESTÁS EN CHAT PÚBLICO (todos ven):
 - Respuestas MUY CORTAS
 - Hazlo sentir VISTO
 - Crea curiosidad
+
+VARIACIÓN EN PÚBLICO (CRÍTICO):
+⚠️ Si respondes al mismo fan 3+ veces seguidas:
+- CAMBIA el patrón completamente, NO repitas estructura
+- NUNCA uses el mismo inicio 2 veces seguidas
+- NUNCA uses el mismo emoji 2 veces seguidas
+
+Alterna inicios (INSPIRACIÓN, varía siempre, NO copies literal):
+- Español: "mmm", "uff", "ayy", "jaja", "oye", "damn", "wow", "uyy", "dale"
+- Inglés: "mmm", "uff", "omg", "damn", "fuck", "haha", "wow", "yess", "ooh"
+
+Alterna emojis: 😈 🔥 😏 💦 👅 🤤 💋 😘 🥵
+
+Ejemplo de ERROR (repetitivo):
+❌ "mmm yeah bby... 😈🔥"
+❌ "mmm yes bby... 😈🔥"  
+❌ "mmm yess bby... 😈🔥"
+
+Ejemplo de BIEN (variado):
+✅ "mmm yeah bby... 😈"
+✅ "uff I love that 🔥"
+✅ "fuck yess 🤤"
+✅ "omg bby u drive me crazy 💦"
+
+CREA tus propias variaciones, estos son SOLO ejemplos de tono.
 
 CUANDO EL FAN ESTÁ CALIENTE (mensajes sexuales):
 - NUNCA digas "ven a pvt", "come to pvt", "vamos a pvt" directamente
