@@ -10,7 +10,7 @@
   const CONFIG = {
     API_URL: 'https://camassist.vercel.app/api/generate',
     PLATFORM: 'streamate',
-    VERSION: '1.1.0',
+    VERSION: '1.1.5',
     CURRENCY: 'gold',
     MAX_CONTEXT_MESSAGES: 70
   };
