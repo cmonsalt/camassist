@@ -467,17 +467,44 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
       // Crear popup
       const popup = document.createElement('div');
       popup.id = 'ai-popup';
-      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid green;z-index:9999;border-radius:5px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:450px';
+      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid green;z-index:9999;border-radius:5px;box-shadow:0 4px 6px rgba(0,0,0,0.1);max-width:450px;cursor:move';
+
+      // Hacer el popup movible
+      let isDragging = false;
+      let offsetX, offsetY;
+
+      popup.addEventListener('mousedown', (e) => {
+        // No arrastrar si es el textarea o un botón
+        if (e.target === responseText || e.target.tagName === 'BUTTON') return;
+        isDragging = true;
+        offsetX = e.clientX - popup.getBoundingClientRect().left;
+        offsetY = e.clientY - popup.getBoundingClientRect().top;
+        popup.style.transform = 'none';
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        popup.style.left = (e.clientX - offsetX) + 'px';
+        popup.style.top = (e.clientY - offsetY) + 'px';
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
 
       const title = document.createElement('h3');
       title.style.marginTop = '0';
       title.textContent = `💬 ${isPM ? 'PM' : 'Público'} - @${username} ✅ Copiado!`;
 
       // RESPUESTA PARA COPIAR
-      const responseText = document.createElement('p');
+      const responseText = document.createElement('textarea');
       responseText.id = 'ai-response';
-      responseText.style.cssText = 'background:#f0f0f0;padding:10px;border-radius:3px;max-height:200px;overflow-y:auto;word-wrap:break-word;margin-bottom:10px';
-      responseText.textContent = data.suggestion;
+      responseText.style.cssText = 'background:#f0f0f0;padding:10px;border-radius:3px;height:100px;width:100%;resize:vertical;word-wrap:break-word;margin-bottom:10px;border:1px solid #ccc;font-family:inherit;font-size:14px;box-sizing:border-box';
+      responseText.value = data.suggestion;
+
+      responseText.addEventListener('keydown', (e) => {
+        e.stopPropagation();
+      });
 
       // MOSTRAR TRADUCCIÓN SOLO SI ES DIFERENTE (fan escribió en inglés)
       let translationText = null;
@@ -552,9 +579,27 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
       sendBtn.textContent = '📤 Enviar';
       sendBtn.style.cssText = 'margin-left:5px;padding:5px 10px;cursor:pointer;border-radius:3px;font-size:12px;background:#10B981;color:white;border:none';
       sendBtn.onclick = () => {
-        const text = responseText.textContent;
-        const input = document.querySelector('[data-testid="chat-input"]');
-        const sendButton = document.querySelector('[data-testid="send-button"]');
+        const text = responseText.value;
+
+        // Detectar si estamos en PM AL MOMENTO de enviar
+        const pmTabNow = document.querySelector('#pm-tab-default');
+        const isCurrentlyPM = pmTabNow && pmTabNow.classList.contains('active');
+
+        let input, sendButton;
+
+        // Si es PM, buscar selectores de PM primero
+        if (isCurrentlyPM) {
+          input = document.querySelector('div.theatermodeInputFieldPm[contenteditable="true"]');
+          sendButton = document.querySelector('button.SendButton.pm');
+        }
+
+        // Si no encontró (o es público), usar selectores de público
+        if (!input) {
+          input = document.querySelector('[data-testid="chat-input"]');
+        }
+        if (!sendButton) {
+          sendButton = document.querySelector('[data-testid="send-button"]');
+        }
 
         if (input && sendButton) {
           input.innerHTML = text;
