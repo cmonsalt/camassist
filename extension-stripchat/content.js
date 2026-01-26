@@ -89,28 +89,11 @@ function getHistoryFromDOM(username, isPM) {
   const history = [];
 
   if (isPM) {
-    const allMessages = document.querySelectorAll('div[data-message-id]');
+    const allMessages = document.querySelectorAll('div[data-message-id][class*="base-message"]');
 
     allMessages.forEach(msg => {
-      // Ignorar si no tiene base-message (contenedor padre vacío)
-      if (!msg.querySelector('[class*="base-message"]') && !msg.classList.contains('base-message')) {
-        // Pero revisar si es un tip
-        const tipEl = msg.querySelector('.tipped-message');
-        if (tipEl) {
-          const tipTextEl = msg.querySelector('.tip-message-text');
-          if (tipTextEl) {
-            const tipText = tipTextEl.textContent.trim();
-            const tipMatch = tipText.match(/(\d+)\s*(tk|tokens?)/i);
-            if (tipMatch) {
-              history.push({ type: 'tip', amount: parseInt(tipMatch[1]) });
-            }
-          }
-        }
-        return;
-      }
-
       // 1. DETECTAR TIP PRIMERO
-       if (msg.querySelector('.tipped-message')) {
+      if (msg.querySelector('.tipped-message')) {
         const tipTextEl = msg.querySelector('.tip-message-text');
         if (tipTextEl) {
           const tipText = tipTextEl.textContent.trim();
