@@ -41,15 +41,29 @@ export default async function handler(req, res) {
       max_break_minutes: 15
     };
 
-    // 3. Obtener modelos del studio
+    const defaultMinutes = studioSettings.min_hours_daily * 60;
+
+    // 3. Obtener modelos del studio (con shift_id)
     const { data: models } = await supabase
       .from('models')
-      .select('id, name')
+      .select('id, name, shift_id')
       .eq('studio_id', studio_id)
       .is('deleted_at', null)
       .order('name');
 
-    // 4. Obtener todas las entradas del rango de fechas
+    // 4. Obtener todos los turnos del studio
+    const { data: shifts } = await supabase
+      .from('shifts')
+      .select('id, name, hours, working_days')
+      .eq('studio_id', studio_id);
+
+    // Crear mapa de turnos para acceso rápido
+    const shiftsMap = {};
+    (shifts || []).forEach(s => {
+      shiftsMap[s.id] = s;
+    });
+
+    // 5. Obtener todas las entradas del rango de fechas
     const dateStart = new Date(fecha_inicio + 'T00:00:00-05:00');
     const dateEnd = new Date(fecha_fin + 'T23:59:59.999-05:00');
 
@@ -61,7 +75,7 @@ export default async function handler(req, res) {
       .lte('created_at', dateEnd.toISOString())
       .order('created_at', { ascending: true });
 
-    // 5. Obtener ganancias del rango
+    // 6. Obtener ganancias del rango
     const { data: allEarnings } = await supabase
       .from('daily_earnings')
       .select('*')
@@ -69,7 +83,7 @@ export default async function handler(req, res) {
       .gte('date', fecha_inicio)
       .lte('date', fecha_fin);
 
-    // 6. Obtener notas del rango
+    // 7. Obtener notas del rango
     const { data: allNotes } = await supabase
       .from('day_notes')
       .select('*')
@@ -77,7 +91,7 @@ export default async function handler(req, res) {
       .gte('date', fecha_inicio)
       .lte('date', fecha_fin);
 
-    // 7. Procesar datos por modelo y por día
+    // 8. Procesar datos por modelo y por día
     const reportData = [];
     const modelTotals = {};
 
@@ -91,8 +105,13 @@ export default async function handler(req, res) {
     }
 
     for (const model of models) {
+      // Obtener turno del modelo
+      const modelShift = model.shift_id ? shiftsMap[model.shift_id] : null;
+      const minMinutesRequired = modelShift ? modelShift.hours * 60 : defaultMinutes;
+
       modelTotals[model.id] = {
         name: model.name,
+        shiftName: modelShift?.name || 'Default',
         totalWorkedMinutes: 0,
         totalBreakMinutes: 0,
         daysWorked: 0,
@@ -143,13 +162,12 @@ export default async function handler(req, res) {
 
         const totalWorkedMinutes = Math.floor(totalWorkedMs / 60000);
         const totalBreakMinutes = Math.floor(totalBreakMs / 60000);
-        const minMinutesRequired = studioSettings.min_hours_daily * 60;
         const maxBreakMinutes = studioSettings.max_break_minutes || 15;
         const effectiveBreakMinutes = Math.min(totalBreakMinutes, maxBreakMinutes);
         const totalShiftMinutes = totalWorkedMinutes + effectiveBreakMinutes;
         const isCompliant = totalShiftMinutes >= minMinutesRequired;
 
-        // Minutos pendientes
+        // Minutos pendientes (usa el turno del modelo)
         const minutesPending = Math.max(0, minMinutesRequired - totalShiftMinutes);
 
         // Exceso de break
@@ -170,17 +188,19 @@ export default async function handler(req, res) {
         const dayNote = (allNotes || []).find(n =>
           n.model_id === model.id && n.date === date
         );
-        const observacion = dayNote ? `${getNoteLabel(dayNote.note_type)}${dayNote.note ? ': ' + dayNote.note : ''}` : '';
+        const observacion = dayNote ? `${getNoteLabel(dayNote.note_type, dayNote.custom_name)}${dayNote.note ? ': ' + dayNote.note : ''}` : '';
 
         // Solo agregar si trabajó ese día O tiene nota
         if (checkInTime || dayNote) {
           reportData.push({
             modelo: model.name,
+            turno: modelShift?.name || 'Default',
             fecha: date,
             checkIn: checkInTime ? formatTime(checkInTime) : '-',
             checkOut: checkOutTime ? formatTime(checkOutTime) : '-',
             horasTrabajadas: formatMinutes(totalWorkedMinutes),
             horasDecimal: (totalWorkedMinutes / 60).toFixed(2),
+            horasRequeridas: (minMinutesRequired / 60).toFixed(1),
             minPendientes: minutesPending,
             breaks: breaksCount,
             minBreak: totalBreakMinutes,
@@ -206,7 +226,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 8. Crear Excel
+    // 9. Crear Excel
     const workbook = new ExcelJS.Workbook();
     workbook.creator = 'CamAssist';
     workbook.created = new Date();
@@ -215,18 +235,18 @@ export default async function handler(req, res) {
     const sheetDetalle = workbook.addWorksheet('Detalle Diario');
 
     // Encabezado
-    sheetDetalle.mergeCells('A1:P1');
+    sheetDetalle.mergeCells('A1:R1');
     sheetDetalle.getCell('A1').value = `Reporte de Tiempo - ${studio?.name || 'Studio'}`;
     sheetDetalle.getCell('A1').font = { bold: true, size: 16, color: { argb: 'FF9333EA' } };
     sheetDetalle.getCell('A1').alignment = { horizontal: 'center' };
 
-    sheetDetalle.mergeCells('A2:P2');
+    sheetDetalle.mergeCells('A2:R2');
     sheetDetalle.getCell('A2').value = `Período: ${fecha_inicio} al ${fecha_fin}`;
     sheetDetalle.getCell('A2').font = { size: 12, color: { argb: 'FF666666' } };
     sheetDetalle.getCell('A2').alignment = { horizontal: 'center' };
 
-    // Headers de tabla
-    const headers = ['Modelo', 'Fecha', 'Entrada', 'Salida', 'Horas Trabajadas', 'Horas (decimal)', 'Min Pendientes', 'Breaks', 'Min Break', 'Exceso Break', 'Cumplió', 'Ganancias', 'Seg Inicio', 'Seg Fin', 'Seg Ganados', 'Observaciones'];
+    // Headers de tabla (agregamos Turno y Horas Requeridas)
+    const headers = ['Modelo', 'Turno', 'Fecha', 'Entrada', 'Salida', 'Horas Trabajadas', 'Horas (decimal)', 'Horas Req.', 'Min Pendientes', 'Breaks', 'Min Break', 'Exceso Break', 'Cumplió', 'Ganancias', 'Seg Inicio', 'Seg Fin', 'Seg Ganados', 'Observaciones'];
     sheetDetalle.addRow([]);
     const headerRow = sheetDetalle.addRow(headers);
     headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -241,11 +261,13 @@ export default async function handler(req, res) {
     reportData.forEach(row => {
       const dataRow = sheetDetalle.addRow([
         row.modelo,
+        row.turno,
         row.fecha,
         row.checkIn,
         row.checkOut,
         row.horasTrabajadas,
         parseFloat(row.horasDecimal),
+        parseFloat(row.horasRequeridas),
         row.minPendientes,
         row.breaks,
         row.minBreak,
@@ -260,21 +282,21 @@ export default async function handler(req, res) {
 
       // Color según cumplimiento
       if (row.cumplimiento === 'No') {
-        dataRow.getCell(11).font = { color: { argb: 'FFDC2626' } };
+        dataRow.getCell(13).font = { color: { argb: 'FFDC2626' } };
       } else if (row.cumplimiento === 'Sí') {
-        dataRow.getCell(11).font = { color: { argb: 'FF16A34A' } };
+        dataRow.getCell(13).font = { color: { argb: 'FF16A34A' } };
       }
 
       // Color rojo si hay exceso de break
       if (row.excesoBreak > 0) {
-        dataRow.getCell(10).font = { color: { argb: 'FFDC2626' } };
+        dataRow.getCell(12).font = { color: { argb: 'FFDC2626' } };
       }
     });
 
     // Ajustar anchos
     sheetDetalle.columns = [
-      { width: 20 }, { width: 12 }, { width: 10 }, { width: 10 },
-      { width: 15 }, { width: 12 }, { width: 12 }, { width: 8 },
+      { width: 18 }, { width: 14 }, { width: 12 }, { width: 10 }, { width: 10 },
+      { width: 15 }, { width: 12 }, { width: 10 }, { width: 12 }, { width: 8 },
       { width: 10 }, { width: 12 }, { width: 10 }, { width: 12 },
       { width: 10 }, { width: 10 }, { width: 12 }, { width: 30 }
     ];
@@ -282,17 +304,17 @@ export default async function handler(req, res) {
     // === HOJA 2: Resumen por modelo ===
     const sheetResumen = workbook.addWorksheet('Resumen por Modelo');
 
-    sheetResumen.mergeCells('A1:I1');
+    sheetResumen.mergeCells('A1:J1');
     sheetResumen.getCell('A1').value = `Resumen por Modelo - ${studio?.name || 'Studio'}`;
     sheetResumen.getCell('A1').font = { bold: true, size: 16, color: { argb: 'FF9333EA' } };
     sheetResumen.getCell('A1').alignment = { horizontal: 'center' };
 
-    sheetResumen.mergeCells('A2:I2');
+    sheetResumen.mergeCells('A2:J2');
     sheetResumen.getCell('A2').value = `Período: ${fecha_inicio} al ${fecha_fin}`;
     sheetResumen.getCell('A2').font = { size: 12, color: { argb: 'FF666666' } };
     sheetResumen.getCell('A2').alignment = { horizontal: 'center' };
 
-    const resumenHeaders = ['Modelo', 'Días Trabajados', 'Días Cumplió', '% Cumplimiento', 'Total Horas', 'Promedio/Día', 'Total Break', 'Ganancias', 'Seg Ganados'];
+    const resumenHeaders = ['Modelo', 'Turno', 'Días Trabajados', 'Días Cumplió', '% Cumplimiento', 'Total Horas', 'Promedio/Día', 'Total Break', 'Ganancias', 'Seg Ganados'];
     sheetResumen.addRow([]);
     const resumenHeaderRow = sheetResumen.addRow(resumenHeaders);
     resumenHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -318,6 +340,7 @@ export default async function handler(req, res) {
 
         sheetResumen.addRow([
           model.name,
+          model.shiftName,
           model.daysWorked,
           model.daysCompliant,
           `${cumplimientoPct}%`,
@@ -339,6 +362,7 @@ export default async function handler(req, res) {
     sheetResumen.addRow([]);
     const totalRow = sheetResumen.addRow([
       'TOTAL',
+      '-',
       totalDiasGeneral,
       '-',
       '-',
@@ -356,11 +380,11 @@ export default async function handler(req, res) {
     };
 
     sheetResumen.columns = [
-      { width: 20 }, { width: 15 }, { width: 12 }, { width: 14 },
+      { width: 18 }, { width: 14 }, { width: 15 }, { width: 12 }, { width: 14 },
       { width: 12 }, { width: 12 }, { width: 12 }, { width: 12 }, { width: 12 }
     ];
 
-    // 9. Generar buffer y enviar
+    // 10. Generar buffer y enviar
     const buffer = await workbook.xlsx.writeBuffer();
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
