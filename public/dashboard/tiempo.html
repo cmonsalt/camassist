@@ -302,6 +302,57 @@
             </div>
         </div>
     </div>
+    <!-- Modal para editar tiempo -->
+    <div id="editTimeModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-xl font-bold mb-4">✏️ Editar Registro de Tiempo</h3>
+            <p class="text-gray-600 mb-2">Modelo: <strong id="editTimeModelName">-</strong></p>
+            <p class="text-gray-600 mb-4">Fecha: <strong id="editTimeDate">-</strong></p>
+
+            <input type="hidden" id="editTimeModelId">
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">🟢 Entrada</label>
+                    <input type="time" id="editCheckIn"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">🔴 Salida</label>
+                    <input type="time" id="editCheckOut"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">📝 Motivo del cambio</label>
+                <input type="text" id="editTimeReason"
+                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                    placeholder="Ej: Olvidó marcar salida">
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <p class="text-sm text-yellow-700">
+                    ⚠️ Esto reemplazará los registros existentes de este día para esta modelo.
+                </p>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="saveTimeEdit()"
+                    class="flex-1 bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700">
+                    💾 Guardar
+                </button>
+                <button onclick="deleteTimeEntry()"
+                    class="px-4 py-3 bg-red-100 text-red-600 rounded-lg font-semibold hover:bg-red-200">
+                    🗑️
+                </button>
+                <button onclick="closeEditTimeModal()"
+                    class="flex-1 bg-gray-200 py-3 rounded-lg font-semibold hover:bg-gray-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
         const API_BASE = 'https://camassist.vercel.app/api';
@@ -506,17 +557,21 @@
                             ` : ''}
                         </td>
                         <td class="px-6 py-4 text-center">
-                            <div class="flex justify-center gap-2">
-                                <button onclick="openEarningsModal('${model.id}', '${model.name}')" 
-                                        class="text-purple-600 hover:text-purple-800" title="Ingresar ganancias">
-                                    💰
-                                </button>
-                                <button onclick="openNoteModal('${model.id}', '${model.name}')" 
-                                        class="text-gray-600 hover:text-gray-800" title="Agregar nota">
-                                    📝
-                                </button>
-                            </div>
-                        </td>
+    <div class="flex justify-center gap-2">
+        <button onclick="openEditTimeModal('${model.id}', '${model.name}')" 
+                class="text-blue-600 hover:text-blue-800" title="Editar tiempo">
+            ✏️
+        </button>
+        <button onclick="openEarningsModal('${model.id}', '${model.name}')" 
+                class="text-purple-600 hover:text-purple-800" title="Ingresar ganancias">
+            💰
+        </button>
+        <button onclick="openNoteModal('${model.id}', '${model.name}')" 
+                class="text-gray-600 hover:text-gray-800" title="Agregar nota">
+            📝
+        </button>
+    </div>
+</td>
                     </tr>
                 `;
             }).join('');
@@ -799,6 +854,115 @@
 
         // Cargar balance al inicio
         loadBalance();
+
+        // === EDIT TIME MODAL ===
+        async function openEditTimeModal(modelId, modelName) {
+            document.getElementById('editTimeModelId').value = modelId;
+            document.getElementById('editTimeModelName').textContent = modelName;
+
+            const date = document.getElementById('selectedDate').value;
+            document.getElementById('editTimeDate').textContent = date;
+
+            // Limpiar campos
+            document.getElementById('editCheckIn').value = '';
+            document.getElementById('editCheckOut').value = '';
+            document.getElementById('editTimeReason').value = '';
+
+            // Cargar registros existentes
+            try {
+                const res = await fetch(`${API_BASE}/time/manual-entry?model_id=${modelId}&date=${date}`);
+                const data = await res.json();
+
+                if (data.success && data.parsed) {
+                    if (data.parsed.checkIn) {
+                        const checkInTime = new Date(data.parsed.checkIn.created_at);
+                        document.getElementById('editCheckIn').value =
+                            checkInTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Bogota' });
+                    }
+                    if (data.parsed.checkOut) {
+                        const checkOutTime = new Date(data.parsed.checkOut.created_at);
+                        document.getElementById('editCheckOut').value =
+                            checkOutTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Bogota' });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading time entries:', error);
+            }
+
+            document.getElementById('editTimeModal').classList.remove('hidden');
+            document.getElementById('editTimeModal').classList.add('flex');
+        }
+
+        function closeEditTimeModal() {
+            document.getElementById('editTimeModal').classList.add('hidden');
+            document.getElementById('editTimeModal').classList.remove('flex');
+        }
+
+        async function saveTimeEdit() {
+            const modelId = document.getElementById('editTimeModelId').value;
+            const date = document.getElementById('selectedDate').value;
+            const checkIn = document.getElementById('editCheckIn').value;
+            const checkOut = document.getElementById('editCheckOut').value;
+            const reason = document.getElementById('editTimeReason').value;
+
+            if (!checkIn && !checkOut) {
+                alert('Ingresa al menos entrada o salida');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/time/manual-entry`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model_id: modelId,
+                        studio_id: studioId,
+                        date,
+                        check_in: checkIn || null,
+                        check_out: checkOut || null,
+                        edited_reason: reason
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    closeEditTimeModal();
+                    loadData();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al guardar');
+            }
+        }
+
+        async function deleteTimeEntry() {
+            if (!confirm('¿Eliminar todos los registros de tiempo de este día?')) return;
+
+            const modelId = document.getElementById('editTimeModelId').value;
+            const date = document.getElementById('selectedDate').value;
+
+            try {
+                const res = await fetch(`${API_BASE}/time/manual-entry`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model_id: modelId, date })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    closeEditTimeModal();
+                    loadData();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
 
         // function exportCSV() {
         //     if (!modelsData || modelsData.length === 0) {
