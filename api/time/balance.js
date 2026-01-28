@@ -28,14 +28,26 @@ export default async function handler(req, res) {
 
     const defaultMinutes = (settings?.min_hours_daily || 6) * 60;
 
-    // 2. Obtener modelos con su turno asignado
+    // 2. Obtener modelos
     const { data: models } = await supabase
       .from('models')
-      .select('id, name, shift_id, shifts(hours)')
+      .select('id, name, shift_id')
       .eq('studio_id', studio_id)
       .is('deleted_at', null);
 
-    // 3. Obtener todas las entradas de tiempo en el rango
+    // 3. Obtener todos los turnos del studio
+    const { data: shifts } = await supabase
+      .from('shifts')
+      .select('id, name, hours, working_days')
+      .eq('studio_id', studio_id);
+
+    // Crear mapa de turnos para acceso rápido
+    const shiftsMap = {};
+    (shifts || []).forEach(s => {
+      shiftsMap[s.id] = s;
+    });
+
+    // 4. Obtener todas las entradas de tiempo en el rango
     let entriesQuery = supabase
       .from('time_entries')
       .select('*')
@@ -47,7 +59,7 @@ export default async function handler(req, res) {
 
     const { data: entries } = await entriesQuery;
 
-    // 4. Obtener notas en el rango
+    // 5. Obtener notas en el rango
     let notesQuery = supabase
       .from('day_notes')
       .select('*')
@@ -58,11 +70,14 @@ export default async function handler(req, res) {
 
     const { data: notes } = await notesQuery;
 
-    // 5. Calcular balance por modelo
+    // 6. Calcular balance por modelo
     const balances = models.map(model => {
+      // Obtener turno del modelo (si tiene)
+      const modelShift = model.shift_id ? shiftsMap[model.shift_id] : null;
+      
       // Minutos esperados por día para este modelo
-      const expectedMinutesPerDay = model.shifts?.hours 
-        ? model.shifts.hours * 60 
+      const expectedMinutesPerDay = modelShift 
+        ? modelShift.hours * 60 
         : defaultMinutes;
 
       // Filtrar entradas de este modelo
@@ -136,6 +151,7 @@ export default async function handler(req, res) {
       return {
         model_id: model.id,
         model_name: model.name,
+        shift_name: modelShift?.name || 'Default',
         expected_minutes: totalExpectedMinutes,
         worked_minutes: totalWorkedMinutes,
         balance_minutes: balanceMinutes,
