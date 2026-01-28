@@ -106,7 +106,7 @@ export default async function handler(req, res) {
         const dayEnd = new Date(date + 'T23:59:59.999-05:00');
 
         // Filtrar entradas de este modelo en este día
-        const entries = (allEntries || []).filter(e => 
+        const entries = (allEntries || []).filter(e =>
           e.model_id === model.id &&
           new Date(e.created_at) >= dayStart &&
           new Date(e.created_at) <= dayEnd
@@ -156,7 +156,7 @@ export default async function handler(req, res) {
         const breakExcessMinutes = Math.max(0, totalBreakMinutes - maxBreakMinutes);
 
         // Ganancias del día
-        const dayEarnings = (allEarnings || []).find(e => 
+        const dayEarnings = (allEarnings || []).find(e =>
           e.model_id === model.id && e.date === date
         );
         const earnings = dayEarnings ? (dayEarnings.tokens || dayEarnings.earnings || 0) : 0;
@@ -167,7 +167,7 @@ export default async function handler(req, res) {
         const followersGained = followersEnd - followersStart;
 
         // Nota del día
-        const dayNote = (allNotes || []).find(n => 
+        const dayNote = (allNotes || []).find(n =>
           n.model_id === model.id && n.date === date
         );
         const observacion = dayNote ? `${getNoteLabel(dayNote.note_type)}${dayNote.note ? ': ' + dayNote.note : ''}` : '';
@@ -274,7 +274,7 @@ export default async function handler(req, res) {
     // Ajustar anchos
     sheetDetalle.columns = [
       { width: 20 }, { width: 12 }, { width: 10 }, { width: 10 },
-      { width: 15 }, { width: 12 }, { width: 12 }, { width: 8 }, 
+      { width: 15 }, { width: 12 }, { width: 12 }, { width: 8 },
       { width: 10 }, { width: 12 }, { width: 10 }, { width: 12 },
       { width: 10 }, { width: 10 }, { width: 12 }, { width: 30 }
     ];
@@ -375,8 +375,8 @@ export default async function handler(req, res) {
 
 function formatTime(isoString) {
   const date = new Date(isoString);
-  return date.toLocaleTimeString('es-CO', { 
-    hour: '2-digit', 
+  return date.toLocaleTimeString('es-CO', {
+    hour: '2-digit',
     minute: '2-digit',
     hour12: true,
     timeZone: 'America/Bogota'
@@ -389,16 +389,13 @@ function formatMinutes(minutes) {
   return `${hours}h ${mins}m`;
 }
 
-function getNoteLabel(noteType) {
+function getNoteLabel(noteType, customName = null) {
   const labels = {
-    'day_off': 'Día libre',
-    'holiday': 'Festivo',
-    'medical': 'Médico',
-    'permission': 'Permiso',
-    'late': 'Tarde',
-    'early_leave': 'Salió temprano',
-    'absent': 'Inasistencia',
-    'other': 'Otro'
+    'permission': '📋 Permiso',
+    'absence': '❌ Falta',
+    'late': '⏰ Llegó tarde',
+    'left_early': '🏃 Salió temprano',
+    'other': customName ? `📌 ${customName}` : '📌 Otro'
   };
   return labels[noteType] || noteType;
 }

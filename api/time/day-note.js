@@ -5,15 +5,12 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
-// Tipos de notas válidos
+// Tipos de notas válidos (simplificados)
 const VALID_NOTE_TYPES = [
-  'day_off',      // Día libre (domingo)
-  'holiday',      // Festivo (navidad, integración, etc.)
-  'medical',      // Motivo médico
-  'permission',   // Permiso personal
+  'permission',   // Permiso
+  'absence',      // Falta
   'late',         // Llegó tarde
-  'early_leave',  // Se fue temprano
-  'absent',       // Inasistencia
+  'left_early',   // Salió temprano
   'other'         // Otro
 ];
 
@@ -53,7 +50,7 @@ export default async function handler(req, res) {
 
   // POST - Guardar nota
   if (req.method === 'POST') {
-    const { model_id, studio_id, date, note_type, note } = req.body;
+    const { model_id, studio_id, date, note_type, note, custom_name, must_recover } = req.body;
 
     if (!model_id || !studio_id || !date || !note_type) {
       return res.status(400).json({ error: 'Faltan campos requeridos: model_id, studio_id, date, note_type' });
@@ -74,7 +71,9 @@ export default async function handler(req, res) {
           studio_id,
           date,
           note_type,
-          note: note || null
+          note: note || null,
+          custom_name: custom_name || null,
+          must_recover: must_recover ?? true
         }, {
           onConflict: 'model_id,date'
         })
@@ -83,7 +82,7 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      console.log(`📝 Nota guardada: ${model_id} - ${date} - ${note_type}`);
+      console.log(`📝 Nota guardada: ${model_id} - ${date} - ${note_type} - Reponer: ${must_recover}`);
 
       return res.status(200).json({
         success: true,

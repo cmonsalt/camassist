@@ -205,6 +205,19 @@
                         </table>
                     </div>
                 </div>
+                <!-- Sección Balance de Horas -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-gray-800">📊 Balance de Horas (Mes actual)</h2>
+                        <button onclick="loadBalance()" class="text-purple-600 hover:text-purple-800">
+                            🔄 Actualizar
+                        </button>
+                    </div>
+
+                    <div id="balanceContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Se llena dinámicamente -->
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -244,22 +257,37 @@
 
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de nota</label>
-                <select id="noteType" class="w-full px-4 py-2 border rounded-lg">
-                    <option value="day_off">🌙 Día libre (Domingo)</option>
-                    <option value="holiday">🎉 Festivo / Integración</option>
-                    <option value="medical">🏥 Motivo médico</option>
-                    <option value="permission">📋 Permiso personal</option>
+                <select id="noteType" class="w-full px-4 py-2 border rounded-lg" onchange="toggleCustomName()">
+                    <option value="permission">📋 Permiso</option>
+                    <option value="absence">❌ Falta</option>
                     <option value="late">⏰ Llegó tarde</option>
-                    <option value="early_leave">🚪 Se fue temprano</option>
-                    <option value="absent">❌ Inasistencia</option>
+                    <option value="left_early">🏃 Salió temprano</option>
                     <option value="other">📌 Otro</option>
                 </select>
             </div>
 
-            <div class="mb-6">
+            <!-- Campo nombre custom (solo para "Otro") -->
+            <div id="customNameContainer" class="mb-4 hidden">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Nombre de la nota</label>
+                <input type="text" id="customName" class="w-full px-4 py-2 border rounded-lg"
+                    placeholder="Ej: Viaje familiar, Cita médica...">
+            </div>
+
+            <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Observación (opcional)</label>
-                <textarea id="noteText" class="w-full px-4 py-2 border rounded-lg" rows="3"
-                    placeholder="Ej: Se fue temprano por cita médica"></textarea>
+                <textarea id="noteText" class="w-full px-4 py-2 border rounded-lg" rows="2"
+                    placeholder="Ej: Se fue temprano por emergencia"></textarea>
+            </div>
+
+            <!-- ¿Debe reponer horas? -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="mustRecover" class="w-5 h-5 text-purple-600 rounded">
+                    <div>
+                        <span class="font-medium text-gray-700">¿Debe reponer horas?</span>
+                        <p class="text-xs text-gray-500">Si marca esta opción, las horas se sumarán como deuda</p>
+                    </div>
+                </label>
             </div>
 
             <div class="flex gap-3">
@@ -514,16 +542,13 @@
             return '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">❌ No cumple</span>';
         }
 
-        function getNoteLabel(noteType) {
+        function getNoteLabel(noteType, customName = null) {
             const labels = {
-                'day_off': 'Día libre',
-                'holiday': 'Festivo',
-                'medical': 'Médico',
-                'permission': 'Permiso',
-                'late': 'Tarde',
-                'early_leave': 'Salió temprano',
-                'absent': 'Inasistencia',
-                'other': 'Otro'
+                'permission': '📋 Permiso',
+                'absence': '❌ Falta',
+                'late': '⏰ Llegó tarde',
+                'left_early': '🏃 Salió temprano',
+                'other': customName ? `📌 ${customName}` : '📌 Otro'
             };
             return labels[noteType] || noteType;
         }
@@ -639,11 +664,24 @@
         }
 
         // === NOTE MODAL ===
+        function toggleCustomName() {
+            const noteType = document.getElementById('noteType').value;
+            const container = document.getElementById('customNameContainer');
+            if (noteType === 'other') {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
         function openNoteModal(modelId, modelName) {
             document.getElementById('noteModalModelId').value = modelId;
             document.getElementById('noteModalModelName').textContent = modelName;
-            document.getElementById('noteType').value = 'day_off';
+            document.getElementById('noteType').value = 'permission';
             document.getElementById('noteText').value = '';
+            document.getElementById('customName').value = '';
+            document.getElementById('mustRecover').checked = false;
+            document.getElementById('customNameContainer').classList.add('hidden');
 
             document.getElementById('noteModal').classList.remove('hidden');
             document.getElementById('noteModal').classList.add('flex');
@@ -659,6 +697,8 @@
             const date = document.getElementById('selectedDate').value;
             const noteType = document.getElementById('noteType').value;
             const note = document.getElementById('noteText').value;
+            const customName = document.getElementById('customName').value;
+            const mustRecover = document.getElementById('mustRecover').checked;
 
             try {
                 await fetch(`${API_BASE}/time/day-note`, {
@@ -669,7 +709,9 @@
                         studio_id: studioId,
                         date,
                         note_type: noteType,
-                        note
+                        note,
+                        custom_name: noteType === 'other' ? customName : null,
+                        must_recover: mustRecover
                     })
                 });
 
@@ -685,6 +727,78 @@
             localStorage.removeItem('studio_name');
             window.location.href = '/dashboard/login.html';
         }
+
+        // === BALANCE ===
+        async function loadBalance() {
+            const container = document.getElementById('balanceContainer');
+            container.innerHTML = '<div class="col-span-3 text-center text-gray-500">Cargando...</div>';
+
+            // Obtener primer día del mes
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString('en-CA');
+            const today = now.toLocaleDateString('en-CA');
+
+            try {
+                const res = await fetch(`${API_BASE}/time/balance?studio_id=${studioId}&start_date=${firstDay}&end_date=${today}`);
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.error);
+
+                if (data.balances.length === 0) {
+                    container.innerHTML = '<div class="col-span-3 text-center text-gray-500">No hay datos</div>';
+                    return;
+                }
+
+                container.innerHTML = data.balances.map(b => {
+                    const hours = Math.floor(Math.abs(b.balance_minutes) / 60);
+                    const mins = Math.abs(b.balance_minutes) % 60;
+                    const sign = b.balance_minutes >= 0 ? '+' : '-';
+                    const balanceText = `${sign}${hours}h ${mins}m`;
+
+                    let statusClass, statusIcon, statusBg;
+                    if (b.status === 'ok') {
+                        statusClass = 'text-green-600';
+                        statusIcon = '✅';
+                        statusBg = 'bg-green-50 border-green-200';
+                    } else if (b.status === 'warning') {
+                        statusClass = 'text-yellow-600';
+                        statusIcon = '⚠️';
+                        statusBg = 'bg-yellow-50 border-yellow-200';
+                    } else {
+                        statusClass = 'text-red-600';
+                        statusIcon = '🔴';
+                        statusBg = 'bg-red-50 border-red-200';
+                    }
+
+                    const workedHours = Math.floor(b.worked_minutes / 60);
+                    const workedMins = b.worked_minutes % 60;
+                    const expectedHours = Math.floor(b.expected_minutes / 60);
+                    const expectedMins = b.expected_minutes % 60;
+
+                    return `
+                <div class="border rounded-lg p-4 ${statusBg}">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="font-medium text-gray-800">${b.model_name}</span>
+                        <span class="text-lg">${statusIcon}</span>
+                    </div>
+                    <div class="text-2xl font-bold ${statusClass} mb-2">${balanceText}</div>
+                    <div class="text-xs text-gray-500">
+                        <div>Trabajado: ${workedHours}h ${workedMins}m</div>
+                        <div>Esperado: ${expectedHours}h ${expectedMins}m</div>
+                        <div>Días: ${b.days_worked}</div>
+                    </div>
+                </div>
+            `;
+                }).join('');
+
+            } catch (error) {
+                console.error('Error loading balance:', error);
+                container.innerHTML = '<div class="col-span-3 text-center text-red-500">Error cargando balance</div>';
+            }
+        }
+
+        // Cargar balance al inicio
+        loadBalance();
 
         // function exportCSV() {
         //     if (!modelsData || modelsData.length === 0) {
