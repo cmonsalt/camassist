@@ -176,14 +176,44 @@
                         </div>
 
                         <!-- Agregar turno -->
-                        <div class="flex gap-2">
-                            <input type="text" id="newShiftName" placeholder="Nombre (ej: Turno Mañana)"
-                                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                            <input type="number" id="newShiftHours" placeholder="Horas" min="1" max="24" step="0.5"
-                                class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <div class="space-y-3 border-t pt-4">
+                            <div class="flex gap-2">
+                                <input type="text" id="newShiftName" placeholder="Nombre (ej: Turno Mañana)"
+                                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <input type="number" id="newShiftHours" placeholder="Horas" min="1" max="24" step="0.5"
+                                    class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm text-gray-600 mb-2">Días de trabajo:</label>
+                                <div class="flex flex-wrap gap-2">
+                                    <label class="flex items-center gap-1 text-sm">
+                                        <input type="checkbox" id="day_mon" checked class="rounded"> Lun
+                                    </label>
+                                    <label class="flex items-center gap-1 text-sm">
+                                        <input type="checkbox" id="day_tue" checked class="rounded"> Mar
+                                    </label>
+                                    <label class="flex items-center gap-1 text-sm">
+                                        <input type="checkbox" id="day_wed" checked class="rounded"> Mié
+                                    </label>
+                                    <label class="flex items-center gap-1 text-sm">
+                                        <input type="checkbox" id="day_thu" checked class="rounded"> Jue
+                                    </label>
+                                    <label class="flex items-center gap-1 text-sm">
+                                        <input type="checkbox" id="day_fri" checked class="rounded"> Vie
+                                    </label>
+                                    <label class="flex items-center gap-1 text-sm">
+                                        <input type="checkbox" id="day_sat" checked class="rounded"> Sáb
+                                    </label>
+                                    <label class="flex items-center gap-1 text-sm">
+                                        <input type="checkbox" id="day_sun" class="rounded"> Dom
+                                    </label>
+                                </div>
+                            </div>
+
                             <button onclick="createShift()"
-                                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                                ➕ Agregar
+                                class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                                ➕ Agregar Turno
                             </button>
                         </div>
                     </div>
@@ -371,18 +401,31 @@
                 return;
             }
 
-            container.innerHTML = shiftsData.map(shift => `
-        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div>
-                <span class="font-medium">${shift.name}</span>
-                <span class="text-gray-500 ml-2">${shift.hours}h</span>
+            const dayLabels = {
+                'mon': 'Lun', 'tue': 'Mar', 'wed': 'Mié',
+                'thu': 'Jue', 'fri': 'Vie', 'sat': 'Sáb', 'sun': 'Dom'
+            };
+
+            container.innerHTML = shiftsData.map(shift => {
+                const days = (shift.working_days || 'mon,tue,wed,thu,fri,sat')
+                    .split(',')
+                    .map(d => dayLabels[d] || d)
+                    .join(', ');
+
+                return `
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                    <span class="font-medium">${shift.name}</span>
+                    <span class="text-purple-600 ml-2">${shift.hours}h</span>
+                    <div class="text-xs text-gray-500">${days}</div>
+                </div>
+                <button onclick="deleteShift('${shift.id}')" 
+                        class="text-red-500 hover:text-red-700 text-sm">
+                    🗑️
+                </button>
             </div>
-            <button onclick="deleteShift('${shift.id}')" 
-                    class="text-red-500 hover:text-red-700 text-sm">
-                🗑️ Eliminar
-            </button>
-        </div>
-    `).join('');
+        `;
+            }).join('');
         }
 
         async function createShift() {
@@ -394,11 +437,22 @@
                 return;
             }
 
+            // Obtener días seleccionados
+            const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+            const selectedDays = days.filter(d => document.getElementById(`day_${d}`)?.checked);
+
+            if (selectedDays.length === 0) {
+                alert('Selecciona al menos un día de trabajo');
+                return;
+            }
+
+            const working_days = selectedDays.join(',');
+
             try {
                 const res = await fetch(`${API_BASE}/time/shifts`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ studio_id: studioId, name, hours })
+                    body: JSON.stringify({ studio_id: studioId, name, hours, working_days })
                 });
 
                 const data = await res.json();
@@ -406,6 +460,11 @@
                 if (data.success) {
                     document.getElementById('newShiftName').value = '';
                     document.getElementById('newShiftHours').value = '';
+                    // Reset checkboxes
+                    days.forEach(d => {
+                        const cb = document.getElementById(`day_${d}`);
+                        if (cb) cb.checked = d !== 'sun'; // Todo marcado excepto domingo
+                    });
                     loadShifts();
                 } else {
                     alert('Error: ' + data.error);
@@ -415,7 +474,6 @@
                 alert('Error al crear turno');
             }
         }
-
         async function deleteShift(shiftId) {
             if (!confirm('¿Eliminar este turno? Las modelos asignadas quedarán sin turno.')) return;
 

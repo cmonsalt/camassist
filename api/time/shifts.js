@@ -39,7 +39,7 @@ export default async function handler(req, res) {
 
   // POST - Crear turno
   if (req.method === 'POST') {
-    const { studio_id, name, hours } = req.body;
+    const { studio_id, name, hours, working_days } = req.body;
 
     if (!studio_id || !name || !hours) {
       return res.status(400).json({ error: 'Faltan campos: studio_id, name, hours' });
@@ -52,16 +52,21 @@ export default async function handler(req, res) {
     try {
       const { data, error } = await supabase
         .from('shifts')
-        .insert({ studio_id, name, hours })
+        .insert({
+          studio_id,
+          name,
+          hours,
+          working_days: working_days || 'mon,tue,wed,thu,fri,sat'
+        })
         .select()
         .single();
 
       if (error) throw error;
 
-      console.log(`📋 Turno creado: ${name} - ${hours}h`);
+      console.log(`📋 Turno creado: ${name} - ${hours}h - ${working_days}`);
 
-      return res.status(200).json({ 
-        success: true, 
+      return res.status(200).json({
+        success: true,
         shift: data,
         message: `Turno "${name}" creado`
       });
@@ -74,7 +79,7 @@ export default async function handler(req, res) {
 
   // PUT - Actualizar turno
   if (req.method === 'PUT') {
-    const { id, name, hours } = req.body;
+    const { id, name, hours, working_days } = req.body;
 
     if (!id) {
       return res.status(400).json({ error: 'id requerido' });
@@ -84,6 +89,7 @@ export default async function handler(req, res) {
       const updates = {};
       if (name) updates.name = name;
       if (hours) updates.hours = hours;
+      if (working_days) updates.working_days = working_days;
 
       const { data, error } = await supabase
         .from('shifts')
@@ -94,8 +100,8 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      return res.status(200).json({ 
-        success: true, 
+      return res.status(200).json({
+        success: true,
         shift: data,
         message: 'Turno actualizado'
       });
@@ -129,8 +135,8 @@ export default async function handler(req, res) {
 
       if (error) throw error;
 
-      return res.status(200).json({ 
-        success: true, 
+      return res.status(200).json({
+        success: true,
         message: 'Turno eliminado'
       });
 
