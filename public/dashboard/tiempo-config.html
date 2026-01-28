@@ -488,10 +488,14 @@
         // === ASSIGN SHIFTS TO MODELS ===
         async function loadModelsForShifts() {
             try {
-                const res = await fetch(`${API_BASE}/models?studio_id=${studioId}`);
+                const res = await fetch(`${API_BASE}/get-models`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studio_id: studioId })
+                });
                 const data = await res.json();
 
-                if (data.success || data.models) {
+                if (data.success && data.models) {
                     renderModelsShiftsList(data.models);
                 }
             } catch (error) {
