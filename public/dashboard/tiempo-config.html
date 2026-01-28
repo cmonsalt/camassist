@@ -99,7 +99,7 @@
                     </div>
 
                     <!-- Días de trabajo -->
-                    <div class="bg-white rounded-xl shadow-sm p-6">
+                    <!-- <div class="bg-white rounded-xl shadow-sm p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">📅 Días de Trabajo</h2>
 
                         <div class="flex flex-wrap gap-3">
@@ -133,7 +133,7 @@
                             </label>
                         </div>
                         <p class="text-xs text-gray-500 mt-2">Los días marcados se consideran días laborales</p>
-                    </div>
+                    </div> -->
 
                     <!-- Plataformas -->
                     <div class="bg-white rounded-xl shadow-sm p-6">
@@ -185,7 +185,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-sm text-gray-600 mb-2">Días de trabajo:</label>
+                                <label class="block text-sm text-gray-600 mb-2">📅 Días de trabajo:</label>
                                 <div class="flex flex-wrap gap-2">
                                     <label class="flex items-center gap-1 text-sm">
                                         <input type="checkbox" id="day_mon" checked class="rounded"> Lun
@@ -277,12 +277,6 @@
                     document.getElementById('maxBreakMinutes').value = settings.max_break_minutes ?? 15;
                     document.getElementById('trackFollowers').checked = settings.track_followers ?? true;
 
-                    // Working days
-                    const workingDays = (settings.working_days || 'mon,tue,wed,thu,fri,sat').split(',');
-                    ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].forEach(day => {
-                        document.getElementById(`day_${day}`).checked = workingDays.includes(day);
-                    });
-
                     // Platforms
                     renderPlatforms(settings.platforms || ['chaturbate', 'stripchat']);
                 }
@@ -321,11 +315,6 @@
         }
 
         async function saveSettings() {
-            // Gather working days
-            const workingDays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-                .filter(day => document.getElementById(`day_${day}`).checked)
-                .join(',');
-
             // Gather platforms
             const platforms = availablePlatforms
                 .filter(p => document.getElementById(`platform_${p.id}`).checked)
@@ -341,7 +330,6 @@
                 min_hours_daily: parseFloat(document.getElementById('minHoursDaily').value) ?? 6,
                 max_breaks_per_shift: parseInt(document.getElementById('maxBreaksPerShift').value) ?? 3,
                 max_break_minutes: parseInt(document.getElementById('maxBreakMinutes').value) ?? 15,
-                working_days: workingDays,
                 platforms: platforms,
                 track_followers: document.getElementById('trackFollowers').checked,
                 timezone: 'America/Bogota'
