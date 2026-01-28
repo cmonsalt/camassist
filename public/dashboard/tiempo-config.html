@@ -344,6 +344,158 @@
             localStorage.removeItem('studio_name');
             window.location.href = '/dashboard/login.html';
         }
+
+        // === SHIFTS ===
+        let shiftsData = [];
+
+        async function loadShifts() {
+            try {
+                const res = await fetch(`${API_BASE}/time/shifts?studio_id=${studioId}`);
+                const data = await res.json();
+
+                if (data.success) {
+                    shiftsData = data.shifts;
+                    renderShiftsList();
+                    loadModelsForShifts();
+                }
+            } catch (error) {
+                console.error('Error loading shifts:', error);
+            }
+        }
+
+        function renderShiftsList() {
+            const container = document.getElementById('shiftsList');
+
+            if (shiftsData.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">No hay turnos creados. Crea uno abajo.</p>';
+                return;
+            }
+
+            container.innerHTML = shiftsData.map(shift => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div>
+                <span class="font-medium">${shift.name}</span>
+                <span class="text-gray-500 ml-2">${shift.hours}h</span>
+            </div>
+            <button onclick="deleteShift('${shift.id}')" 
+                    class="text-red-500 hover:text-red-700 text-sm">
+                🗑️ Eliminar
+            </button>
+        </div>
+    `).join('');
+        }
+
+        async function createShift() {
+            const name = document.getElementById('newShiftName').value.trim();
+            const hours = parseFloat(document.getElementById('newShiftHours').value);
+
+            if (!name || !hours) {
+                alert('Ingresa nombre y horas del turno');
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/time/shifts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studio_id: studioId, name, hours })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('newShiftName').value = '';
+                    document.getElementById('newShiftHours').value = '';
+                    loadShifts();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al crear turno');
+            }
+        }
+
+        async function deleteShift(shiftId) {
+            if (!confirm('¿Eliminar este turno? Las modelos asignadas quedarán sin turno.')) return;
+
+            try {
+                const res = await fetch(`${API_BASE}/time/shifts`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: shiftId })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    loadShifts();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // === ASSIGN SHIFTS TO MODELS ===
+        async function loadModelsForShifts() {
+            try {
+                const res = await fetch(`${API_BASE}/models?studio_id=${studioId}`);
+                const data = await res.json();
+
+                if (data.success || data.models) {
+                    renderModelsShiftsList(data.models);
+                }
+            } catch (error) {
+                console.error('Error loading models:', error);
+            }
+        }
+
+        function renderModelsShiftsList(models) {
+            const container = document.getElementById('modelsShiftsList');
+
+            if (!models || models.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-sm">No hay modelos.</p>';
+                return;
+            }
+
+            const shiftOptions = `
+        <option value="">-- Sin turno (usa default) --</option>
+        ${shiftsData.map(s => `<option value="${s.id}">${s.name} (${s.hours}h)</option>`).join('')}
+    `;
+
+            container.innerHTML = models.map(model => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <span class="font-medium">${model.name}</span>
+            <select onchange="assignShift('${model.id}', this.value)" 
+                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                ${shiftOptions.replace(`value="${model.shift_id}"`, `value="${model.shift_id}" selected`)}
+            </select>
+        </div>
+    `).join('');
+        }
+
+        async function assignShift(modelId, shiftId) {
+            try {
+                const res = await fetch(`${API_BASE}/time/assign-shift`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model_id: modelId, shift_id: shiftId || null })
+                });
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Cargar turnos al inicio
+        loadShifts();
     </script>
 </body>
 

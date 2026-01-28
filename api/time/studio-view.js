@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     // 2. Obtener todas las modelos del studio
     const { data: models, error: modelsError } = await supabase
       .from('models')
-      .select('id, name, token')
+      .select('id, name, token, shift_id, shifts(id, name, hours)')
       .eq('studio_id', studio_id)
       .is('deleted_at', null)
       .order('name');

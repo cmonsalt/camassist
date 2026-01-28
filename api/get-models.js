@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   try {
     const { data, error } = await supabase
       .from('models')
-      .select('*')
+      .select('*, shifts(id, name, hours)')
       .eq('studio_id', studio_id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
