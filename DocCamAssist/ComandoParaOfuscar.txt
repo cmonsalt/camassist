@@ -1,8 +1,0 @@
-# Ofuscar ambas extensiones (CB + SC)
-npm run ofuscar
-
-# Solo Chaturbate
-npm run ofuscar:cb
-
-# Solo StripChat
-npm run ofuscar:sc
