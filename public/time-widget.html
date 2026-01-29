@@ -176,6 +176,39 @@
       border-radius: 3px;
       transition: width 0.3s;
     }
+
+    .balance-box {
+      margin: 12px 0;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .balance-positive {
+      background: #10b98133;
+      border: 1px solid #10b981;
+    }
+
+    .balance-negative {
+      background: #ef444433;
+      border: 1px solid #ef4444;
+    }
+
+    .balance-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .btn-refresh {
+      background: transparent;
+      color: #888;
+      padding: 8px;
+      font-size: 12px;
+    }
+
+    .btn-refresh:hover {
+      color: white;
+    }
   </style>
 </head>
 
@@ -240,8 +273,11 @@
       const progressPercent = Math.min((data.totalWorkedMinutes / (data.settings.min_hours_daily * 60)) * 100, 100);
 
       document.getElementById('app').innerHTML = `
-        <div class="header">
-          <h2>⏰ Control de Tiempo</h2>
+  <div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2>⏰ Control de Tiempo</h2>
+      <button class="btn-refresh" onclick="loadStatus()">🔄</button>
+    </div>
           <div class="status-badge status-${data.status}">
             ${statusLabels[data.status]}
           </div>
@@ -256,6 +292,16 @@
           <div class="timer-label" style="margin-top:4px">
             Meta: ${data.settings.min_hours_daily}h (${Math.round(progressPercent)}%)
           </div>
+          <div class="timer-label" style="margin-top:4px">
+  Meta: ${data.settings.min_hours_daily}h (${Math.round(progressPercent)}%)
+</div>
+
+${data.balanceMinutes !== undefined ? `
+<div class="balance-box ${data.balanceMinutes >= 0 ? 'balance-positive' : 'balance-negative'}">
+  <div class="balance-value">${data.balanceMinutes >= 0 ? '+' : ''}${Math.floor(data.balanceMinutes / 60)}h ${Math.abs(data.balanceMinutes % 60)}m</div>
+  <div class="timer-label">Balance del mes</div>
+</div>
+` : ''}
         </div>
 
         <div class="stats">

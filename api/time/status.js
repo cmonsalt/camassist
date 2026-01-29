@@ -91,6 +91,80 @@ export default async function handler(req, res) {
       .eq('studio_id', model.studio_id)
       .single();
 
+    // Calcular balance del mes
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const todayStr = now.toISOString().split('T')[0];
+
+    // Obtener turno del modelo
+    const { data: modelWithShift } = await supabase
+      .from('models')
+      .select('shift_id, shifts(hours)')
+      .eq('id', model.id)
+      .single();
+
+    const expectedMinutesPerDay = modelWithShift?.shifts?.hours
+      ? modelWithShift.shifts.hours * 60
+      : (settings?.min_hours_daily || 6) * 60;
+
+    // Obtener todas las entradas del mes
+    const { data: monthEntries } = await supabase
+      .from('time_entries')
+      .select('*')
+      .eq('model_id', model.id)
+      .gte('created_at', firstDay + 'T00:00:00')
+      .lte('created_at', todayStr + 'T23:59:59')
+      .order('created_at', { ascending: true });
+
+    // Agrupar por día y calcular
+    const entriesByDay = {};
+    (monthEntries || []).forEach(entry => {
+      const day = entry.created_at.split('T')[0];
+      if (!entriesByDay[day]) entriesByDay[day] = [];
+      entriesByDay[day].push(entry);
+    });
+
+    let totalWorkedMonth = 0;
+    let totalExpectedMonth = 0;
+
+    Object.keys(entriesByDay).forEach(day => {
+      const dayEntries = entriesByDay[day];
+      const checkIn = dayEntries.find(e => e.entry_type === 'check_in');
+      const checkOut = dayEntries.find(e => e.entry_type === 'check_out');
+
+      if (checkIn) {
+        totalExpectedMonth += expectedMinutesPerDay;
+
+        let workedMs = 0;
+        if (checkOut) {
+          workedMs = new Date(checkOut.created_at) - new Date(checkIn.created_at);
+        } else if (day === todayStr) {
+          workedMs = Date.now() - new Date(checkIn.created_at).getTime();
+        }
+
+        // Restar breaks
+        let breakMs = 0;
+        let breakStart = null;
+        dayEntries.forEach(entry => {
+          if (entry.entry_type === 'break_start') {
+            breakStart = new Date(entry.created_at);
+          } else if (entry.entry_type === 'break_end' && breakStart) {
+            breakMs += new Date(entry.created_at) - breakStart;
+            breakStart = null;
+          }
+        });
+
+        // Si hay break activo
+        if (breakStart && day === todayStr) {
+          breakMs += Date.now() - breakStart.getTime();
+        }
+
+        totalWorkedMonth += Math.floor(Math.max(0, workedMs - breakMs) / 60000);
+      }
+    });
+
+    const balanceMinutes = totalWorkedMonth - totalExpectedMonth;
+
     return res.status(200).json({
       success: true,
       model: model.name,
@@ -104,8 +178,10 @@ export default async function handler(req, res) {
         min_hours_daily: 6,
         max_break_minutes: 15,
         max_breaks_per_shift: 3
-      }
+      },
+      balanceMinutes  
     });
+    
 
   } catch (error) {
     console.error('Error:', error);
