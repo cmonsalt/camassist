@@ -180,11 +180,11 @@
     </div>
 
     <script>
-        const studioRole = localStorage.getItem('studio_role') || 'studio';
-        const isSuperAdmin = studioRole === 'super_admin';
         // Check auth
         const studioId = localStorage.getItem('studio_id');
         const studioName = localStorage.getItem('studio_name');
+        const studioRole = localStorage.getItem('studio_role') || 'studio';
+        const isSuperAdmin = studioRole === 'super_admin';
 
         if (!studioId) {
             window.location.href = '/dashboard/login.html';
@@ -218,46 +218,45 @@
 
             if (models.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full text-center py-12">
-                        <div class="text-6xl mb-4">👩‍💼</div>
-                        <h3 class="text-xl font-semibold text-gray-600">No tienes modelos aún</h3>
-                        <p class="text-gray-500 mt-2">Click en "Agregar Modelo" para empezar</p>
-                    </div>
-                `;
+            <div class="col-span-full text-center py-12">
+                <div class="text-6xl mb-4">👩‍💼</div>
+                <h3 class="text-xl font-semibold text-gray-600">No tienes modelos aún</h3>
+                <p class="text-gray-500 mt-2">Click en "Agregar Modelo" para empezar</p>
+            </div>
+        `;
                 return;
             }
 
             console.log('Models:', models);
+            console.log('Role:', studioRole, 'isSuperAdmin:', isSuperAdmin);
 
             grid.innerHTML = models.map(model => `
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
-                    <div class="h-24 bg-gradient-to-r from-purple-400 to-pink-400"></div>
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="text-xl font-semibold text-gray-800">${model.name}</h3>
-                        </div>
-                        <div class="bg-gray-100 p-2 rounded mb-4">
-                            <p class="text-xs text-gray-500">Token:</p>
-                            <p class="font-mono text-sm text-purple-600 truncate">${model.token}</p>
-                        </div>
-                        <div class="flex gap-2">
-    ${isSuperAdmin ? `
-    <button onclick="editModel('${model.token}')" class="flex-1 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition">
-        ⚙️ Configurar
-    </button>
-    ` : ''}
-    <button onclick="copyModelToken('${model.token}')" class="flex-1 px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition">
-        📋 Copiar Token
-    </button>
-    ${isSuperAdmin ? `
-    <button onclick="deleteModel('${model.id}', '${model.name}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
-       🗑️
-    </button>
-    ` : ''}
-</div>
-                    </div>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
+            <div class="h-24 bg-gradient-to-r from-purple-400 to-pink-400"></div>
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xl font-semibold text-gray-800">${model.name}</h3>
                 </div>
-            `).join('');
+                <div class="bg-gray-100 p-2 rounded mb-4">
+                    <p class="text-xs text-gray-500">Token:</p>
+                    <p class="font-mono text-sm text-purple-600 truncate">${model.token}</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="editModel('${model.token}')" class="flex-1 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition">
+                        ${isSuperAdmin ? '⚙️ Configurar' : '👁️ Ver Info'}
+                    </button>
+                    <button onclick="copyModelToken('${model.token}')" class="px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition">
+                        📋
+                    </button>
+                    ${isSuperAdmin ? `
+                    <button onclick="deleteModel('${model.id}', '${model.name}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
+                       🗑️
+                    </button>
+                    ` : ''}
+                </div>
+            </div>
+        </div>
+    `).join('');
         }
 
         function showAddModal() {
