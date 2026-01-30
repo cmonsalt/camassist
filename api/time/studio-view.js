@@ -123,9 +123,11 @@ export default async function handler(req, res) {
           breaksCount: 0,
           minutesPending: 0,
           breakExcessMinutes: 0,
-          compliance: 'night_shift_continued', // Marcador especial
+          compliance: '-',
+          progressPercent: 0,
+          totalEarnings: 0,
           earnings: [],
-          note: null
+          dayNote: null
         };
       }
 
