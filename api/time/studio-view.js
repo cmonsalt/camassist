@@ -229,9 +229,9 @@ export default async function handler(req, res) {
       online: modelsData.filter(m => m.status === 'working').length,
       onBreak: modelsData.filter(m => m.status === 'on_break').length,
       offline: modelsData.filter(m => m.status === 'offline').length,
-      cumpliendo: modelsData.filter(m => m.compliance === 'complete').length,
-      noCumpliendo: modelsData.filter(m => m.compliance === 'pending').length,
-      totalEarnings: modelsData.reduce((sum, m) => sum + (m.earnings?.reduce((s, e) => s + (e.earnings || 0), 0) || 0), 0)
+      cumpliendo: modelsData.filter(m => m.compliance === 'CUMPLE').length,
+      noCumpliendo: modelsData.filter(m => m.compliance === 'NO CUMPLE').length,
+      totalEarnings: modelsData.reduce((sum, m) => sum + (m.totalEarnings || 0), 0)
     };
 
     return res.status(200).json({
