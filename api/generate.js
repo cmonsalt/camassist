@@ -818,10 +818,27 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
       });
       console.log('📊 Uso guardado');
 
-      // Activar trial de 14 días en primer uso
+      // Activar trial en primer uso
       if (!modelData.trial_started) {
-        const trialEndsAt = new Date();
-        trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+        // Verificar si tiene slots de trial disponibles
+        const { data: studio } = await supabase
+          .from('studios')
+          .select('trial_models_created, role')
+          .eq('id', modelData.studio_id)
+          .single();
+
+        const hasTrialSlots = (studio?.trial_models_created || 0) < 5;
+        const isSuperAdmin = studio?.role === 'super_admin';
+
+        let trialEndsAt;
+        if (isSuperAdmin || hasTrialSlots) {
+          // Tiene trial: 14 días gratis
+          trialEndsAt = new Date();
+          trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+        } else {
+          // Sin trial: cobra desde hoy
+          trialEndsAt = new Date();
+        }
 
         await supabase
           .from('models')
@@ -831,7 +848,7 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
           })
           .eq('id', modelData.id);
 
-        console.log('🎁 Trial de 14 días activado para:', modelData.name);
+        console.log(hasTrialSlots ? '🎁 Trial 14 días activado' : '💰 Sin trial, cobra desde hoy');
       }
     }
 

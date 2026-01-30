@@ -41,12 +41,6 @@ export default async function handler(req, res) {
     let trialStarted = false;
     let trialEndsAt = null;
 
-    if (!isSuperAdmin && !hasTrialSlots) {
-      // Ya usó los 5 slots, esta modelo PAGA desde día 1
-      trialStarted = true;
-      trialEndsAt = new Date().toISOString();
-    }
-
     // 4. Crear modelo
     const { data, error } = await supabase
       .from('models')
@@ -82,7 +76,7 @@ export default async function handler(req, res) {
         hasTrialSlots: hasTrialSlots,
         slotsUsed: trialSlotsUsed + 1,
         slotsRemaining: Math.max(0, 5 - (trialSlotsUsed + 1)),
-        message: hasTrialSlots 
+        message: hasTrialSlots
           ? `✅ Modelo creada con trial de 14 días. Te quedan ${4 - trialSlotsUsed} slots de trial.`
           : `⚠️ Ya usaste tus 5 trials. Esta modelo requiere pago desde el día 1.`
       }
