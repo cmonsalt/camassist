@@ -70,7 +70,8 @@ export default async function handler(req, res) {
     return res.json({
       success: true,
       studio_id: data.id,
-      studio_name: data.name
+      studio_name: data.name,
+      studio_role: data.role || 'studio'
     });
 
   } catch (error) {

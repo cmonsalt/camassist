@@ -180,6 +180,8 @@
     </div>
 
     <script>
+        const studioRole = localStorage.getItem('studio_role') || 'studio';
+        const isSuperAdmin = studioRole === 'super_admin';
         // Check auth
         const studioId = localStorage.getItem('studio_id');
         const studioName = localStorage.getItem('studio_name');
@@ -239,16 +241,20 @@
                             <p class="font-mono text-sm text-purple-600 truncate">${model.token}</p>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="editModel('${model.token}')" class="flex-1 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition">
-                                ⚙️ Configurar
-                            </button>
-                            <button onclick="copyModelToken('${model.token}')" class="px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition">
-                                📋
-                            </button>
-                            <button onclick="deleteModel('${model.id}', '${model.name}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
-                               🗑️
-                            </button>
-                        </div>
+    ${isSuperAdmin ? `
+    <button onclick="editModel('${model.token}')" class="flex-1 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition">
+        ⚙️ Configurar
+    </button>
+    ` : ''}
+    <button onclick="copyModelToken('${model.token}')" class="flex-1 px-4 py-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition">
+        📋 Copiar Token
+    </button>
+    ${isSuperAdmin ? `
+    <button onclick="deleteModel('${model.id}', '${model.name}')" class="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
+       🗑️
+    </button>
+    ` : ''}
+</div>
                     </div>
                 </div>
             `).join('');
