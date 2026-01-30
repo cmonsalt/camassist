@@ -206,6 +206,17 @@ export default async function handler(req, res) {
       // Nota del día
       const modelNote = (allNotes || []).find(n => n.model_id === model.id);
 
+      // Calcular totalEarnings
+      const totalEarnings = modelEarnings.reduce((sum, e) => sum + (e.earnings || 0), 0);
+
+      // Calcular progreso (%)
+      const progressPercent = minMinutesRequired > 0
+        ? Math.min(100, Math.round((totalShiftMinutes / minMinutesRequired) * 100))
+        : 0;
+
+      // Compliance label para el frontend
+      const complianceLabel = totalShiftMinutes >= minMinutesRequired ? 'CUMPLE' : 'NO CUMPLE';
+
       return {
         id: model.id,
         name: model.name,
@@ -219,9 +230,11 @@ export default async function handler(req, res) {
         breaksCount,
         minutesPending,
         breakExcessMinutes,
-        compliance,
+        compliance: complianceLabel,
+        progressPercent,
+        totalEarnings,
         earnings: modelEarnings,
-        note: modelNote
+        dayNote: modelNote
       };
     }));
 
