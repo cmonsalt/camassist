@@ -35,9 +35,11 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Token inválido' });
     }
 
-    // Validar transición de estado
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Usar hora Colombia (UTC-5)
+    const now = new Date();
+    const colombiaOffset = -5 * 60; // -5 horas en minutos
+    const colombiaTime = new Date(now.getTime() + (now.getTimezoneOffset() + colombiaOffset) * 60000);
+    const today = new Date(colombiaTime.getFullYear(), colombiaTime.getMonth(), colombiaTime.getDate());
 
     const { data: lastEntry } = await supabase
       .from('time_entries')
@@ -60,7 +62,7 @@ export default async function handler(req, res) {
     };
 
     if (!validTransitions[lastType]?.includes(entry_type)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: `No puedes hacer ${entry_type} después de ${lastType || 'nada'}`,
         current_state: lastType
       });
@@ -84,7 +86,7 @@ export default async function handler(req, res) {
         .gte('created_at', today.toISOString());
 
       if (count >= maxBreaks) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           error: `Límite de ${maxBreaks} breaks alcanzado hoy`
         });
       }

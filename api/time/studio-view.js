@@ -74,8 +74,8 @@ export default async function handler(req, res) {
       .eq('date', date);
 
     // 6. Procesar cada modelo
-    const modelsData = models.map(model => {
-      // Filtrar entradas de este modelo
+    const modelsData = await Promise.all(models.map(async (model) => {
+      // Filtrar entradas de este modelo en el día seleccionado
       const entries = (allEntries || []).filter(e => e.model_id === model.id);
 
       // Calcular estado y tiempo
@@ -107,6 +107,66 @@ export default async function handler(req, res) {
         }
       }
 
+      // === TURNO NOCTURNO: Si hay check_out pero NO check_in ===
+      // Significa que el turno empezó ayer - ignorar este día
+      if (checkOutTime && !checkInTime) {
+        return {
+          id: model.id,
+          name: model.name,
+          token: model.token,
+          shift: model.shifts,
+          status: 'offline',
+          checkInTime: null,
+          checkOutTime: null,
+          totalWorkedMinutes: 0,
+          totalBreakMinutes: 0,
+          breaksCount: 0,
+          minutesPending: 0,
+          breakExcessMinutes: 0,
+          compliance: 'night_shift_continued', // Marcador especial
+          earnings: [],
+          note: null
+        };
+      }
+
+      // === TURNO NOCTURNO: Si hay check_in pero NO check_out ===
+      // Buscar si hay check_out al día siguiente (antes de las 12pm)
+      if (checkInTime && !checkOutTime) {
+        const nextDay = new Date(date);
+        nextDay.setDate(nextDay.getDate() + 1);
+        const nextDayStr = nextDay.toISOString().split('T')[0];
+
+        const nextDayStart = new Date(nextDayStr + 'T00:00:00-05:00');
+        const nextDayNoon = new Date(nextDayStr + 'T12:00:00-05:00'); // Hasta mediodía
+
+        const { data: nextDayEntries } = await supabase
+          .from('time_entries')
+          .select('*')
+          .eq('model_id', model.id)
+          .gte('created_at', nextDayStart.toISOString())
+          .lte('created_at', nextDayNoon.toISOString())
+          .order('created_at', { ascending: true });
+
+        // Buscar check_out del día siguiente
+        const nextDayCheckOut = (nextDayEntries || []).find(e => e.entry_type === 'check_out');
+
+        if (nextDayCheckOut) {
+          checkOutTime = nextDayCheckOut.created_at;
+          status = 'offline';
+
+          // También procesar breaks del día siguiente
+          (nextDayEntries || []).forEach(entry => {
+            if (entry.entry_type === 'break_start') {
+              currentBreakStart = new Date(entry.created_at);
+              breaksCount++;
+            } else if (entry.entry_type === 'break_end' && currentBreakStart) {
+              totalBreakMs += new Date(entry.created_at) - currentBreakStart;
+              currentBreakStart = null;
+            }
+          });
+        }
+      }
+
       // Calcular tiempo trabajado
       if (checkInTime) {
         const endTime = checkOutTime ? new Date(checkOutTime) : new Date();
@@ -121,44 +181,47 @@ export default async function handler(req, res) {
 
       const totalWorkedMinutes = Math.floor(totalWorkedMs / 60000);
       const totalBreakMinutes = Math.floor(totalBreakMs / 60000);
-      const minMinutesRequired = studioSettings.min_hours_daily * 60;
+
+      // Usar turno del modelo o default del studio
+      const modelShift = model.shifts;
+      const minMinutesRequired = modelShift?.hours
+        ? modelShift.hours * 60
+        : studioSettings.min_hours_daily * 60;
 
       // Calcular exceso de break
       const maxBreakMinutes = studioSettings.max_break_minutes || 15;
       const breakExcessMinutes = Math.max(0, totalBreakMinutes - maxBreakMinutes);
       const effectiveBreakMinutes = Math.min(totalBreakMinutes, maxBreakMinutes);
 
-      // Tiempo para cumplimiento = trabajado + break permitido (exceso NO cuenta)
+      // Tiempo para cumplimiento = trabajado + break permitido
       const totalShiftMinutes = totalWorkedMinutes + effectiveBreakMinutes;
       const minutesPending = Math.max(0, minMinutesRequired - totalShiftMinutes);
-      const compliance = totalShiftMinutes >= minMinutesRequired ? 'CUMPLE' : 'NO CUMPLE';
-      const progressPercent = Math.min(100, Math.round((totalShiftMinutes / minMinutesRequired) * 100));
+      const compliance = totalShiftMinutes >= minMinutesRequired ? 'complete' : 'pending';
 
       // Ganancias del día
-      const earnings = (allEarnings || []).filter(e => e.model_id === model.id);
-      const totalEarnings = earnings.reduce((sum, e) => sum + parseFloat(e.earnings || 0), 0);
+      const modelEarnings = (allEarnings || []).filter(e => e.model_id === model.id);
 
       // Nota del día
-      const dayNote = (allNotes || []).find(n => n.model_id === model.id);
+      const modelNote = (allNotes || []).find(n => n.model_id === model.id);
 
       return {
         id: model.id,
         name: model.name,
+        token: model.token,
+        shift: modelShift,
         status,
         checkInTime,
         checkOutTime,
         totalWorkedMinutes,
         totalBreakMinutes,
-        breakExcessMinutes,
         breaksCount,
-        compliance: checkInTime ? compliance : null,
-        minutesPending: checkInTime ? minutesPending : null,
-        progressPercent,
-        earnings,
-        totalEarnings,
-        dayNote: dayNote || null
+        minutesPending,
+        breakExcessMinutes,
+        compliance,
+        earnings: modelEarnings,
+        note: modelNote
       };
-    });
+    }));
 
     // 7. Resumen general
     const summary = {
