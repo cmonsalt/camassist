@@ -288,6 +288,12 @@
                 if (data.success) {
                     hideAddModal();
                     document.getElementById('newToken').textContent = data.model.token;
+
+                    // Mostrar info de trial
+                    if (data.trialInfo) {
+                        alert(data.trialInfo.message);
+                    }
+
                     document.getElementById('tokenModal').classList.remove('hidden');
                 } else {
                     alert(data.message || 'Error al crear modelo');
