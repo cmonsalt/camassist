@@ -40,7 +40,6 @@ export default async function handler(req, res) {
         .from('models')
         .select('id')
         .eq('chaturbate_username', chaturbate_username)
-        .is('deleted_at', null)
         .maybeSingle();
       if (existing) {
         return res.json({ success: false, message: `El username "${chaturbate_username}" ya está registrado en Chaturbate` });
@@ -52,7 +51,6 @@ export default async function handler(req, res) {
         .from('models')
         .select('id')
         .eq('stripchat_username', stripchat_username)
-        .is('deleted_at', null)
         .maybeSingle();
       if (existing) {
         return res.json({ success: false, message: `El username "${stripchat_username}" ya está registrado en StripChat` });
@@ -64,7 +62,6 @@ export default async function handler(req, res) {
         .from('models')
         .select('id')
         .eq('streamate_username', streamate_username)
-        .is('deleted_at', null)
         .maybeSingle();
       if (existing) {
         return res.json({ success: false, message: `El username "${streamate_username}" ya está registrado en Streamate` });
@@ -76,7 +73,6 @@ export default async function handler(req, res) {
         .from('models')
         .select('id')
         .eq('xmodels_username', xmodels_username)
-        .is('deleted_at', null)
         .maybeSingle();
       if (existing) {
         return res.json({ success: false, message: `El username "${xmodels_username}" ya está registrado en XModels` });
