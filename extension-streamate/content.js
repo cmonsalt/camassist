@@ -1,7 +1,7 @@
 // CamAssist - Streamate Extension
 // Reescrita para funcionar igual que CB/SC/XModels
 
-(function() {
+(function () {
   'use strict';
 
   console.log('🤖 CamAssist Streamate v1.1.0 cargando...');
@@ -70,13 +70,17 @@
     // Buscar en el header donde dice el nombre de la modelo
     const headerEl = document.querySelector('[class*="header"] [class*="name"], [class*="performer"]');
     if (headerEl) return headerEl.textContent.trim();
-    
+
     // Fallback: buscar en la URL o título
     const urlMatch = window.location.href.match(/performer\/(\w+)/i);
     if (urlMatch) return urlMatch[1];
-    
+
     return 'Model';
   }
+
+  // Obtener broadcaster username al inicio
+  const broadcasterUsername = getModelUsername();
+  console.log('👤 Broadcaster username:', broadcasterUsername);
 
   // ============ PROCESAR TODOS LOS MENSAJES ============
   function processAllMessages() {
@@ -110,7 +114,7 @@
         let messageText = '';
         const fullText = messageEl.textContent;
         const translationEl = messageEl.querySelector('.translation, [class*="translation"]');
-        
+
         if (translationEl) {
           messageText = fullText.replace(translationEl.textContent, '').trim();
         } else {
@@ -201,14 +205,14 @@
 
       try {
         const response = await getAIResponse(username, messageText);
-        
+
         if (response) {
           // Copiar al portapapeles
           navigator.clipboard.writeText(response.suggestion);
-          
+
           // Mostrar popup
           showPopup(username, response.suggestion, response.translation);
-          
+
           btn.textContent = '✓';
           setTimeout(() => btn.textContent = '🤖', 2000);
         } else {
@@ -255,7 +259,8 @@
       body: JSON.stringify({
         token: modelToken,
         platform: CONFIG.PLATFORM,
-        version: CONFIG.VERSION,
+        version: '1.1.6',
+        broadcaster_username: broadcasterUsername,  // NUEVO
         username: username,
         message: message,
         context: fullContext.slice(-CONFIG.MAX_CONTEXT_MESSAGES),
@@ -265,7 +270,7 @@
     });
 
     const data = await response.json();
-    
+
     if (data.success) {
       return {
         suggestion: data.suggestion,
@@ -312,7 +317,7 @@
     if (translation) {
       const suggestionClean = suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
       const translationClean = translation.replace(/\s+/g, ' ').trim().toLowerCase();
-      
+
       if (suggestionClean !== translationClean) {
         translationHtml = `
           <p style="background:#e8f4e8;padding:12px;border-radius:5px;color:#555;font-size:13px;margin-bottom:10px;">
@@ -347,7 +352,7 @@
 
     // Event listeners
     popup.querySelector('#btn-close').onclick = () => popup.remove();
-    
+
     popup.querySelector('#btn-insert').onclick = () => {
       insertTextToInput(suggestion);
       popup.remove();
@@ -357,14 +362,14 @@
       const btn = popup.querySelector('#btn-regen');
       btn.disabled = true;
       btn.textContent = '⏳...';
-      
+
       const newResponse = await getAIResponse(username, fanHistory[username]?.messages.slice(-1)[0]?.message || '');
-      
+
       if (newResponse) {
         popup.querySelector('#ai-response').textContent = newResponse.suggestion;
         navigator.clipboard.writeText(newResponse.suggestion);
       }
-      
+
       btn.disabled = false;
       btn.textContent = '🔄 Regenerar';
     };
@@ -377,7 +382,7 @@
 
     input.focus();
     input.value = text;
-    
+
     // Disparar eventos para React
     input.dispatchEvent(new Event('input', { bubbles: true }));
     input.dispatchEvent(new Event('change', { bubbles: true }));
@@ -408,15 +413,15 @@
   // ============ INICIALIZACIÓN ============
   function init() {
     console.log('🤖 CamAssist Streamate iniciando...');
-    
+
     injectStyles();
-    
+
     // Procesar mensajes cada 2 segundos
     setInterval(processAllMessages, 2000);
-    
+
     // Procesar inmediatamente
     setTimeout(processAllMessages, 1000);
-    
+
     console.log('✅ CamAssist Streamate activo');
   }
 

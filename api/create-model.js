@@ -14,72 +14,105 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { studio_id, name } = req.body;
+  const { 
+    studio_id, 
+    name,
+    chaturbate_username,
+    stripchat_username,
+    streamate_username,
+    xmodels_username
+  } = req.body;
 
   if (!studio_id || !name) {
     return res.json({ success: false, message: 'Faltan datos' });
   }
 
+  // Validar que al menos 1 username esté presente
+  const hasUsername = chaturbate_username || stripchat_username || streamate_username || xmodels_username;
+  if (!hasUsername) {
+    return res.json({ success: false, message: 'Debes ingresar al menos 1 username de plataforma' });
+  }
+
   try {
-    // 1. Obtener studio y verificar slots de trial
-    const { data: studio, error: studioError } = await supabase
-      .from('studios')
-      .select('trial_models_created, role')
-      .eq('id', studio_id)
-      .single();
+    // Verificar que usernames no existan ya
+    if (chaturbate_username) {
+      const { data: existing } = await supabase
+        .from('models')
+        .select('id')
+        .eq('chaturbate_username', chaturbate_username)
+        .is('deleted_at', null)
+        .maybeSingle();
+      if (existing) {
+        return res.json({ success: false, message: `El username "${chaturbate_username}" ya está registrado en Chaturbate` });
+      }
+    }
 
-    if (studioError) throw studioError;
+    if (stripchat_username) {
+      const { data: existing } = await supabase
+        .from('models')
+        .select('id')
+        .eq('stripchat_username', stripchat_username)
+        .is('deleted_at', null)
+        .maybeSingle();
+      if (existing) {
+        return res.json({ success: false, message: `El username "${stripchat_username}" ya está registrado en StripChat` });
+      }
+    }
 
-    const trialSlotsUsed = studio.trial_models_created || 0;
-    const isSuperAdmin = studio.role === 'super_admin';
-    const hasTrialSlots = trialSlotsUsed < 5;
+    if (streamate_username) {
+      const { data: existing } = await supabase
+        .from('models')
+        .select('id')
+        .eq('streamate_username', streamate_username)
+        .is('deleted_at', null)
+        .maybeSingle();
+      if (existing) {
+        return res.json({ success: false, message: `El username "${streamate_username}" ya está registrado en Streamate` });
+      }
+    }
 
-    // 2. Generar token único
+    if (xmodels_username) {
+      const { data: existing } = await supabase
+        .from('models')
+        .select('id')
+        .eq('xmodels_username', xmodels_username)
+        .is('deleted_at', null)
+        .maybeSingle();
+      if (existing) {
+        return res.json({ success: false, message: `El username "${xmodels_username}" ya está registrado en XModels` });
+      }
+    }
+
+    // Generar token único
     const token = 'mdl_' + name.toLowerCase().replace(/\s+/g, '_') + '_' + Math.random().toString(36).substring(2, 10);
 
-    // 3. Determinar si tiene trial o paga desde día 1
-    let trialStarted = false;
-    let trialEndsAt = null;
-
-    // 4. Crear modelo
+    // Crear modelo (trial empieza en primer uso)
     const { data, error } = await supabase
       .from('models')
       .insert({
         studio_id,
         name,
         token,
+        chaturbate_username: chaturbate_username || null,
+        stripchat_username: stripchat_username || null,
+        streamate_username: streamate_username || null,
+        xmodels_username: xmodels_username || null,
         age: 24,
         location: 'Colombia',
         personality: 'extrovert_playful',
         emoji_level: 2,
-        trial_started: trialStarted,
-        trial_ends_at: trialEndsAt
+        trial_started: false,
+        trial_ends_at: null
       })
       .select()
       .single();
 
     if (error) throw error;
 
-    // 5. Incrementar contador de slots usados (si no es super_admin)
-    if (!isSuperAdmin) {
-      await supabase
-        .from('studios')
-        .update({ trial_models_created: trialSlotsUsed + 1 })
-        .eq('id', studio_id);
-    }
-
-    // 6. Respuesta con info de trial
     return res.json({
       success: true,
       model: data,
-      trialInfo: {
-        hasTrialSlots: hasTrialSlots,
-        slotsUsed: trialSlotsUsed + 1,
-        slotsRemaining: Math.max(0, 5 - (trialSlotsUsed + 1)),
-        message: hasTrialSlots
-          ? `✅ Modelo creada con trial de 14 días. Te quedan ${4 - trialSlotsUsed} slots de trial.`
-          : `⚠️ Ya usaste tus 5 trials. Esta modelo requiere pago desde el día 1.`
-      }
+      message: '✅ Modelo creada. Trial de 14 días inicia con el primer uso.'
     });
 
   } catch (error) {

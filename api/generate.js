@@ -184,6 +184,24 @@ CONTEXTO XMODELS (VIP 1:1):
           });
         }
 
+        // NUEVO: Validar broadcaster_username si viene en el request
+        const broadcasterUsername = req.body.broadcaster_username;
+        if (broadcasterUsername) {
+          const platformField = `${platform}_username`; // ej: chaturbate_username
+          const expectedUsername = model[platformField];
+
+          // Solo validar si el modelo tiene username configurado para esta plataforma
+          if (expectedUsername && expectedUsername.toLowerCase() !== broadcasterUsername.toLowerCase()) {
+            console.log('🚫 Username no coincide:', expectedUsername, 'vs', broadcasterUsername);
+            return res.status(403).json({
+              success: false,
+              suggestion: "⚠️ Token no válido para este usuario",
+              translation: "⚠️ Token no válido para este usuario",
+              error: 'username_mismatch'
+            });
+          }
+        }
+
         modelData = { ...modelData, ...model };
         const studioName = model.studios?.name || 'Sin studio';
         console.log('✅ Modelo encontrado:', modelData.name, '| Studio:', studioName);
@@ -818,27 +836,10 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
       });
       console.log('📊 Uso guardado');
 
-      // Activar trial en primer uso
+      // Activar trial en primer uso - SIEMPRE 14 días
       if (!modelData.trial_started) {
-        // Verificar si tiene slots de trial disponibles
-        const { data: studio } = await supabase
-          .from('studios')
-          .select('trial_models_created, role')
-          .eq('id', modelData.studio_id)
-          .single();
-
-        const hasTrialSlots = (studio?.trial_models_created || 0) < 5;
-        const isSuperAdmin = studio?.role === 'super_admin';
-
-        let trialEndsAt;
-        if (isSuperAdmin || hasTrialSlots) {
-          // Tiene trial: 14 días gratis
-          trialEndsAt = new Date();
-          trialEndsAt.setDate(trialEndsAt.getDate() + 14);
-        } else {
-          // Sin trial: cobra desde hoy
-          trialEndsAt = new Date();
-        }
+        const trialEndsAt = new Date();
+        trialEndsAt.setDate(trialEndsAt.getDate() + 14);
 
         await supabase
           .from('models')
@@ -848,7 +849,7 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
           })
           .eq('id', modelData.id);
 
-        console.log(hasTrialSlots ? '🎁 Trial 14 días activado' : '💰 Sin trial, cobra desde hoy');
+        console.log('🎁 Trial 14 días activado');
       }
     }
 
