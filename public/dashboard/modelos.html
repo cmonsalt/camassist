@@ -387,7 +387,7 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('✅ Modelo eliminada');
+                    alert('✅ ' + (data.message || 'Modelo eliminada'));
                     loadModels();
                 } else {
                     alert('❌ ' + data.message);
