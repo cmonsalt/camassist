@@ -76,10 +76,21 @@ export default async function handler(req, res) {
   };
   const currencyTerm = platformTerms[platform.toLowerCase()] || 'tips';
 
-  // Contexto específico para Streamate
+  let platformContext = '';
+  const chatType = req.body.chatType || 'free';
+
   if (platform.toLowerCase() === 'streamate') {
-    if (isPM) {
-      // isPM = true significa GUEST o PAID (la extensión envía isPM para ambos)
+    if (chatType === 'inbox') {
+      platformContext = `
+CONTEXTO STREAMATE (MESSENGER / INBOX):
+- El fan escribe por mensaje privado (no en vivo)
+- Conversación personal y relajada, como un DM
+- NO vendas shows, crea conexión emocional
+- Girlfriend experience, hazlo sentir especial
+- Si pregunta por shows, invítalo a conectarse cuando estés en vivo
+- Moneda: GOLD
+`;
+    } else if (isPM) {
       platformContext = `
 CONTEXTO STREAMATE (HUÉSPED o PAGADO):
 - Si es HUÉSPED: es 1:1 pero gratis, crea conexión, sexting suave
@@ -101,17 +112,21 @@ CONTEXTO STREAMATE (CHAT PÚBLICO - TODOS):
     }
   }
 
-  // Contexto específico para XModels
-  let platformContext = '';
   if (platform.toLowerCase() === 'xmodels') {
-    const chatType = req.body.chatType || 'free';
-
     if (chatType === 'free') {
       platformContext = `
 CONTEXTO XMODELS (FREE):
 - NO puedes mostrar contenido explícito en FREE
 - Objetivo: que el fan vaya a PRIVATE o VIP
 - Teasea, crea curiosidad
+`;
+    } else if (chatType === 'inbox') {
+      platformContext = `
+CONTEXTO XMODELS (INBOX / MENSAJES):
+- El fan escribe por mensaje privado offline
+- Conversación personal, crea conexión
+- NO vendas agresivamente
+- Invita a conectarse cuando estés en vivo
 `;
     } else if (chatType === 'private') {
       platformContext = `

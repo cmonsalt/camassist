@@ -1,42 +1,36 @@
-// CamAssist - Streamate Extension
-// Reescrita para funcionar igual que CB/SC/XModels
+// CamAssist - Streamate Extension v1.3.0
+// Soporta: Chat en vivo (performerclient) + Messenger Inbox (engagement/messenger)
 
 (function () {
   'use strict';
 
-  console.log('🤖 CamAssist Streamate v1.1.0 cargando...');
+  console.log('🤖 CamAssist Streamate v1.3.0 cargando...');
 
   // ============ CONFIGURACIÓN ============
   const CONFIG = {
-    API_URL: 'https://camassist.vercel.app/api/generate',
+    API_URL: 'https://www.camassist.co/api/generate',
     PLATFORM: 'streamate',
-    VERSION: '1.1.5',
+    VERSION: '1.3.0',
     CURRENCY: 'gold',
     MAX_CONTEXT_MESSAGES: 70
   };
 
-  // ============ HISTORIAL POR FAN ============
-  const fanHistory = {};  // { username: { messages: [], tips: [] } }
-
   // ============ TOKEN ============
   let modelToken = null;
 
-  // Cargar token desde localStorage primero (por si el popup ya lo guardó)
   modelToken = localStorage.getItem('model_token');
   if (modelToken) {
     console.log('🔑 Token cargado desde localStorage:', modelToken.substring(0, 15) + '...');
   }
 
-  // Cargar token desde chrome.storage
   chrome.storage.local.get(['model_token'], (result) => {
     if (result.model_token) {
       modelToken = result.model_token;
-      localStorage.setItem('model_token', modelToken); // Sync con localStorage
+      localStorage.setItem('model_token', modelToken);
       console.log('🔑 Token cargado desde storage:', modelToken.substring(0, 15) + '...');
     }
   });
 
-  // Escuchar cambios de token
   chrome.storage.onChanged.addListener((changes, namespace) => {
     if (namespace === 'local' && changes.model_token) {
       modelToken = changes.model_token.newValue;
@@ -45,391 +39,510 @@
     }
   });
 
-  // ============ DETECTAR MODO (FREE vs PAID) ============
-  function detectChatMode() {
-    // Buscar en el área del input
-    const inputArea = document.querySelector('[class*="TextInput-container"]');
-    if (inputArea) {
-      const text = inputArea.textContent.toLowerCase();
-      if (text.includes('pagado') || text.includes('paid')) return 'PAID';
-      if (text.includes('huésped') || text.includes('guest')) return 'GUEST';
-    }
+  // ============ DETECTAR MODO: STREAMING vs MESSENGER ============
+  const isMessenger = window.location.href.includes('/engagement/messenger');
+  const isStreaming = window.location.href.includes('performerclient.');
 
-    // Buscar en el header
-    const headerText = document.body.textContent;
-    if (headerText.includes('Sesión Pagada') || headerText.includes('Private') || headerText.includes('Exclusive')) {
-      return 'PAID';
-    }
-
-    // Default: FREE (público)
-    return 'FREE';
+  if (isMessenger) {
+    console.log('📬 Modo MESSENGER detectado');
+    initMessenger();
+  } else if (isStreaming) {
+    console.log('📡 Modo STREAMING detectado');
+    initStreaming();
+  } else {
+    console.log('⚠️ Página no reconocida, intentando streaming...');
+    initStreaming();
   }
 
-  // ============ OBTENER USERNAME DE LA MODELO ============
-  function getModelUsername() {
-    // Buscar en el header donde dice el nombre de la modelo
-    const headerEl = document.querySelector('[class*="header"] [class*="name"], [class*="performer"]');
-    if (headerEl) return headerEl.textContent.trim();
+  // ============================================================
+  // =================== MODO STREAMING =========================
+  // ============================================================
+  function initStreaming() {
+    const fanHistory = {};
 
-    // Fallback: buscar en la URL o título
-    const urlMatch = window.location.href.match(/performer\/(\w+)/i);
-    if (urlMatch) return urlMatch[1];
-
-    return 'Model';
-  }
-
-  // Obtener broadcaster username al inicio
-  const broadcasterUsername = getModelUsername();
-  console.log('👤 Broadcaster username:', broadcasterUsername);
-
-  // ============ PROCESAR TODOS LOS MENSAJES ============
-  function processAllMessages() {
-    const chatContainer = document.querySelector('[id*="scroll-target"]')?.parentElement;
-    if (!chatContainer) return;
-
-    // Buscar todos los mensajes
-    const messageElements = chatContainer.querySelectorAll('[data-ta-locator*="Message"]');
-
-    messageElements.forEach(msg => {
-      if (msg.dataset.processed) return;
-
-      try {
-        // Buscar elementos del mensaje
-        const audienceEl = msg.querySelector('[data-ta-locator="PerformerMessage__Audience"]');
-        const messageEl = msg.querySelector('[data-ta-locator="PerformerMessage__Message"]');
-
-        if (!messageEl) {
-          msg.dataset.processed = 'true';
-          return;
+    let broadcasterUsername = 'Model';
+    const usernameInterval = setInterval(() => {
+      const nicknameEl = document.querySelector('[data-ta-locator="Header__Nickname"]');
+      if (nicknameEl) {
+        const name = nicknameEl.textContent.trim();
+        if (name && name !== 'Model') {
+          broadcasterUsername = name;
+          console.log('👤 Broadcaster username:', broadcasterUsername);
+          clearInterval(usernameInterval);
         }
-
-        // Extraer username
-        let username = '';
-        if (audienceEl) {
-          // El formato es "A username" - removemos el "A "
-          username = audienceEl.textContent.replace(/^A\s*/i, '').trim();
-        }
-
-        // Extraer mensaje (sin traducción)
-        let messageText = '';
-        const fullText = messageEl.textContent;
-        const translationEl = messageEl.querySelector('.translation, [class*="translation"]');
-
-        if (translationEl) {
-          messageText = fullText.replace(translationEl.textContent, '').trim();
-        } else {
-          messageText = fullText.trim();
-        }
-
-        if (!username || !messageText) {
-          msg.dataset.processed = 'true';
-          return;
-        }
-
-        // Detectar si es mensaje de la modelo (empieza con "A " y tiene audienceEl)
-        // En Streamate, los mensajes de la modelo hacia fans empiezan con "A fanname"
-        const isModelMessage = msg.textContent.trim().startsWith('A ') && audienceEl;
-
-        // Detectar tips de GOLD
-        const isTip = messageText.toLowerCase().includes('gold') && /\d+/.test(messageText);
-        let tipAmount = 0;
-        if (isTip) {
-          const match = messageText.match(/(\d+\.?\d*)\s*gold/i);
-          if (match) tipAmount = parseFloat(match[1]);
-        }
-
-        msg.dataset.processed = 'true';
-
-        // Inicializar historial del usuario
-        if (!fanHistory[username]) {
-          fanHistory[username] = { messages: [], tips: [] };
-        }
-
-        // Guardar en historial
-        if (isTip && tipAmount > 0) {
-          fanHistory[username].tips.push({
-            type: 'tip',
-            amount: tipAmount,
-            timestamp: Date.now()
-          });
-          console.log(`💰 Tip de ${username}: ${tipAmount} GOLD`);
-        } else {
-          fanHistory[username].messages.push({
-            type: isModelMessage ? 'model' : 'fan',
-            message: messageText,
-            timestamp: Date.now()
-          });
-
-          // Mantener últimos 70 mensajes
-          if (fanHistory[username].messages.length > 70) {
-            fanHistory[username].messages.shift();
-          }
-
-          console.log(`💬 ${isModelMessage ? 'Modelo→' : 'Fan'} ${username}: ${messageText.substring(0, 50)}...`);
-        }
-
-        // Agregar botón IA solo en mensajes de fans (no modelo, no tips puros)
-        if (!isModelMessage && messageText && !msg.querySelector('.ai-btn')) {
-          if (!isTip || (isTip && messageText.length > 20)) { // Tips con mensaje personalizado
-            addAIButton(msg, username, messageText);
-          }
-        }
-
-      } catch (err) {
-        console.error('Error procesando mensaje:', err);
-        msg.dataset.processed = 'true';
       }
-    });
-  }
+    }, 2000);
 
-  // ============ AGREGAR BOTÓN IA ============
-  function addAIButton(container, username, messageText) {
-    const btn = document.createElement('button');
-    btn.textContent = '🤖';
-    btn.className = 'ai-btn';
-    btn.style.cssText = `
-      background: #8B5CF6;
-      color: white;
-      border: none;
-      padding: 4px 8px;
-      margin-left: 8px;
-      cursor: pointer;
-      border-radius: 5px;
-      font-size: 12px;
-      vertical-align: middle;
-    `;
+    function detectChatMode() {
+      const inputArea = document.querySelector('[class*="TextInput-container"]');
+      if (inputArea) {
+        const text = inputArea.textContent.toLowerCase();
+        if (text.includes('pagado') || text.includes('paid')) return 'PAID';
+        if (text.includes('huésped') || text.includes('guest')) return 'GUEST';
+      }
+      const tabs = document.querySelectorAll('[class*="tab"], [role="tab"]');
+      for (const tab of tabs) {
+        const text = tab.textContent.toLowerCase();
+        const isActive = tab.classList.contains('active') || tab.getAttribute('aria-selected') === 'true' || tab.querySelector('[class*="active"]');
+        if (isActive && (text.includes('pagado') || text.includes('paid'))) return 'PAID';
+        if (isActive && (text.includes('huésped') || text.includes('guest'))) return 'GUEST';
+      }
+      return 'FREE';
+    }
 
-    btn.onclick = async () => {
-      console.log(`🔵 IA para ${username}: "${messageText.substring(0, 30)}..."`);
-      btn.textContent = '...';
+    function processAllMessages() {
+      const chatContainer = document.querySelector('[id*="scroll-target"]')?.parentElement;
+      if (!chatContainer) return;
 
-      try {
-        const response = await getAIResponse(username, messageText);
+      const allMessages = chatContainer.querySelectorAll('[data-ta-locator="ChatDisplay__Message"]');
 
-        if (response) {
-          // Copiar al portapapeles
-          navigator.clipboard.writeText(response.suggestion);
+      allMessages.forEach(msg => {
+        if (msg.dataset.processed) return;
+        try {
+          const userMessageText = msg.querySelector('[data-ta-locator="UserMessage__MessageText"]');
+          const performerMessageText = msg.querySelector('[data-ta-locator="PerformerMessage__MessageText"]');
 
-          // Mostrar popup
-          showPopup(username, response.suggestion, response.translation);
+          if (userMessageText) {
+            const audienceEl = msg.querySelector('[data-ta-locator="UserMessage__Audience"]');
+            const messageEl = msg.querySelector('[data-ta-locator="UserMessage__Message"]');
+            if (!messageEl) { msg.dataset.processed = 'true'; return; }
 
-          btn.textContent = '✓';
-          setTimeout(() => btn.textContent = '🤖', 2000);
-        } else {
+            let username = '';
+            if (audienceEl) {
+              const spanEl = audienceEl.querySelector('span');
+              username = spanEl ? spanEl.textContent.trim() : audienceEl.textContent.trim();
+            }
+
+            let messageText = '';
+            const fullText = messageEl.textContent || '';
+            const translationEl = messageEl.querySelector('.translation, [class*="translation"]');
+            messageText = translationEl ? fullText.replace(translationEl.textContent, '').trim() : fullText.trim();
+
+            if (!username || !messageText) { msg.dataset.processed = 'true'; return; }
+            msg.dataset.processed = 'true';
+
+            const isTip = messageText.toLowerCase().includes('gold') && /\d+/.test(messageText);
+            let tipAmount = 0;
+            if (isTip) {
+              const match = messageText.match(/(\d+\.?\d*)\s*gold/i);
+              if (match) tipAmount = parseFloat(match[1]);
+            }
+
+            if (!fanHistory[username]) fanHistory[username] = { messages: [], tips: [] };
+
+            if (isTip && tipAmount > 0) {
+              fanHistory[username].tips.push({ type: 'tip', amount: tipAmount, timestamp: Date.now() });
+              console.log(`💰 Tip de ${username}: ${tipAmount} GOLD`);
+            } else {
+              fanHistory[username].messages.push({ type: 'fan', message: messageText, timestamp: Date.now() });
+              if (fanHistory[username].messages.length > 70) fanHistory[username].messages.shift();
+              console.log(`💬 Fan ${username}: ${messageText.substring(0, 50)}...`);
+            }
+
+            if (messageText && !msg.querySelector('.ai-btn') && (!isTip || messageText.length > 20)) {
+              addStreamingAIButton(msg, username, messageText);
+            }
+
+          } else if (performerMessageText) {
+            const audienceEl = msg.querySelector('[data-ta-locator="PerformerMessage__Audience"]');
+            const messageEl = msg.querySelector('[data-ta-locator="PerformerMessage__Message"]');
+            if (!messageEl) { msg.dataset.processed = 'true'; return; }
+
+            let targetUser = '';
+            if (audienceEl) targetUser = audienceEl.textContent.replace(/^A\s*/i, '').trim();
+
+            let messageText = '';
+            const fullText = messageEl.textContent || '';
+            const translationEl = messageEl.querySelector('.translation, [class*="translation"]');
+            messageText = translationEl ? fullText.replace(translationEl.textContent, '').trim() : fullText.trim();
+
+            msg.dataset.processed = 'true';
+
+            if (targetUser && messageText) {
+              if (!fanHistory[targetUser]) fanHistory[targetUser] = { messages: [], tips: [] };
+              fanHistory[targetUser].messages.push({ type: 'model', message: messageText, timestamp: Date.now() });
+              if (fanHistory[targetUser].messages.length > 70) fanHistory[targetUser].messages.shift();
+              console.log(`💬 Modelo→ ${targetUser}: ${messageText.substring(0, 50)}...`);
+            }
+          } else {
+            msg.dataset.processed = 'true';
+          }
+        } catch (err) {
+          console.error('Error procesando mensaje:', err);
+          msg.dataset.processed = 'true';
+        }
+      });
+    }
+
+    function addStreamingAIButton(container, username, messageText) {
+      const btn = document.createElement('button');
+      btn.textContent = '🤖';
+      btn.className = 'ai-btn';
+      btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:4px 8px;margin-left:8px;cursor:pointer;border-radius:5px;font-size:12px;vertical-align:middle;';
+
+      btn.onclick = async () => {
+        btn.textContent = '...';
+        try {
+          const mode = detectChatMode();
+          const isPaid = mode === 'PAID' || mode === 'GUEST';
+          const userHistory = fanHistory[username] || { messages: [], tips: [] };
+          let fullContext = [...userHistory.messages, ...userHistory.tips].sort((a, b) => a.timestamp - b.timestamp);
+
+          const data = await callAPI({
+            username, message: messageText,
+            context: fullContext.slice(-CONFIG.MAX_CONTEXT_MESSAGES),
+            isPM: isPaid, chatType: mode.toLowerCase(),
+            broadcaster_username: broadcasterUsername
+          });
+
+          if (data) {
+            navigator.clipboard.writeText(data.suggestion);
+            showStreamingPopup(username, data.suggestion, data.translation, detectChatMode());
+            btn.textContent = '✓';
+          } else {
+            btn.textContent = '!';
+          }
+        } catch (error) {
+          console.error('Error:', error);
           btn.textContent = '!';
-          setTimeout(() => btn.textContent = '🤖', 2000);
         }
-      } catch (error) {
-        console.error('Error:', error);
-        btn.textContent = '!';
         setTimeout(() => btn.textContent = '🤖', 2000);
-      }
-    };
+      };
 
-    // Insertar botón después del mensaje
-    const messageEl = container.querySelector('[data-ta-locator="PerformerMessage__Message"]');
-    if (messageEl) {
-      messageEl.style.display = 'inline';
-      messageEl.after(btn);
-    } else {
+      const messageEl = container.querySelector('[data-ta-locator="UserMessage__Message"]');
+      if (messageEl) {
+        messageEl.style.display = 'inline';
+        messageEl.after(btn);
+      } else {
+        container.appendChild(btn);
+      }
+    }
+
+    function showStreamingPopup(username, suggestion, translation, mode) {
+      const oldPopup = document.getElementById('ai-popup');
+      if (oldPopup) oldPopup.remove();
+
+      const modeLabel = { 'FREE': '🌐 FREE', 'GUEST': '👤 GUEST', 'PAID': '💰 PAID' };
+
+      let translationHtml = '';
+      if (translation) {
+        const sClean = suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
+        const tClean = translation.replace(/\s+/g, ' ').trim().toLowerCase();
+        if (sClean !== tClean) {
+          translationHtml = `<p style="background:#e8f4e8;padding:12px;border-radius:5px;color:#555;font-size:13px;margin-bottom:10px;"><strong>🇪🇸 Traducción:</strong><br>${translation}</p>`;
+        }
+      }
+
+      const popup = document.createElement('div');
+      popup.id = 'ai-popup';
+      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;';
+
+      popup.innerHTML = `
+        <h3 style="margin:0 0 15px 0;color:#333;">${modeLabel[mode] || mode} - @${username} ✅ Copiado!</h3>
+        <p id="ai-response" style="background:#f0f0f0;padding:12px;border-radius:5px;color:#333;margin-bottom:10px;">${suggestion}</p>
+        ${translationHtml}
+        <div style="display:flex;gap:10px;">
+          <button id="btn-regen" style="padding:8px 15px;cursor:pointer;border:none;background:#10B981;color:white;border-radius:5px;">🔄 Regenerar</button>
+          <button id="btn-insert" style="padding:8px 15px;cursor:pointer;border:none;background:#22c55e;color:white;border-radius:5px;">📤 Enviar</button>
+          <button id="btn-close" style="padding:8px 15px;cursor:pointer;border:none;background:#EF4444;color:white;border-radius:5px;">❌ Cerrar</button>
+        </div>
+      `;
+
+      document.body.appendChild(popup);
+      popup.querySelector('#btn-close').onclick = () => popup.remove();
+
+      popup.querySelector('#btn-insert').onclick = () => {
+        const input = document.querySelector('#message_text_input');
+        if (input) {
+          const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+          nativeInputValueSetter.call(input, suggestion);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          setTimeout(() => {
+            input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }));
+          }, 100);
+        }
+        popup.remove();
+      };
+
+      popup.querySelector('#btn-regen').onclick = async () => {
+        const regenBtn = popup.querySelector('#btn-regen');
+        regenBtn.disabled = true;
+        regenBtn.textContent = '⏳...';
+
+        const userHistory = fanHistory[username] || { messages: [], tips: [] };
+        let fullContext = [...userHistory.messages, ...userHistory.tips].sort((a, b) => a.timestamp - b.timestamp);
+        const lastMsg = fanHistory[username]?.messages.slice(-1)[0]?.message || '';
+
+        const data = await callAPI({
+          username, message: lastMsg,
+          context: fullContext.slice(-CONFIG.MAX_CONTEXT_MESSAGES),
+          isPM: detectChatMode() !== 'FREE', chatType: detectChatMode().toLowerCase(),
+          broadcaster_username: broadcasterUsername
+        });
+
+        if (data) {
+          popup.querySelector('#ai-response').textContent = data.suggestion;
+          suggestion = data.suggestion;
+          navigator.clipboard.writeText(data.suggestion);
+        }
+
+        regenBtn.disabled = false;
+        regenBtn.textContent = '🔄 Regenerar';
+      };
+    }
+
+    injectStyles();
+    setInterval(processAllMessages, 2000);
+    setTimeout(processAllMessages, 1000);
+    console.log('✅ CamAssist Streamate Streaming activo');
+  }
+
+  // ============================================================
+  // =================== MODO MESSENGER =========================
+  // ============================================================
+  function initMessenger() {
+    let inboxHistory = [];
+
+    function getFanUsername() {
+      const allH3 = document.querySelectorAll('h3[data-ta-locator="Text"]');
+      for (const el of allH3) {
+        if (el.className.includes('streamfans')) return el.textContent.trim();
+      }
+      const h3 = document.querySelector('h3.streamfans');
+      if (h3) return h3.textContent.trim();
+      return null;
+    }
+
+    let broadcasterUsername = 'Model';
+
+    function processInboxMessages() {
+      const fanUsername = getFanUsername();
+      if (!fanUsername) return;
+
+      const allMessages = document.querySelectorAll('[data-ta-locator="user-message"]');
+
+      allMessages.forEach(msg => {
+        if (msg.dataset.processed) return;
+
+        const messageText = msg.textContent.trim();
+        if (!messageText) { msg.dataset.processed = 'true'; return; }
+
+        const isModelMessage = msg.className.includes('bg-c_$messenger');
+
+        msg.dataset.processed = 'true';
+
+        inboxHistory.push({
+          type: isModelMessage ? 'model' : 'fan',
+          message: messageText,
+          timestamp: Date.now()
+        });
+
+        if (inboxHistory.length > CONFIG.MAX_CONTEXT_MESSAGES) inboxHistory.shift();
+
+        console.log(`💬 INBOX - ${isModelMessage ? 'Modelo' : 'Fan'} ${fanUsername}: ${messageText.substring(0, 50)}...`);
+
+        if (!isModelMessage && !msg.querySelector('.ai-btn')) {
+          addInboxAIButton(msg, fanUsername, messageText);
+        }
+      });
+
+      const goldMessages = document.querySelectorAll('[data-ta-locator="gold-message"]');
+      goldMessages.forEach(msg => {
+        if (msg.dataset.processed) return;
+        msg.dataset.processed = 'true';
+
+        const text = msg.textContent.trim();
+        const match = text.match(/(\d+\.?\d*)\s*GOLD/i);
+        if (match) {
+          const amount = parseFloat(match[1]);
+          inboxHistory.push({ type: 'tip', amount: amount, timestamp: Date.now() });
+          console.log(`💰 INBOX - Tip: ${amount} GOLD`);
+        }
+      });
+    }
+
+    function addInboxAIButton(container, username, messageText) {
+      const btn = document.createElement('button');
+      btn.textContent = '🤖';
+      btn.className = 'ai-btn';
+      btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:4px 8px;margin-left:8px;cursor:pointer;border-radius:5px;font-size:12px;vertical-align:middle;';
+
+      btn.onclick = async () => {
+        btn.textContent = '...';
+        try {
+          const sortedHistory = inboxHistory.sort((a, b) => a.timestamp - b.timestamp);
+
+          const data = await callAPI({
+            username, message: messageText,
+            context: sortedHistory.slice(-CONFIG.MAX_CONTEXT_MESSAGES),
+            isPM: true, chatType: 'inbox',
+            broadcaster_username: broadcasterUsername
+          });
+
+          if (data) {
+            navigator.clipboard.writeText(data.suggestion);
+            showInboxPopup(username, data.suggestion, data.translation, messageText);
+            btn.textContent = '✓';
+          } else {
+            btn.textContent = '!';
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          btn.textContent = '!';
+        }
+        setTimeout(() => btn.textContent = '🤖', 2000);
+      };
+
       container.appendChild(btn);
     }
+
+    function showInboxPopup(username, suggestion, translation, originalMessage) {
+      const oldPopup = document.getElementById('ai-popup');
+      if (oldPopup) oldPopup.remove();
+
+      let translationHtml = '';
+      if (translation) {
+        const sClean = suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
+        const tClean = translation.replace(/\s+/g, ' ').trim().toLowerCase();
+        if (sClean !== tClean) {
+          translationHtml = `<p style="background:#e8f4e8;padding:12px;border-radius:5px;color:#555;font-size:13px;margin-bottom:10px;"><strong>🇪🇸 Traducción:</strong><br>${translation}</p>`;
+        }
+      }
+
+      const popup = document.createElement('div');
+      popup.id = 'ai-popup';
+      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;';
+
+      popup.innerHTML = `
+        <h3 style="margin:0 0 15px 0;color:#333;">📬 INBOX - @${username} ✅ Copiado!</h3>
+        <textarea id="ai-response" style="background:#f0f0f0;padding:12px;border-radius:5px;height:100px;width:100%;resize:vertical;margin-bottom:10px;color:#333;border:1px solid #ccc;font-family:inherit;font-size:14px;box-sizing:border-box">${suggestion}</textarea>
+        ${translationHtml}
+        <div style="display:flex;gap:10px;">
+          <button id="btn-regen" style="padding:8px 15px;cursor:pointer;border:none;background:#10B981;color:white;border-radius:5px;">🔄 Regenerar</button>
+          <button id="btn-send" style="padding:8px 15px;cursor:pointer;border:none;background:#22c55e;color:white;border-radius:5px;">📤 Enviar</button>
+          <button id="btn-close" style="padding:8px 15px;cursor:pointer;border:none;background:#EF4444;color:white;border-radius:5px;">❌ Cerrar</button>
+        </div>
+      `;
+
+      document.body.appendChild(popup);
+
+      popup.querySelector('#ai-response').addEventListener('keydown', (e) => e.stopPropagation());
+
+      popup.querySelector('#btn-close').onclick = () => popup.remove();
+
+      popup.querySelector('#btn-send').onclick = () => {
+        const text = popup.querySelector('#ai-response').value;
+        const textarea = document.querySelector('textarea[data-ta-locator="create-message-input"]');
+        const sendBtn = document.querySelector('button[data-ta-locator="send-button"]');
+
+        if (textarea && sendBtn) {
+          const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+          nativeSetter.call(textarea, text);
+          textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          textarea.dispatchEvent(new Event('change', { bubbles: true }));
+
+          setTimeout(() => {
+            sendBtn.click();
+            popup.remove();
+          }, 200);
+        } else {
+          navigator.clipboard.writeText(text);
+          alert('Texto copiado. No se encontró el input del messenger.');
+        }
+      };
+
+      popup.querySelector('#btn-regen').onclick = async () => {
+        const regenBtn = popup.querySelector('#btn-regen');
+        regenBtn.disabled = true;
+        regenBtn.textContent = '⏳...';
+
+        const sortedHistory = inboxHistory.sort((a, b) => a.timestamp - b.timestamp);
+
+        const data = await callAPI({
+          username, message: originalMessage,
+          context: sortedHistory.slice(-CONFIG.MAX_CONTEXT_MESSAGES),
+          isPM: true, chatType: 'inbox',
+          broadcaster_username: broadcasterUsername
+        });
+
+        if (data) {
+          popup.querySelector('#ai-response').value = data.suggestion;
+          suggestion = data.suggestion;
+          navigator.clipboard.writeText(data.suggestion);
+        }
+
+        regenBtn.disabled = false;
+        regenBtn.textContent = '🔄 Regenerar';
+      };
+    }
+
+    // Detectar cambio de fan
+    let currentFan = null;
+    setInterval(() => {
+      const newFan = getFanUsername();
+      if (newFan && newFan !== currentFan) {
+        currentFan = newFan;
+        inboxHistory = [];
+        document.querySelectorAll('[data-ta-locator="user-message"]').forEach(m => m.dataset.processed = '');
+        document.querySelectorAll('[data-ta-locator="gold-message"]').forEach(m => m.dataset.processed = '');
+        console.log(`👤 INBOX - Cambió a fan: ${newFan}`);
+      }
+    }, 1000);
+
+    injectStyles();
+    setInterval(processInboxMessages, 2000);
+    setTimeout(processInboxMessages, 1000);
+    console.log('✅ CamAssist Streamate Messenger activo');
   }
 
-  // ============ LLAMAR API ============
-  async function getAIResponse(username, message) {
+  // ============================================================
+  // =================== FUNCIONES COMPARTIDAS ==================
+  // ============================================================
+
+  async function callAPI(params) {
     if (!modelToken) {
       alert('⚠️ Token no configurado. Abre el popup de la extensión.');
       return null;
     }
 
-    const mode = detectChatMode();
-    const isPaid = mode === 'PAID' || mode === 'GUEST';
+    try {
+      const response = await fetch(CONFIG.API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          token: modelToken,
+          platform: CONFIG.PLATFORM,
+          version: CONFIG.VERSION,
+          ...params
+        })
+      });
 
-    // Construir contexto
-    const userHistory = fanHistory[username] || { messages: [], tips: [] };
-    let fullContext = [...userHistory.messages, ...userHistory.tips];
-    fullContext = fullContext.sort((a, b) => a.timestamp - b.timestamp);
+      const data = await response.json();
 
-    console.log('📚 Historial enviado:', fullContext.length, 'items');
-
-    const response = await fetch(CONFIG.API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token: modelToken,
-        platform: CONFIG.PLATFORM,
-        version: '1.1.6',
-        broadcaster_username: broadcasterUsername,  // NUEVO
-        username: username,
-        message: message,
-        context: fullContext.slice(-CONFIG.MAX_CONTEXT_MESSAGES),
-        isPM: isPaid, // PAID/GUEST = como PM (no vender agresivo)
-        chatType: mode.toLowerCase()
-      })
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      return {
-        suggestion: data.suggestion,
-        translation: data.translation
-      };
-    } else {
-      console.error('API Error:', data.error);
+      if (data.success) {
+        return { suggestion: data.suggestion, translation: data.translation };
+      } else {
+        console.error('API Error:', data.error);
+        return null;
+      }
+    } catch (error) {
+      console.error('API Error:', error);
       return null;
     }
   }
 
-  // ============ MOSTRAR POPUP ============
-  function showPopup(username, suggestion, translation) {
-    // Remover popup anterior
-    const oldPopup = document.getElementById('ai-popup');
-    if (oldPopup) oldPopup.remove();
-
-    const mode = detectChatMode();
-    const modeLabel = {
-      'FREE': '🌐 FREE',
-      'GUEST': '👤 GUEST',
-      'PAID': '💰 PAID'
-    };
-
-    const popup = document.createElement('div');
-    popup.id = 'ai-popup';
-    popup.style.cssText = `
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      padding: 20px;
-      border: 2px solid #8B5CF6;
-      z-index: 99999;
-      border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-      max-width: 450px;
-      font-family: Arial, sans-serif;
-    `;
-
-    // Traducción (si es diferente)
-    let translationHtml = '';
-    if (translation) {
-      const suggestionClean = suggestion.replace(/\s+/g, ' ').trim().toLowerCase();
-      const translationClean = translation.replace(/\s+/g, ' ').trim().toLowerCase();
-
-      if (suggestionClean !== translationClean) {
-        translationHtml = `
-          <p style="background:#e8f4e8;padding:12px;border-radius:5px;color:#555;font-size:13px;margin-bottom:10px;">
-            <strong>🇪🇸 Traducción:</strong><br>${translation}
-          </p>
-        `;
-      }
-    }
-
-    popup.innerHTML = `
-      <h3 style="margin:0 0 15px 0;color:#333;">
-        ${modeLabel[mode] || mode} - @${username} ✅ Copiado!
-      </h3>
-      <p id="ai-response" style="background:#f0f0f0;padding:12px;border-radius:5px;color:#333;margin-bottom:10px;">
-        ${suggestion}
-      </p>
-      ${translationHtml}
-      <div style="display:flex;gap:10px;">
-        <button id="btn-regen" style="padding:8px 15px;cursor:pointer;border:none;background:#10B981;color:white;border-radius:5px;">
-          🔄 Regenerar
-        </button>
-        <button id="btn-insert" style="padding:8px 15px;cursor:pointer;border:none;background:#3B82F6;color:white;border-radius:5px;">
-          ✍️ Insertar
-        </button>
-        <button id="btn-close" style="padding:8px 15px;cursor:pointer;border:none;background:#EF4444;color:white;border-radius:5px;">
-          ❌ Cerrar
-        </button>
-      </div>
-    `;
-
-    document.body.appendChild(popup);
-
-    // Event listeners
-    popup.querySelector('#btn-close').onclick = () => popup.remove();
-
-    popup.querySelector('#btn-insert').onclick = () => {
-      insertTextToInput(suggestion);
-      popup.remove();
-    };
-
-    popup.querySelector('#btn-regen').onclick = async () => {
-      const btn = popup.querySelector('#btn-regen');
-      btn.disabled = true;
-      btn.textContent = '⏳...';
-
-      const newResponse = await getAIResponse(username, fanHistory[username]?.messages.slice(-1)[0]?.message || '');
-
-      if (newResponse) {
-        popup.querySelector('#ai-response').textContent = newResponse.suggestion;
-        navigator.clipboard.writeText(newResponse.suggestion);
-      }
-
-      btn.disabled = false;
-      btn.textContent = '🔄 Regenerar';
-    };
-  }
-
-  // ============ INSERTAR TEXTO EN INPUT ============
-  function insertTextToInput(text) {
-    const input = document.querySelector('#message_text_input, [data-ta-locator="ChatTools__ChatInputText"]');
-    if (!input) return;
-
-    input.focus();
-    input.value = text;
-
-    // Disparar eventos para React
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-  }
-
-  // ============ ESTILOS ============
   function injectStyles() {
     const style = document.createElement('style');
     style.textContent = `
-      .ai-btn {
-        transition: all 0.2s;
-      }
-      .ai-btn:hover {
-        background: #7C3AED !important;
-        transform: scale(1.1);
-      }
-      #ai-popup {
-        animation: fadeIn 0.2s ease;
-      }
+      .ai-btn { transition: all 0.2s; }
+      .ai-btn:hover { background: #7C3AED !important; transform: scale(1.1); }
+      #ai-popup { animation: fadeIn 0.2s ease; }
       @keyframes fadeIn {
         from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
         to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
       }
     `;
     document.head.appendChild(style);
-  }
-
-  // ============ INICIALIZACIÓN ============
-  function init() {
-    console.log('🤖 CamAssist Streamate iniciando...');
-
-    injectStyles();
-
-    // Procesar mensajes cada 2 segundos
-    setInterval(processAllMessages, 2000);
-
-    // Procesar inmediatamente
-    setTimeout(processAllMessages, 1000);
-
-    console.log('✅ CamAssist Streamate activo');
-  }
-
-  // ============ INICIAR ============
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
   }
 
 })();
