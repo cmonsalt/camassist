@@ -266,10 +266,13 @@
                     <h3 class="text-xl font-semibold text-gray-800">${model.name}</h3>
                 </div>
                 <div class="bg-gray-100 p-2 rounded mb-4">
-                    <p class="text-xs text-gray-500">Token:</p>
-                    <p class="font-mono text-sm text-purple-600 truncate">${model.token}</p>
-                </div>
-                <div class="flex gap-2">
+    <p class="text-xs text-gray-500">Token:</p>
+    <p class="font-mono text-sm text-purple-600 truncate">${model.token}</p>
+</div>
+<div class="text-xs mb-3 ${model.last_extension_version === '1.0.6' ? 'text-green-600' : 'text-orange-500'}">
+    📦 Extensión: v${model.last_extension_version || 'Sin datos'}
+</div>
+<div class="flex gap-2">
     <button onclick="editModel('${model.token}')" class="flex-1 px-4 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition">
         ⚙️ Configurar
     </button>

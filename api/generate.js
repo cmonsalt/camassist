@@ -825,7 +825,6 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
     console.log('✅ Respuesta generada');
 
     // Guardar uso en BD
-    // Guardar uso en BD
     if (modelData.id && modelData.studio_id && supabase) {
       await supabase.from('usage').insert({
         model_id: modelData.id,
@@ -835,6 +834,15 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
         is_pm: isPM
       });
       console.log('📊 Uso guardado');
+
+      // Guardar versión de extensión
+      await supabase
+        .from('models')
+        .update({
+          last_extension_version: version || null,
+          last_activity_at: new Date().toISOString()
+        })
+        .eq('id', modelData.id);
 
       // Activar trial en primer uso - SIEMPRE 14 días
       if (!modelData.trial_started) {
