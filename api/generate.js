@@ -246,7 +246,7 @@ CONTEXTO XMODELS (VIP 1:1):
     }).filter(Boolean).join('\n');
   }
 
-  console.log('📚 HISTORIAL:', contextText);
+  console.log('🎯 PLATFORM CONTEXT:', platform, '| chatType:', chatType, '| isPM:', isPM);
 
   // PROMPT GENUINO Y HUMANO
   const systemPrompt = `Eres ${modelData.name}, ${modelData.age} años, modelo webcam de ${modelData.location || 'Colombia'}.

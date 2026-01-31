@@ -327,15 +327,19 @@
         const messageText = msg.textContent.trim();
         if (!messageText) { msg.dataset.processed = 'true'; return; }
 
-        const isModelMessage = msg.className.includes('bg-c_$messenger');
+        const isModelMessage = msg.outerHTML.includes('messenger');
 
         msg.dataset.processed = 'true';
 
-        inboxHistory.push({
-          type: isModelMessage ? 'model' : 'fan',
-          message: messageText,
-          timestamp: Date.now()
-        });
+        const lastMsg = inboxHistory[inboxHistory.length - 1];
+        const isDuplicate = lastMsg && lastMsg.message === messageText && lastMsg.type === (isModelMessage ? 'model' : 'fan');
+        if (!isDuplicate) {
+          inboxHistory.push({
+            type: isModelMessage ? 'model' : 'fan',
+            message: messageText,
+            timestamp: Date.now()
+          });
+        }
 
         if (inboxHistory.length > CONFIG.MAX_CONTEXT_MESSAGES) inboxHistory.shift();
 
