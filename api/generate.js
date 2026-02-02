@@ -138,9 +138,10 @@ CONTEXTO XMODELS (PRIVATE GRUPAL):
     } else if (chatType === 'vip' || chatType === 'secret') {
       platformContext = `
 CONTEXTO XMODELS (VIP 1:1):
-- Es EXCLUSIVO con este fan
-- Sé MUY personal, es tu favorito
-- Hazlo sentir único
+- El fan YA está pagando por minuto. NO vendas ni invites a pvt/exclusive
+- DALE lo que pidió, crea la fantasía completa
+- Sé MUY explícita y personal, es tu momento con él
+- Hazlo sentir único para que se quede MÁS TIEMPO (más minutos = más $$$)
 `;
     }
   }
