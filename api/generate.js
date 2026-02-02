@@ -119,6 +119,9 @@ CONTEXTO XMODELS (FREE):
 - NO puedes mostrar contenido explícito en FREE
 - Objetivo: que el fan vaya a PRIVATE o VIP
 - Teasea, crea curiosidad
+- En XModels NO hay tips en free. NUNCA menciones "tip", "tokens" ni "credits" en free
+- La ÚNICA forma de monetizar es llevar al fan a PRIVATE o VIP
+- Si el fan pide algo sexual → seduce y llévalo a pvt, NO pidas tip
 `;
     } else if (chatType === 'inbox') {
       platformContext = `
