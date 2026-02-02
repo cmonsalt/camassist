@@ -204,6 +204,22 @@ CONTEXTO XMODELS (VIP 1:1):
             error: 'deleted'
           });
         }
+
+        // Verificar pago después de trial
+        const now = new Date();
+        const trialEnds = model.trial_ends_at ? new Date(model.trial_ends_at) : null;
+        const paidUntil = model.paid_until ? new Date(model.paid_until) : null;
+
+        if (trialEnds && trialEnds < now && (!paidUntil || paidUntil < now)) {
+          console.log('🚫 Trial vencido sin pago:', model.name);
+          return res.status(403).json({
+            success: false,
+            suggestion: "⚠️ Periodo de prueba terminado - Contacta a tu estudio",
+            translation: "⚠️ Periodo de prueba terminado - Contacta a tu estudio",
+            error: 'trial_expired'
+          });
+        }
+
         // Validar que el token se usa en la sala correcta
         const broadcasterUsername = req.body.broadcaster_username;
         if (broadcasterUsername && broadcasterUsername.length > 1 && broadcasterUsername !== 'Model') {
