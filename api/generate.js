@@ -202,20 +202,19 @@ CONTEXTO XMODELS (VIP 1:1):
         }
         // Validar que el token se usa en la sala correcta
         const broadcasterUsername = req.body.broadcaster_username;
-        console.log('🔍 VALIDACIÓN SALA:', {
-          broadcasterUsername: broadcasterUsername,
-          modelName: model.name,
-          match: model.name?.toLowerCase() === broadcasterUsername?.toLowerCase()
-        });
-        if (broadcasterUsername && broadcasterUsername !== 'Model' &&
-          model.name.toLowerCase() !== broadcasterUsername.toLowerCase()) {
-          console.log('🚫 Token en sala incorrecta:', model.name, '→', broadcasterUsername);
-          return res.status(403).json({
-            success: false,
-            suggestion: "⚠️ Token no válido para esta modelo",
-            translation: "⚠️ Token no válido para esta modelo",
-            error: 'wrong_room'
-          });
+        if (broadcasterUsername && broadcasterUsername.length > 1 && broadcasterUsername !== 'Model') {
+          const platformField = `${platform.toLowerCase()}_username`;
+          const expectedUsername = model[platformField];
+
+          if (expectedUsername && expectedUsername.toLowerCase() !== broadcasterUsername.toLowerCase()) {
+            console.log('🚫 Token en sala incorrecta:', expectedUsername, '→', broadcasterUsername);
+            return res.status(403).json({
+              success: false,
+              suggestion: "⚠️ Token no válido para esta modelo",
+              translation: "⚠️ Token no válido para esta modelo",
+              error: 'wrong_room'
+            });
+          }
         }
 
         modelData = { ...modelData, ...model };
