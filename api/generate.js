@@ -202,6 +202,11 @@ CONTEXTO XMODELS (VIP 1:1):
         }
         // Validar que el token se usa en la sala correcta
         const broadcasterUsername = req.body.broadcaster_username;
+        console.log('🔍 VALIDACIÓN SALA:', {
+          broadcasterUsername: broadcasterUsername,
+          modelName: model.name,
+          match: model.name?.toLowerCase() === broadcasterUsername?.toLowerCase()
+        });
         if (broadcasterUsername && broadcasterUsername !== 'Model' &&
           model.name.toLowerCase() !== broadcasterUsername.toLowerCase()) {
           console.log('🚫 Token en sala incorrecta:', model.name, '→', broadcasterUsername);
