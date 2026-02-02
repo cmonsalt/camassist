@@ -189,6 +189,8 @@ CONTEXTO XMODELS (VIP 1:1):
           });
         }
 
+
+
         if (model.deleted_at) {
           console.log('🚫 Modelo eliminada:', model.name);
           return res.status(403).json({
@@ -198,23 +200,17 @@ CONTEXTO XMODELS (VIP 1:1):
             error: 'deleted'
           });
         }
-
-        // NUEVO: Validar broadcaster_username si viene en el request
+        // Validar que el token se usa en la sala correcta
         const broadcasterUsername = req.body.broadcaster_username;
-        if (broadcasterUsername) {
-          const platformField = `${platform}_username`; // ej: chaturbate_username
-          const expectedUsername = model[platformField];
-
-          // Solo validar si el modelo tiene username configurado para esta plataforma
-          if (expectedUsername && expectedUsername.toLowerCase() !== broadcasterUsername.toLowerCase()) {
-            console.log('🚫 Username no coincide:', expectedUsername, 'vs', broadcasterUsername);
-            return res.status(403).json({
-              success: false,
-              suggestion: "⚠️ Token no válido para este usuario",
-              translation: "⚠️ Token no válido para este usuario",
-              error: 'username_mismatch'
-            });
-          }
+        if (broadcasterUsername && broadcasterUsername !== 'Model' &&
+          model.name.toLowerCase() !== broadcasterUsername.toLowerCase()) {
+          console.log('🚫 Token en sala incorrecta:', model.name, '→', broadcasterUsername);
+          return res.status(403).json({
+            success: false,
+            suggestion: "⚠️ Token no válido para esta modelo",
+            translation: "⚠️ Token no válido para esta modelo",
+            error: 'wrong_room'
+          });
         }
 
         modelData = { ...modelData, ...model };
