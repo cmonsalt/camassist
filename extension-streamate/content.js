@@ -99,8 +99,26 @@
       allMessages.forEach(msg => {
         if (msg.dataset.processed) return;
         try {
+          // Detectar si es un mensaje de TIP (tiene icono goldCoin)
+          const goldCoinIcon = msg.querySelector('svg[name="goldCoin"]');
+          if (goldCoinIcon) {
+            const tipText = msg.textContent || '';
+            const tipMatch = tipText.match(/(\d+\.?\d*)\s*GOLD/i);
+            const fromMatch = tipText.match(/desde\s+(\w+)/i) || tipText.match(/from\s+(\w+)/i);
+
+            if (tipMatch && fromMatch) {
+              const tipAmount = parseFloat(tipMatch[1]);
+              const username = fromMatch[1];
+
+              if (!fanHistory[username]) fanHistory[username] = { messages: [], tips: [] };
+              fanHistory[username].tips.push({ type: 'tip', amount: tipAmount, timestamp: Date.now() });
+              console.log(`💰 Tip de ${username}: ${tipAmount} GOLD`);
+            }
+            msg.dataset.processed = 'true';
+            return;
+          }
           const userMessageText = msg.querySelector('[data-ta-locator="UserMessage__MessageText"]');
-          const performerMessageText = msg.querySelector('[data-ta-locator="PerformerMessage__MessageText"]');
+          const performerMessageText = msg.querySelector('[data-ta-locator="PerformerMessage__Message"]');
 
           if (userMessageText) {
             const audienceEl = msg.querySelector('[data-ta-locator="UserMessage__Audience"]');
