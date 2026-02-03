@@ -10,7 +10,7 @@
   const CONFIG = {
     API_URL: 'https://www.camassist.co/api/generate',
     PLATFORM: 'streamate',
-    VERSION: '1.3.0',
+    VERSION: '1.6.0',
     CURRENCY: 'gold',
     MAX_CONTEXT_MESSAGES: 70
   };
