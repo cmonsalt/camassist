@@ -228,7 +228,19 @@ CONTEXTO XMODELS (VIP 1:1):
           const platformField = `${platform.toLowerCase()}_username`;
           const expectedUsername = model[platformField];
 
-          if (expectedUsername && expectedUsername.toLowerCase() !== broadcasterUsername.toLowerCase()) {
+          // Si NO tiene username configurado → BLOQUEAR
+          if (!expectedUsername) {
+            console.log('🚫 Username no configurado:', model.name, '→', platform);
+            return res.status(403).json({
+              success: false,
+              suggestion: `⚠️ Configura tu username de ${platform} en el dashboard`,
+              translation: `⚠️ Configura tu username de ${platform} en el dashboard`,
+              error: 'username_not_configured'
+            });
+          }
+
+          // Si tiene username pero no coincide → BLOQUEAR
+          if (expectedUsername.toLowerCase() !== broadcasterUsername.toLowerCase()) {
             console.log('🚫 Token en sala incorrecta:', expectedUsername, '→', broadcasterUsername);
             return res.status(403).json({
               success: false,
