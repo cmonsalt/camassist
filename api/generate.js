@@ -64,9 +64,9 @@ export default async function handler(req, res) {
   // ========== FIN RATE LIMITING ==========
 
   console.log('📥 Request:', { token, username, message, isPM, platform: platform || 'unknown', version, contextLength: context.length, hasImage: !!imageUrl });
-// if (context.length > 0) {
-//   console.log('📚 Chat reciente:', context.slice(-70));
-// }
+  // if (context.length > 0) {
+  //   console.log('📚 Chat reciente:', context.slice(-70));
+  // }
 
   // Terminología según plataforma
   const platformTerms = {
@@ -784,6 +784,8 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
 
       // PASO 2: Usar el prompt de texto normal con la descripción
       console.log('💬 Paso 2: Generando respuesta con contexto...');
+      console.log('📤 PROMPT TEXTO:', systemPrompt);
+      console.log('📤 USER PROMPT:', `Fan ${username} dice: "${imageMessage}"`);
 
       const imageMessage = `[Fan envió una foto: ${imageDescription}]`;
 
