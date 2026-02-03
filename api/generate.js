@@ -222,24 +222,23 @@ CONTEXTO XMODELS (VIP 1:1):
           });
         }
 
-        // Validar que el token se usa en la sala correcta
+        // Validar que el username de la plataforma esté configurado (SIEMPRE)
+        const platformField = `${platform.toLowerCase()}_username`;
+        const expectedUsername = model[platformField];
+
+        if (!expectedUsername) {
+          console.log('🚫 Username no configurado:', model.name, '→', platform);
+          return res.status(403).json({
+            success: false,
+            suggestion: `⚠️ Configura tu username de ${platform} en el dashboard`,
+            translation: `⚠️ Configura tu username de ${platform} en el dashboard`,
+            error: 'username_not_configured'
+          });
+        }
+
+        // Validar que el token se usa en la sala correcta (si viene broadcaster_username)
         const broadcasterUsername = req.body.broadcaster_username;
         if (broadcasterUsername && broadcasterUsername.length > 1 && broadcasterUsername !== 'Model') {
-          const platformField = `${platform.toLowerCase()}_username`;
-          const expectedUsername = model[platformField];
-
-          // Si NO tiene username configurado → BLOQUEAR
-          if (!expectedUsername) {
-            console.log('🚫 Username no configurado:', model.name, '→', platform);
-            return res.status(403).json({
-              success: false,
-              suggestion: `⚠️ Configura tu username de ${platform} en el dashboard`,
-              translation: `⚠️ Configura tu username de ${platform} en el dashboard`,
-              error: 'username_not_configured'
-            });
-          }
-
-          // Si tiene username pero no coincide → BLOQUEAR
           if (expectedUsername.toLowerCase() !== broadcasterUsername.toLowerCase()) {
             console.log('🚫 Token en sala incorrecta:', expectedUsername, '→', broadcasterUsername);
             return res.status(403).json({
