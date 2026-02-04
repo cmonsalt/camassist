@@ -792,8 +792,6 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
       }
 
       console.log('🖼️ Descripción de imagen:', imageDescription);
-
-      // PASO 2: Usar el prompt de texto normal con la descripción
       console.log('💬 Paso 2: Generando respuesta con contexto...');
       console.log('📤 PROMPT TEXTO:', systemPrompt);
       console.log('📤 USER PROMPT:', `Fan ${username} dice: "${imageMessage}"`);
