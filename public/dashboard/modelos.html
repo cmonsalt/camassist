@@ -270,6 +270,12 @@
     <p class="text-xs text-gray-500">Token:</p>
     <p class="font-mono text-sm text-purple-600 truncate">${model.token}</p>
 </div>
+<div class="flex flex-wrap gap-1 mb-3">
+    ${model.chaturbate_username ? '<span class="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-600">CB</span>' : ''}
+    ${model.stripchat_username ? '<span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-600">SC</span>' : ''}
+    ${model.streamate_username ? '<span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-600">SM</span>' : ''}
+    ${model.xmodels_username ? '<span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-600">XM</span>' : ''}
+</div>
 <div class="text-xs mb-3 ${model.last_extension_version === '1.0.6' ? 'text-green-600' : 'text-orange-500'}">
     📦 Extensión: v${model.last_extension_version || 'Sin datos'}
 </div>
