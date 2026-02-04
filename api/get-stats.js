@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     // Obtener modelos del studio
     const { data: models, error: modelsError } = await supabase
       .from('models')
-      .select('id, name, token, created_at, trial_started, trial_ends_at, subscription_status, paid_until')
+      .select('id, name, token, created_at, trial_started, trial_ends_at, subscription_status, paid_until, chaturbate_username, stripchat_username, streamate_username, xmodels_username')
       .eq('studio_id', studio_id)
       .is('deleted_at', null)
       .order('created_at', { ascending: false });
@@ -162,7 +162,12 @@ export default async function handler(req, res) {
         lastUsed: modelUsage.lastUsed,
         trialStatus,
         trialDaysLeft,
-        trialEndsAt: model.trial_ends_at
+        trialEndsAt: model.trial_ends_at,
+        trialEndsAt: model.trial_ends_at,
+        chaturbate_username: model.chaturbate_username,
+        stripchat_username: model.stripchat_username,
+        streamate_username: model.streamate_username,
+        xmodels_username: model.xmodels_username
       };
     });
 
