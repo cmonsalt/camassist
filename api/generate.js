@@ -896,7 +896,7 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
       // Activar trial en primer uso - SIEMPRE 14 días
       if (!modelData.trial_started) {
         const trialEndsAt = new Date();
-        trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+        trialEndsAt.setDate(trialEndsAt.getDate() + 7);
 
         await supabase
           .from('models')
