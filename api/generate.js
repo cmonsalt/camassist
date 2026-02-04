@@ -792,11 +792,12 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
       }
 
       console.log('🖼️ Descripción de imagen:', imageDescription);
+
+      const imageMessage = `[Fan envió una foto: ${imageDescription}]`;
+
       console.log('💬 Paso 2: Generando respuesta con contexto...');
       console.log('📤 PROMPT TEXTO:', systemPrompt);
       console.log('📤 USER PROMPT:', `Fan ${username} dice: "${imageMessage}"`);
-
-      const imageMessage = `[Fan envió una foto: ${imageDescription}]`;
 
       messages = [
         { role: 'system', content: systemPrompt },
