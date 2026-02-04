@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CamAssist - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -99,7 +100,7 @@
             }
         }
     </style>
-     <link rel="icon" href="LogosMarca/icon16.png" type="image/png">
+    <link rel="icon" href="LogosMarca/icon16.png" type="image/png">
 </head>
 
 <body class="bg-gray-50">
@@ -125,7 +126,7 @@
                         class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">⏰</span> Tiempo
                     </a>
-                      <a href="/dashboard/tiempo-config.html"
+                    <a href="/dashboard/tiempo-config.html"
                         class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
                         <span class="mr-3">⚙️</span> Configurar Tiempo
                     </a>
@@ -218,6 +219,17 @@
                     </div>
                 </div>
 
+                <!-- Gráfico últimos 7 días -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-semibold text-gray-800">📈 Últimos 7 días</h2>
+                        <span class="text-sm text-gray-500">Respuestas IA</span>
+                    </div>
+                    <div style="height: 200px;">
+                        <canvas id="usageChart"></canvas>
+                    </div>
+                </div>
+
                 <!-- Uso por Modelo -->
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
                     <div class="flex items-center justify-between mb-6">
@@ -291,6 +303,11 @@
 
                     // Renderizar tabla de modelos
                     renderModelsTable(data.models);
+
+                    // Renderizar gráfico
+                    if (data.stats.dailyUsage) {
+                        renderChart(data.stats.dailyUsage);
+                    }
                 } else {
                     console.error('Error cargando stats:', data.message);
                 }
@@ -368,6 +385,45 @@
                     </table>
                 </div>
             `;
+        }
+
+        function renderChart(dailyUsage) {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+
+            const labels = dailyUsage.map(d => {
+                const date = new Date(d.date + 'T12:00:00');
+                return date.toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric' });
+            });
+
+            const data = dailyUsage.map(d => d.count);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Respuestas',
+                        data: data,
+                        backgroundColor: 'rgba(147, 51, 234, 0.5)',
+                        borderColor: 'rgb(147, 51, 234)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 }
+                        }
+                    }
+                }
+            });
         }
 
         function formatTimeAgo(dateString) {

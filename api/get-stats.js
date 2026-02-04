@@ -169,6 +169,32 @@ export default async function handler(req, res) {
     // Ordenar por uso (más activos primero)
     modelsWithUsage.sort((a, b) => b.usageMonth - a.usageMonth);
 
+    // Obtener uso últimos 7 días para gráfico
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      date.setHours(0, 0, 0, 0);
+      last7Days.push(date.toISOString().split('T')[0]);
+    }
+
+    const usageByDay = {};
+    last7Days.forEach(day => {
+      usageByDay[day] = 0;
+    });
+
+    allUsageMonth.forEach(u => {
+      const day = u.created_at.split('T')[0];
+      if (usageByDay[day] !== undefined) {
+        usageByDay[day]++;
+      }
+    });
+
+    const dailyUsage = last7Days.map(day => ({
+      date: day,
+      count: usageByDay[day]
+    }));
+
     // Calcular costo estimado (aproximado)
     const estimatedCost = (totalUsage * 0.00025).toFixed(2);
 
@@ -184,7 +210,8 @@ export default async function handler(req, res) {
         pmCount,
         publicCount,
         totalModels: models.length,
-        estimatedCost
+        estimatedCost,
+        dailyUsage
       },
       models: modelsWithUsage
     });
