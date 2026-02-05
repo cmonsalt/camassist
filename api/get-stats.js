@@ -178,6 +178,7 @@ export default async function handler(req, res) {
     const last7Days = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
+      date.setHours(date.getHours() - 5); // Ajustar a hora Colombia (UTC-5)
       date.setDate(date.getDate() - i);
       date.setHours(0, 0, 0, 0);
       last7Days.push(date.toISOString().split('T')[0]);
