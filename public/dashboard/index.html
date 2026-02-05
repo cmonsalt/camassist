@@ -168,6 +168,11 @@
                         class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold">
                         <!-- Se llena dinámicamente -->
                     </div>
+
+                    <!-- Alertas -->
+                    <div id="alertsContainer" class="mb-6 space-y-3">
+                        <!-- Se llenan dinámicamente -->
+                    </div>
                 </div>
 
                 <!-- Stats Cards -->
@@ -322,6 +327,57 @@
             } catch (error) {
                 console.error('Error:', error);
             }
+        }
+
+        // Cargar alertas
+        loadAlerts();
+
+        async function loadAlerts() {
+            try {
+                const response = await fetch(`https://camassist.vercel.app/api/extensions?studio_id=${studioId}&action=list`);
+                const data = await response.json();
+
+                if (data.success && data.alerts && data.alerts.length > 0) {
+                    renderAlerts(data.alerts);
+                }
+            } catch (error) {
+                console.error('Error cargando alertas:', error);
+            }
+        }
+
+        function renderAlerts(alerts) {
+            const container = document.getElementById('alertsContainer');
+
+            const typeStyles = {
+                'info': 'bg-blue-50 border-blue-200 text-blue-800',
+                'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800',
+                'urgent': 'bg-red-50 border-red-200 text-red-800',
+                'update': 'bg-green-50 border-green-200 text-green-800'
+            };
+
+            const typeIcons = {
+                'info': 'ℹ️',
+                'warning': '⚠️',
+                'urgent': '🚨',
+                'update': '🆕'
+            };
+
+            container.innerHTML = alerts.map(alert => {
+                const style = typeStyles[alert.type] || typeStyles['info'];
+                const icon = typeIcons[alert.type] || '📢';
+
+                return `
+            <div class="border rounded-xl p-4 ${style}">
+                <div class="flex items-start">
+                    <span class="text-xl mr-3">${icon}</span>
+                    <div>
+                        <h3 class="font-semibold">${alert.title}</h3>
+                        <p class="mt-1 text-sm opacity-90">${alert.message}</p>
+                    </div>
+                </div>
+            </div>
+        `;
+            }).join('');
         }
 
         function renderModelsTable(models) {
