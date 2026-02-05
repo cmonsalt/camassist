@@ -106,43 +106,41 @@
 <body class="bg-gray-50">
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <aside class="w-64 bg-gradient-to-b from-purple-600 to-pink-600 text-white flex flex-col">
-            <div class="p-6">
-                <div class="flex items-center mb-8">
-                    <span class="text-3xl mr-3">🤖</span>
-                    <h1 class="text-xl font-bold">CamAssist</h1>
-                </div>
-
-                <nav class="space-y-2">
-                    <a href="/dashboard/index.html"
-                        class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
-                        <span class="mr-3">📊</span> Dashboard
-                    </a>
-                    <a href="/dashboard/modelos.html"
-                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <span class="mr-3">👥</span> Modelos
-                    </a>
-                    <a href="/dashboard/tiempo.html"
-                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <span class="mr-3">⏰</span> Tiempo
-                    </a>
-                    <a href="/dashboard/tiempo-config.html"
-                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <span class="mr-3">⚙️</span> Configurar Tiempo
-                    </a>
-                    <a href="/dashboard/extensiones.html"
-                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <span class="mr-3">🧩</span> Extensiones
-                    </a>
-                    <a href="/dashboard/facturacion.html"
-                        class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
-                        <span class="mr-3">💳</span> Facturación
-                    </a>
-                </nav>
+        <aside class="w-64 bg-gradient-to-b from-purple-700 to-pink-600 min-h-screen p-6 text-white fixed">
+            <div class="flex items-center mb-8">
+                <span class="text-2xl mr-2">🤖</span>
+                <h1 class="text-xl font-bold">CamAssist</h1>
             </div>
 
-            <div class="mt-auto p-6 border-t border-white/10">
-                <div class="text-sm mb-4">
+            <nav class="space-y-2">
+                <a href="/dashboard/index.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">📊</span> Dashboard
+                </a>
+                <a href="/dashboard/modelos.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">👩‍💼</span> Modelos
+                </a>
+                <a href="/dashboard/tiempo.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">⏱️</span> Tiempo
+                </a>
+                <a href="/dashboard/tiempo-config.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">⚙️</span> Configurar Tiempo
+                </a>
+                <a href="/dashboard/extensiones.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">🧩</span> Extensiones
+                </a>
+                <a href="/dashboard/facturacion.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">💳</span> Facturación
+                </a>
+            </nav>
+
+            <div class="absolute bottom-6 left-6 right-6">
+                <div class="mb-4 text-sm opacity-80">
                     <div class="text-white/60">Studio</div>
                     <div class="font-semibold" id="studioName">Cargando...</div>
                 </div>
