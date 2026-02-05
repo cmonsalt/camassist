@@ -517,6 +517,14 @@
             localStorage.clear();
             window.location.href = '/dashboard/login.html';
         }
+
+        // Resaltar página activa en el menú
+        document.querySelectorAll('aside nav a').forEach(link => {
+            if (link.href === window.location.href) {
+                link.classList.remove('hover:bg-white/10');
+                link.classList.add('bg-white/20');
+            }
+        });
     </script>
 </body>
 
