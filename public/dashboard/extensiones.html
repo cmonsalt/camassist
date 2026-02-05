@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extensiones - CamAssist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gradient-to-b from-purple-700 to-pink-600 min-h-screen p-6 text-white fixed">
+            <div class="flex items-center mb-8">
+                <span class="text-2xl mr-2">🤖</span>
+                <h1 class="text-xl font-bold">CamAssist</h1>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="/dashboard/index.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">📊</span> Dashboard
+                </a>
+                <a href="/dashboard/modelos.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">👩‍💼</span> Modelos
+                </a>
+                <a href="/dashboard/tiempo.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">⏱️</span> Tiempo
+                </a>
+                <a href="/dashboard/extensiones.html"
+                    class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
+                    <span class="mr-3">🧩</span> Extensiones
+                </a>
+                <a href="/dashboard/facturacion.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">💳</span> Facturación
+                </a>
+            </nav>
+
+            <div class="absolute bottom-6 left-6 right-6">
+                <div class="mb-4 text-sm opacity-80">
+                    <div class="text-white/60">Studio</div>
+                    <div class="font-semibold" id="studioName">Cargando...</div>
+                </div>
+                <button onclick="logout()"
+                    class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-2">🚪</span> Salir
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-8">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-gray-800">🧩 Extensiones</h1>
+                <p class="text-gray-600">Descarga las extensiones de Chrome para cada plataforma</p>
+            </div>
+
+            <!-- Alertas -->
+            <div id="alertsContainer" class="mb-8 space-y-4">
+                <!-- Se llenan dinámicamente -->
+            </div>
+
+            <!-- Sin plataformas asignadas -->
+            <div id="noPlatformsMessage" class="hidden bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
+                <div class="flex items-start">
+                    <span class="text-2xl mr-3">⚠️</span>
+                    <div>
+                        <h3 class="font-semibold text-yellow-800">No tienes plataformas asignadas</h3>
+                        <p class="text-yellow-700 mt-1">Contacta al administrador para que te asigne las plataformas que necesitas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid de extensiones -->
+            <div id="extensionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Se llenan dinámicamente -->
+            </div>
+
+            <!-- Instrucciones de instalación -->
+            <div class="mt-8 bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">📖 Cómo instalar la extensión</h2>
+                <ol class="list-decimal list-inside space-y-3 text-gray-600">
+                    <li>Descarga el archivo .zip de la plataforma que necesites</li>
+                    <li>Descomprime el archivo en una carpeta de tu computador</li>
+                    <li>Abre Chrome y ve a <code class="bg-gray-100 px-2 py-1 rounded">chrome://extensions</code></li>
+                    <li>Activa el <strong>"Modo desarrollador"</strong> (esquina superior derecha)</li>
+                    <li>Haz clic en <strong>"Cargar descomprimida"</strong></li>
+                    <li>Selecciona la carpeta donde descomprimiste la extensión</li>
+                    <li>¡Listo! La extensión aparecerá en tu navegador</li>
+                </ol>
+
+                <div class="mt-4 p-4 bg-purple-50 rounded-lg">
+                    <p class="text-purple-700 text-sm">
+                        <strong>💡 Tip:</strong> Después de instalar, ve a la plataforma y haz clic en el icono de la extensión para ingresar tu token de modelo.
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'https://camassist.vercel.app/api';
+
+        // Auth check
+        const studioId = localStorage.getItem('studio_id');
+        const studioName = localStorage.getItem('studio_name');
+
+        if (!studioId) {
+            window.location.href = '/dashboard/login.html';
+        }
+
+        document.getElementById('studioName').textContent = studioName || 'Mi Studio';
+
+        // Cargar extensiones al inicio
+        loadExtensions();
+
+        async function loadExtensions() {
+            try {
+                const response = await fetch(`${API_BASE}/extensions?studio_id=${studioId}&action=list`);
+                const data = await response.json();
+
+                if (data.success) {
+                    renderAlerts(data.alerts || []);
+                    renderExtensions(data.extensions || [], data.allowed_platforms || []);
+                } else {
+                    console.error('Error:', data.message);
+                }
+            } catch (error) {
+                console.error('Error cargando extensiones:', error);
+            }
+        }
+
+        function renderAlerts(alerts) {
+            const container = document.getElementById('alertsContainer');
+
+            if (alerts.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = alerts.map(alert => {
+                const typeStyles = {
+                    'info': 'bg-blue-50 border-blue-200 text-blue-800',
+                    'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800',
+                    'urgent': 'bg-red-50 border-red-200 text-red-800',
+                    'update': 'bg-green-50 border-green-200 text-green-800'
+                };
+
+                const typeIcons = {
+                    'info': 'ℹ️',
+                    'warning': '⚠️',
+                    'urgent': '🚨',
+                    'update': '🆕'
+                };
+
+                const style = typeStyles[alert.type] || typeStyles['info'];
+                const icon = typeIcons[alert.type] || '📢';
+
+                return `
+                    <div class="border rounded-xl p-4 ${style}">
+                        <div class="flex items-start">
+                            <span class="text-xl mr-3">${icon}</span>
+                            <div>
+                                <h3 class="font-semibold">${alert.title}</h3>
+                                <p class="mt-1 text-sm opacity-90">${alert.message}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderExtensions(extensions, allowedPlatforms) {
+            const container = document.getElementById('extensionsGrid');
+            const noPlatformsMsg = document.getElementById('noPlatformsMessage');
+
+            // Si no hay extensiones disponibles
+            if (extensions.length === 0) {
+                if (allowedPlatforms.length === 0) {
+                    noPlatformsMsg.classList.remove('hidden');
+                }
+                container.innerHTML = '';
+                return;
+            }
+
+            noPlatformsMsg.classList.add('hidden');
+
+            const platformInfo = {
+                'chaturbate': {
+                    name: 'Chaturbate',
+                    icon: '🟠',
+                    color: 'from-orange-500 to-orange-600'
+                },
+                'stripchat': {
+                    name: 'StripChat',
+                    icon: '🔴',
+                    color: 'from-red-500 to-red-600'
+                },
+                'xmodels': {
+                    name: 'XModels',
+                    icon: '🔵',
+                    color: 'from-blue-500 to-blue-600'
+                },
+                'streamate': {
+                    name: 'Streamate',
+                    icon: '🟢',
+                    color: 'from-green-500 to-green-600'
+                }
+            };
+
+            container.innerHTML = extensions.map(ext => {
+                const info = platformInfo[ext.platform] || {
+                    name: ext.platform,
+                    icon: '🧩',
+                    color: 'from-gray-500 to-gray-600'
+                };
+
+                return `
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="bg-gradient-to-r ${info.color} p-6 text-white text-center">
+                            <div class="text-5xl mb-2">${info.icon}</div>
+                            <h3 class="text-xl font-bold">${info.name}</h3>
+                            <p class="text-white/80 text-sm">v${ext.version}</p>
+                        </div>
+                        <div class="p-4">
+                            ${ext.changelog ? `
+                                <p class="text-sm text-gray-600 mb-4">
+                                    <strong>Novedades:</strong> ${ext.changelog}
+                                </p>
+                            ` : ''}
+                            <button onclick="downloadExtension('${ext.platform}')"
+                                class="w-full bg-gradient-to-r ${info.color} text-white py-3 rounded-lg font-semibold hover:opacity-90 transition flex items-center justify-center">
+                                <span class="mr-2">⬇️</span> Descargar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function downloadExtension(platform) {
+            try {
+                const response = await fetch(`${API_BASE}/extensions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studio_id: studioId,
+                        action: 'download',
+                        platform: platform
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Abrir URL de descarga
+                    window.open(data.download_url, '_blank');
+                } else {
+                    alert(data.message || 'Error al descargar');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error de conexión');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('studio_id');
+            localStorage.removeItem('studio_name');
+            window.location.href = '/dashboard/login.html';
+        }
+    </script>
+</body>
+
+</html>
