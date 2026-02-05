@@ -85,11 +85,12 @@ function getGoalAndTipMenu() {
 let messageCounter = 0;
 
 // OBTENER HISTORIAL FRESCO DEL DOM
-function getHistoryFromDOM(username, isPM) {
+function getHistoryFromDOM(username, isPM, chatContainer = null) {
   const history = [];
 
   if (isPM) {
-    const allMessages = document.querySelectorAll('div[data-message-id][class*="base-message"]');
+    const searchRoot = chatContainer || document;
+    const allMessages = searchRoot.querySelectorAll('div[data-message-id][class*="base-message"]');
 
     allMessages.forEach(msg => {
       // 1. DETECTAR TIP PRIMERO
@@ -502,12 +503,20 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
     btn.style.cssText = 'background:#8B5CF6;color:white;border:none;padding:3px 8px;margin-left:5px;cursor:pointer;border-radius:5px;font-size:12px;';
   }
 
+  // DESPUÉS:
   btn.onclick = async () => {
     console.log(`🔵 IA para ${isPM ? 'PM' : 'público'} - Usuario: ${username}`);
     btn.textContent = '...';
 
+    // Encontrar el contenedor del chat específico
+    let chatContainer = null;
+    if (isPM) {
+      chatContainer = container.closest('div.messenger-chat');
+      console.log(`📦 Chat container para ${username}:`, chatContainer ? 'encontrado' : 'NO encontrado');
+    }
+
     // OBTENER HISTORIAL FRESCO DEL DOM
-    const freshHistory = getHistoryFromDOM(username, isPM);
+    const freshHistory = getHistoryFromDOM(username, isPM, chatContainer);
 
     console.log('📚 Historial fresco del DOM:', freshHistory.length, 'mensajes');
     console.table(freshHistory.slice(-20).map((item, i) => ({
@@ -545,7 +554,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
           platform: 'stripchat',
-          version: '1.0.6',
+          version: '1.0.7',
           broadcaster_username: broadcasterUsername,
           username,
           message: messageText,
@@ -786,7 +795,7 @@ function addImageAIButton(container, username, imageUrl) {
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
           platform: 'stripchat',
-          version: '1.0.6',
+          version: '1.0.7',
           broadcaster_username: broadcasterUsername,
           username,
           message: '[Fan envió una imagen]',
@@ -841,7 +850,7 @@ function addImageAIButton(container, username, imageUrl) {
             body: JSON.stringify({
               token: localStorage.getItem('model_token') || 'demo_token',
               platform: 'stripchat',
-              version: '1.0.6',
+              version: '1.0.7',
               broadcaster_username: broadcasterUsername,
               username,
               message: '[Fan envió una imagen]',
