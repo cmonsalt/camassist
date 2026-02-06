@@ -61,7 +61,7 @@ export default async function handler(req, res) {
           username: earning.username || null,
           tokens: earning.tokens
         }, {
-          onConflict: 'model_id,platform,transaction_date,action_type,tokens,token_balance',
+          onConflict: 'model_id,platform,transaction_date,action_type,tokens',
           ignoreDuplicates: true
         });
 

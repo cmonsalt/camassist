@@ -4,9 +4,18 @@
 
 // Crear alarma cada 15 minutos
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.alarms.create('syncEarnings', { periodInMinutes: 15 });
-  console.log('⏰ Alarma de sync creada (cada 15 min)');
+  //chrome.alarms.create('syncEarnings', { periodInMinutes: 1 }); // TEMPORAL: 1 min para probar
+  chrome.alarms.create('syncEarnings', { periodInMinutes: 15 }); // Cada 15 minutos
+  console.log('⏰ Alarma de sync creada (cada 15 min - MODO PRUEBA)');
 });
+
+// TEMPORAL: Ejecutar inmediatamente para probar
+// chrome.runtime.onInstalled.addListener(() => {
+//   setTimeout(() => {
+//     console.log('⏰ PRUEBA: Ejecutando sync inmediato...');
+//     triggerEarningsSync();
+//   }, 5000); // 5 segundos después de instalar
+// });
 
 // Escuchar la alarma
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -22,6 +31,8 @@ async function triggerEarningsSync() {
   const result = await chrome.storage.local.get(['model_token', 'broadcaster_username']);
   const token = result.model_token;
   const username = result.broadcaster_username;
+
+  console.log('📊 Token:', token, '| Username:', username);
   
   if (!token || !username) {
     console.log('❌ No hay token o username guardado');
@@ -37,6 +48,8 @@ async function triggerEarningsSync() {
     });
     
     const features = await checkResponse.json();
+    console.log('📊 Features:', features);
+    
     if (!features.analytics) {
       console.log('❌ Studio no tiene plan pro');
       return;
@@ -48,6 +61,7 @@ async function triggerEarningsSync() {
   
   // Abrir pestaña de tokens en background
   const url = `https://chaturbate.com/p/${username}/?tab=tokens`;
+  console.log('📊 Abriendo:', url);
   
   const tab = await chrome.tabs.create({ 
     url, 
@@ -72,5 +86,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'SET_BROADCASTER') {
     chrome.storage.local.set({ broadcaster_username: message.username });
     console.log('👤 Broadcaster guardado:', message.username);
+  }
+  
+  if (message.type === 'SYNC_COMPLETE') {
+    console.log('✅ Sync completado:', message.result);
   }
 });
