@@ -35,6 +35,35 @@ if (syncBroadcaster) {
   });
 }
 
+// Capturar seguidores si estamos en página de broadcast
+if (window.location.pathname.includes('/b/')) {
+  setTimeout(async () => {
+    const followersEl = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('followers'));
+    const followers = parseInt(followersEl?.textContent?.trim()) || 0;
+
+    if (followers >= 0) {
+      const token = localStorage.getItem('model_token');
+      if (token) {
+        try {
+          const response = await fetch('https://camassist.vercel.app/api/sync-followers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token,
+              platform: 'chaturbate',
+              followers
+            })
+          });
+          const data = await response.json();
+          console.log('👥 Followers sync:', data);
+        } catch (error) {
+          console.error('❌ Error syncing followers:', error);
+        }
+      }
+    }
+  }, 5000); // Esperar que cargue la página
+}
+
 // Obtener token de chrome.storage si existe
 chrome.storage.local.get(['model_token'], (result) => {
   if (result.model_token) {
@@ -737,7 +766,7 @@ if (window.location.href.includes('tab=tokens')) {
       }
     });
 
-  console.log(`📊 Encontrados ${earnings.length} registros`, earnings[0]);
+    console.log(`📊 Encontrados ${earnings.length} registros`, earnings[0]);
 
     if (earnings.length > 0) {
       try {
