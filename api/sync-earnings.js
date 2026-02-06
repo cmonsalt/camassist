@@ -50,6 +50,7 @@ export default async function handler(req, res) {
     let skipped = 0;
 
     for (const earning of earnings) {
+       console.log('📅 FECHA RECIBIDA:', earning.date, '| Action:', earning.action?.substring(0, 30));
       const { data, error } = await supabase
         .from('earnings')
         .upsert({

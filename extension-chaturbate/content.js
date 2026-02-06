@@ -763,8 +763,10 @@ if (window.location.href.includes('tab=tokens')) {
         const username = usernameLink?.textContent?.trim() || null;
 
         if (dateStr && tokens > 0) {
+          const parsedDate = parseCBDate(dateStr);
+          console.log('📅 FECHA:', dateStr, '→', parsedDate);
           earnings.push({
-            date: parseCBDate(dateStr),
+            date: parsedDate,
             action: action,
             username: username,
             tokens: tokens,
@@ -777,6 +779,7 @@ if (window.location.href.includes('tab=tokens')) {
     console.log(`📊 Encontrados ${earnings.length} registros`, earnings[0]);
 
     if (earnings.length > 0) {
+       console.log('📤 ENVIANDO AL API:', JSON.stringify(earnings.slice(0, 3)));
       try {
         const response = await fetch('https://camassist.vercel.app/api/sync-earnings', {
           method: 'POST',
