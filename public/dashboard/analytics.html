@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - CamAssist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="icon" href="/LogosMarca/icon16.png" type="image/png">
+    <style>
+        .platform-cb { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .platform-sc { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+        .platform-xm { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .platform-st { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-gradient-to-b from-purple-700 to-pink-600 min-h-screen p-6 text-white fixed">
+            <div class="flex items-center mb-8">
+                <span class="text-2xl mr-2">🤖</span>
+                <h1 class="text-xl font-bold">CamAssist</h1>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="/dashboard/index.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">📊</span> Dashboard
+                </a>
+                <a href="/dashboard/modelos.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">👩‍💼</span> Modelos
+                </a>
+                <a href="/dashboard/analytics.html"
+                    class="flex items-center px-4 py-3 rounded-lg bg-white/20 transition">
+                    <span class="mr-3">💰</span> Analytics
+                </a>
+                <a href="/dashboard/tiempo.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">⏱️</span> Tiempo
+                </a>
+                <a href="/dashboard/tiempo-config.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">⚙️</span> Configurar Tiempo
+                </a>
+                <a href="/dashboard/extensiones.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">🧩</span> Extensiones
+                </a>
+                <a href="/dashboard/facturacion.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-3">💳</span> Facturación
+                </a>
+            </nav>
+
+            <div class="absolute bottom-6 left-6 right-6">
+                <div class="mb-4 text-sm opacity-80">
+                    <div class="text-white/60">Studio</div>
+                    <div class="font-semibold" id="studioName">Cargando...</div>
+                </div>
+                <button onclick="logout()"
+                    class="w-full flex items-center justify-center px-4 py-2 rounded-lg hover:bg-white/10 transition">
+                    <span class="mr-2">🚪</span> Salir
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto ml-64">
+            <div class="p-8">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold text-gray-800">💰 Analytics de Ganancias</h1>
+                    <p class="text-gray-600">Tokens y seguidores sincronizados automáticamente</p>
+                </div>
+
+                <!-- Filtros -->
+                <div class="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap gap-4 items-center">
+                    <div>
+                        <label class="text-sm text-gray-600 block mb-1">Período</label>
+                        <select id="periodFilter" onchange="loadAnalytics()" class="px-4 py-2 border rounded-lg">
+                            <option value="today">Hoy</option>
+                            <option value="week" selected>Esta semana</option>
+                            <option value="month">Este mes</option>
+                            <option value="90days">Últimos 90 días</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 block mb-1">Plataforma</label>
+                        <select id="platformFilter" onchange="loadAnalytics()" class="px-4 py-2 border rounded-lg">
+                            <option value="all">Todas</option>
+                            <option value="chaturbate">🟠 Chaturbate</option>
+                            <option value="stripchat">🔴 StripChat</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-sm text-gray-600 block mb-1">Modelo</label>
+                        <select id="modelFilter" onchange="loadAnalytics()" class="px-4 py-2 border rounded-lg">
+                            <option value="all">Todas las modelos</option>
+                            <!-- Se llena dinámicamente -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Resumen por Plataforma -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Chaturbate -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="platform-cb p-4 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-semibold">Chaturbate</span>
+                                <span class="text-xs bg-white/20 px-2 py-1 rounded">🤖 Auto</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-gray-600 text-sm">Tokens</span>
+                                <span class="text-2xl font-bold text-orange-600" id="cbTokens">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 text-sm">Seguidores</span>
+                                <span class="text-lg font-semibold text-green-600" id="cbFollowers">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- StripChat -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                        <div class="platform-sc p-4 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-semibold">StripChat</span>
+                                <span class="text-xs bg-white/20 px-2 py-1 rounded">🤖 Auto</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-gray-600 text-sm">Tokens</span>
+                                <span class="text-2xl font-bold text-red-600" id="scTokens">-</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-600 text-sm">Seguidores</span>
+                                <span class="text-lg font-semibold text-green-600" id="scFollowers">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- XModels (Próximamente) -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden opacity-50">
+                        <div class="platform-xm p-4 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-semibold">XModels</span>
+                                <span class="text-xs bg-white/20 px-2 py-1 rounded">📝 Próx.</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="text-center text-gray-400 py-4">
+                                <span class="text-2xl">🔜</span>
+                                <p class="text-sm mt-2">Próximamente</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Streamate (Próximamente) -->
+                    <div class="bg-white rounded-xl shadow-sm overflow-hidden opacity-50">
+                        <div class="platform-st p-4 text-white">
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-semibold">Streamate</span>
+                                <span class="text-xs bg-white/20 px-2 py-1 rounded">📝 Próx.</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <div class="text-center text-gray-400 py-4">
+                                <span class="text-2xl">🔜</span>
+                                <p class="text-sm mt-2">Próximamente</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Totales -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-sm p-6 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Total Tokens</p>
+                                <p class="text-4xl font-bold" id="totalTokens">-</p>
+                            </div>
+                            <div class="text-5xl opacity-50">💎</div>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-sm p-6 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Seguidores Ganados</p>
+                                <p class="text-4xl font-bold" id="totalFollowers">-</p>
+                            </div>
+                            <div class="text-5xl opacity-50">👥</div>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-500 to-cyan-600 rounded-xl shadow-sm p-6 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-white/80 text-sm">Valor Estimado USD</p>
+                                <p class="text-4xl font-bold" id="totalUSD">-</p>
+                            </div>
+                            <div class="text-5xl opacity-50">💵</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Ganancias -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">📈 Ganancias por Día</h2>
+                    <canvas id="earningsChart" height="100"></canvas>
+                </div>
+
+                <!-- Top Modelos -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Por Tokens -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">🏆 Top Modelos por Tokens</h2>
+                        <div id="topModelsList" class="space-y-3">
+                            <div class="text-gray-400 text-center py-4">Cargando...</div>
+                        </div>
+                    </div>
+
+                    <!-- Top Fans -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">💎 Top Fans que más pagan</h2>
+                        <div id="topFansList" class="space-y-3">
+                            <div class="text-gray-400 text-center py-4">Cargando...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Transacciones Recientes -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-6 border-b flex justify-between items-center">
+                        <h2 class="text-xl font-semibold text-gray-800">📋 Transacciones Recientes</h2>
+                        <button onclick="exportCSV()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
+                            📥 Exportar CSV
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modelo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Plataforma</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fan</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tokens</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsTable" class="divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-400">Cargando...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE = 'https://camassist.vercel.app/api';
+        const studioId = localStorage.getItem('studio_id');
+        const studioName = localStorage.getItem('studio_name');
+        let earningsChart = null;
+        let allTransactions = [];
+
+        if (!studioId) {
+            window.location.href = '/dashboard/login.html';
+        }
+
+        if (studioName) {
+            document.getElementById('studioName').textContent = studioName;
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/dashboard/login.html';
+        }
+
+        // Cargar modelos para el filtro
+        async function loadModels() {
+            try {
+                const response = await fetch(`${API_BASE}/get-models`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studio_id: studioId })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    const select = document.getElementById('modelFilter');
+                    data.models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading models:', error);
+            }
+        }
+
+        // Cargar analytics
+        async function loadAnalytics() {
+            const period = document.getElementById('periodFilter').value;
+            const platform = document.getElementById('platformFilter').value;
+            const modelId = document.getElementById('modelFilter').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/get-analytics`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studio_id: studioId,
+                        period,
+                        platform: platform === 'all' ? null : platform,
+                        model_id: modelId === 'all' ? null : modelId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Actualizar cards por plataforma
+                    document.getElementById('cbTokens').textContent = data.byPlatform.chaturbate?.tokens?.toLocaleString() || '0';
+                    document.getElementById('cbFollowers').textContent = '+' + (data.byPlatform.chaturbate?.followers || 0);
+                    document.getElementById('scTokens').textContent = data.byPlatform.stripchat?.tokens?.toLocaleString() || '0';
+                    document.getElementById('scFollowers').textContent = '+' + (data.byPlatform.stripchat?.followers || 0);
+
+                    // Totales
+                    document.getElementById('totalTokens').textContent = data.totals.tokens.toLocaleString();
+                    document.getElementById('totalFollowers').textContent = '+' + data.totals.followers;
+                    document.getElementById('totalUSD').textContent = '$' + data.totals.usd.toFixed(2);
+
+                    // Gráfico
+                    renderChart(data.dailyData);
+
+                    // Top modelos
+                    renderTopModels(data.topModels);
+
+                    // Top fans
+                    renderTopFans(data.topFans);
+
+                    // Transacciones
+                    allTransactions = data.transactions;
+                    renderTransactions(data.transactions);
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
+        }
+
+        function renderChart(dailyData) {
+            const ctx = document.getElementById('earningsChart').getContext('2d');
+
+            if (earningsChart) {
+                earningsChart.destroy();
+            }
+
+            earningsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dailyData.map(d => d.date),
+                    datasets: [
+                        {
+                            label: 'Chaturbate',
+                            data: dailyData.map(d => d.chaturbate || 0),
+                            backgroundColor: 'rgba(249, 115, 22, 0.8)',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'StripChat',
+                            data: dailyData.map(d => d.stripchat || 0),
+                            backgroundColor: 'rgba(220, 38, 38, 0.8)',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTopModels(models) {
+            const container = document.getElementById('topModelsList');
+
+            if (!models || models.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 text-center py-4">Sin datos</div>';
+                return;
+            }
+
+            container.innerHTML = models.map((model, index) => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-3">${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '👤'}</span>
+                        <div>
+                            <div class="font-medium">${model.name}</div>
+                            <div class="text-xs text-gray-500">${model.platform}</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-purple-600">${model.tokens.toLocaleString()} tk</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTopFans(fans) {
+            const container = document.getElementById('topFansList');
+
+            if (!fans || fans.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 text-center py-4">Sin datos</div>';
+                return;
+            }
+
+            container.innerHTML = fans.map((fan, index) => `
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-3">${index === 0 ? '💎' : index === 1 ? '💰' : '🪙'}</span>
+                        <div>
+                            <div class="font-medium">${fan.username || 'Anónimo'}</div>
+                            <div class="text-xs text-gray-500">${fan.count} transacciones</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-green-600">${fan.tokens.toLocaleString()} tk</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTransactions(transactions) {
+            const tbody = document.getElementById('transactionsTable');
+
+            if (!transactions || transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">Sin transacciones</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = transactions.slice(0, 50).map(tx => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 text-sm text-gray-600">${formatDate(tx.transaction_date)}</td>
+                    <td class="px-6 py-4 text-sm font-medium">${tx.model_name || '-'}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded text-xs font-medium ${tx.platform === 'chaturbate' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700'}">
+                            ${tx.platform === 'chaturbate' ? '🟠 CB' : '🔴 SC'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${tx.action_type}</td>
+                    <td class="px-6 py-4 text-sm text-gray-600">${tx.username || '-'}</td>
+                    <td class="px-6 py-4 text-sm text-right font-semibold text-purple-600">${tx.tokens} tk</td>
+                </tr>
+            `).join('');
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function exportCSV() {
+            if (!allTransactions || allTransactions.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+
+            const headers = ['Fecha', 'Modelo', 'Plataforma', 'Tipo', 'Fan', 'Tokens'];
+            const rows = allTransactions.map(tx => [
+                tx.transaction_date,
+                tx.model_name || '',
+                tx.platform,
+                tx.action_type,
+                tx.username || '',
+                tx.tokens
+            ]);
+
+            const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analytics_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Inicializar
+        loadModels();
+        loadAnalytics();
+    </script>
+</body>
+
+</html>
