@@ -554,7 +554,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount)
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
           platform: 'stripchat',
-          version: '1.0.7',
+          version: '1.0.8',
           broadcaster_username: broadcasterUsername,
           username,
           message: messageText,
@@ -795,7 +795,7 @@ function addImageAIButton(container, username, imageUrl) {
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
           platform: 'stripchat',
-          version: '1.0.7',
+          version: '1.0.8',
           broadcaster_username: broadcasterUsername,
           username,
           message: '[Fan envió una imagen]',
@@ -850,7 +850,7 @@ function addImageAIButton(container, username, imageUrl) {
             body: JSON.stringify({
               token: localStorage.getItem('model_token') || 'demo_token',
               platform: 'stripchat',
-              version: '1.0.7',
+              version: '1.0.8',
               broadcaster_username: broadcasterUsername,
               username,
               message: '[Fan envió una imagen]',
