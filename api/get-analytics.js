@@ -105,8 +105,8 @@ export default async function handler(req, res) {
 
     // Calcular totales por plataforma
     const byPlatform = {
-      chaturbate: { tokens: 0, followers: 0 },
-      stripchat: { tokens: 0, followers: 0 }
+      chaturbate: { tokens: 0, followers: 0, followersTotal: 0 },
+      stripchat: { tokens: 0, followers: 0, followersTotal: 0 }
     };
 
     earnings?.forEach(e => {
@@ -115,26 +115,34 @@ export default async function handler(req, res) {
       }
     });
 
-    // Calcular followers ganados (max - min por plataforma)
+    // Calcular followers: total actual y ganados (max - min por plataforma)
     const followersByPlatform = {};
     followers?.forEach(f => {
       if (!followersByPlatform[f.platform]) {
-        followersByPlatform[f.platform] = { min: f.followers, max: f.followers };
+        followersByPlatform[f.platform] = { min: f.followers, max: f.followers, latest: f.followers, latestDate: new Date(f.captured_at) };
       } else {
         followersByPlatform[f.platform].min = Math.min(followersByPlatform[f.platform].min, f.followers);
         followersByPlatform[f.platform].max = Math.max(followersByPlatform[f.platform].max, f.followers);
+        // Guardar el más reciente
+        const capturedAt = new Date(f.captured_at);
+        if (capturedAt > followersByPlatform[f.platform].latestDate) {
+          followersByPlatform[f.platform].latest = f.followers;
+          followersByPlatform[f.platform].latestDate = capturedAt;
+        }
       }
     });
 
     Object.keys(followersByPlatform).forEach(plat => {
       if (byPlatform[plat]) {
         byPlatform[plat].followers = followersByPlatform[plat].max - followersByPlatform[plat].min;
+        byPlatform[plat].followersTotal = followersByPlatform[plat].latest || 0;
       }
     });
 
     // Totales
     const totalTokens = (byPlatform.chaturbate?.tokens || 0) + (byPlatform.stripchat?.tokens || 0);
     const totalFollowers = (byPlatform.chaturbate?.followers || 0) + (byPlatform.stripchat?.followers || 0);
+    const totalFollowersTotal = (byPlatform.chaturbate?.followersTotal || 0) + (byPlatform.stripchat?.followersTotal || 0);
     const usdValue = totalTokens * 0.05;
 
     // Totales período anterior
@@ -286,6 +294,7 @@ export default async function handler(req, res) {
       totals: {
         tokens: totalTokens,
         followers: totalFollowers,
+        followersTotal: totalFollowersTotal,
         usd: usdValue
       },
       dailyData: Object.values(dailyData).reverse().slice(-14),

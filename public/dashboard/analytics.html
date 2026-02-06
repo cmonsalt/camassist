@@ -137,14 +137,14 @@
                         <div class="platform-cb p-4 text-white"><div class="flex items-center justify-between"><span class="text-lg font-semibold">Chaturbate</span><span class="text-xs bg-white/20 px-2 py-1 rounded">🤖 Auto</span></div></div>
                         <div class="p-4">
                             <div class="flex justify-between items-center mb-2"><span class="text-gray-600 text-sm">Tokens</span><span class="text-2xl font-bold text-orange-600" id="cbTokens">-</span></div>
-                            <div class="flex justify-between items-center"><span class="text-gray-600 text-sm">Seguidores</span><span class="text-lg font-semibold text-green-600" id="cbFollowers">-</span></div>
+                            <div class="flex justify-between items-center"><span class="text-gray-600 text-sm">Seguidores</span><span class="text-lg font-semibold text-gray-800" id="cbFollowers">-</span></div>
                         </div>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
                         <div class="platform-sc p-4 text-white"><div class="flex items-center justify-between"><span class="text-lg font-semibold">StripChat</span><span class="text-xs bg-white/20 px-2 py-1 rounded">🤖 Auto</span></div></div>
                         <div class="p-4">
                             <div class="flex justify-between items-center mb-2"><span class="text-gray-600 text-sm">Tokens</span><span class="text-2xl font-bold text-red-600" id="scTokens">-</span></div>
-                            <div class="flex justify-between items-center"><span class="text-gray-600 text-sm">Seguidores</span><span class="text-lg font-semibold text-green-600" id="scFollowers">-</span></div>
+                            <div class="flex justify-between items-center"><span class="text-gray-600 text-sm">Seguidores</span><span class="text-lg font-semibold text-gray-800" id="scFollowers">-</span></div>
                         </div>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm overflow-hidden opacity-50">
@@ -279,13 +279,18 @@
                 if (data.success) {
                     // Plataformas
                     document.getElementById('cbTokens').textContent = data.byPlatform.chaturbate?.tokens?.toLocaleString() || '0';
-                    document.getElementById('cbFollowers').textContent = '+' + (data.byPlatform.chaturbate?.followers || 0);
+                    const cbTotal = data.byPlatform.chaturbate?.followersTotal || 0;
+                    const cbGained = data.byPlatform.chaturbate?.followers || 0;
+                    document.getElementById('cbFollowers').innerHTML = `${cbTotal} <span class="text-green-600 text-sm">(+${cbGained})</span>`;
+                    
                     document.getElementById('scTokens').textContent = data.byPlatform.stripchat?.tokens?.toLocaleString() || '0';
-                    document.getElementById('scFollowers').textContent = '+' + (data.byPlatform.stripchat?.followers || 0);
+                    const scTotal = data.byPlatform.stripchat?.followersTotal || 0;
+                    const scGained = data.byPlatform.stripchat?.followers || 0;
+                    document.getElementById('scFollowers').innerHTML = `${scTotal} <span class="text-green-600 text-sm">(+${scGained})</span>`;
 
                     // Totales
                     document.getElementById('totalTokens').textContent = data.totals.tokens.toLocaleString();
-                    document.getElementById('totalFollowers').textContent = '+' + data.totals.followers;
+                    document.getElementById('totalFollowers').innerHTML = `${data.totals.followersTotal} <span class="text-sm opacity-80">(+${data.totals.followers})</span>`;
                     document.getElementById('totalUSD').textContent = '$' + data.totals.usd.toFixed(2);
 
                     // Proyecciones
