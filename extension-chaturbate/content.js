@@ -714,11 +714,12 @@ if (window.location.href.includes('tab=tokens')) {
 
     rows.forEach((row) => {
       const cells = row.querySelectorAll('td');
-      if (cells.length >= 3) {
+      if (cells.length >= 4) {
         const dateStr = cells[0]?.textContent?.trim();
         const actionCell = cells[1];
         const action = actionCell?.textContent?.trim();
         const tokens = parseInt(cells[2]?.textContent?.trim()) || 0;
+        const tokenBalance = parseInt(cells[3]?.textContent?.trim()) || 0;
 
         // Extraer username del link
         const usernameLink = actionCell?.querySelector('a.hrefColor');
@@ -729,7 +730,8 @@ if (window.location.href.includes('tab=tokens')) {
             date: parseCBDate(dateStr),
             action: action,
             username: username,
-            tokens: tokens
+            tokens: tokens,
+            token_balance: tokenBalance
           });
         }
       }
