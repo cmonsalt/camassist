@@ -37,7 +37,9 @@ if (syncBroadcaster) {
 
 // Capturar seguidores si estamos en página de broadcast
 if (window.location.pathname.includes('/b/')) {
-  setTimeout(async () => {
+
+  // Función para sincronizar seguidores
+  async function syncFollowers() {
     const followersEl = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('followers'));
     const followers = parseInt(followersEl?.textContent?.trim()) || 0;
 
@@ -61,7 +63,13 @@ if (window.location.pathname.includes('/b/')) {
         }
       }
     }
-  }, 5000); // Esperar que cargue la página
+  }
+
+  // Capturar al cargar la página (después de 5 segundos)
+  setTimeout(syncFollowers, 5000);
+
+  // Capturar cada 1 hora mientras transmite
+  setInterval(syncFollowers, 60 * 60 * 1000);
 }
 
 // Obtener token de chrome.storage si existe

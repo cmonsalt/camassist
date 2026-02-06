@@ -925,3 +925,214 @@ function addImageAIButton(container, username, imageUrl) {
   container.style.position = 'relative';
   container.appendChild(btn);
 }
+
+// ============================================
+// SINCRONIZACIÓN DE EARNINGS (StripChat)
+// ============================================
+
+if (window.location.href.includes('earnings/tokens-history')) {
+  setTimeout(async () => {
+    console.log('📊 Detectada página de tokens StripChat...');
+
+    const token = localStorage.getItem('model_token');
+    if (!token) {
+      console.log('❌ No hay token guardado');
+      return;
+    }
+
+    // 1. Click en el botón de filtro para abrir dropdown
+    const filterBtn = document.querySelector('.lifetime-picker-btn');
+    if (filterBtn) {
+      filterBtn.click();
+      console.log('📊 Abriendo selector de período...');
+    }
+
+    // 2. Esperar y seleccionar "90 días"
+    setTimeout(() => {
+      const option90 = Array.from(document.querySelectorAll('.lifetime-picker-dropdown-item'))
+        .find(btn => btn.textContent.includes('90') || btn.textContent.includes('Last 90'));
+
+      if (option90) {
+        option90.click();
+        console.log('📊 Seleccionado: Últimos 90 Días');
+      } else {
+        console.log('❌ No se encontró opción de 90 días');
+      }
+
+      // 3. Esperar que carguen los datos y capturar
+      setTimeout(async () => {
+        console.log('📊 Capturando earnings...');
+
+        const earnings = [];
+        const rows = document.querySelectorAll('.data-table-body-row');
+
+        console.log(`📊 Encontradas ${rows.length} filas`);
+
+
+        let rowIndex = 0;  // Agregar contador
+        rows.forEach((row) => {
+          // Ignorar fila vacía
+          if (row.id === 'data-table-empty-table') return;
+
+          const cells = row.querySelectorAll('.data-table-body-cell');
+          if (cells.length >= 4) {
+            const username = row.querySelector('.user-levels-username-text')?.textContent?.trim() || null;
+            const dateStr = cells[1]?.textContent?.trim();
+            const action = cells[2]?.textContent?.trim();
+            const tokens = parseInt(row.querySelector('.data-table-body-cell:last-child')?.textContent?.trim()) || 0;
+
+            if (dateStr && tokens > 0) {
+              earnings.push({
+                date: parseSCDate(dateStr),
+                action: action,
+                username: username,
+                tokens: tokens,
+                token_balance: rowIndex  // Usar índice como "balance falso"
+              });
+              rowIndex++;
+            }
+          }
+        });
+
+        console.log(`📊 Encontrados ${earnings.length} registros`, earnings[0]);
+
+        if (earnings.length > 0) {
+          try {
+            const response = await fetch('https://camassist.vercel.app/api/sync-earnings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                token,
+                platform: 'stripchat',
+                earnings
+              })
+            });
+
+            const data = await response.json();
+            console.log('📊 Sync result:', data);
+
+            // Capturar seguidores también
+            const followersEl = document.querySelector('.favorites-count');
+            const followers = parseInt(followersEl?.textContent?.trim()) || 0;
+
+            if (followers >= 0 && token) {
+              try {
+                const followersResponse = await fetch('https://camassist.vercel.app/api/sync-followers', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    token,
+                    platform: 'stripchat',
+                    followers
+                  })
+                });
+                const followersData = await followersResponse.json();
+                console.log('👥 Followers sync:', followersData);
+              } catch (e) {
+                console.error('❌ Error syncing followers:', e);
+              }
+            }
+
+            chrome.runtime.sendMessage({ type: 'SYNC_COMPLETE', result: data });
+
+          } catch (error) {
+            console.error('❌ Error syncing:', error);
+          }
+        }
+      }, 4000); // Aumentado a 4 segundos
+
+    }, 1000); // Aumentado a 1 segundo
+
+  }, 3000); // Aumentado a 3 segundos inicial
+}
+
+// Parsear fecha de StripChat (ej: "6 de enero de 2026 13:37")
+function parseSCDate(dateStr) {
+  const months = {
+    'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04',
+    'mayo': '05', 'junio': '06', 'julio': '07', 'agosto': '08',
+    'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12',
+    'january': '01', 'february': '02', 'march': '03', 'april': '04',
+    'may': '05', 'june': '06', 'july': '07', 'august': '08',
+    'september': '09', 'october': '10', 'november': '11', 'december': '12'
+  };
+
+  try {
+    // Formato: "6 de enero de 2026 13:37"
+    const match = dateStr.match(/(\d+)\s+de\s+(\w+)\s+de\s+(\d+)\s+(\d+):(\d+)/i);
+    if (match) {
+      const [_, day, month, year, hour, minute] = match;
+      const monthNum = months[month.toLowerCase()] || '01';
+      return `${year}-${monthNum}-${day.padStart(2, '0')}T${hour}:${minute}:00`;
+    }
+
+    // Formato inglés: "January 6, 2026 13:37"
+    const matchEn = dateStr.match(/(\w+)\s+(\d+),?\s+(\d+)\s+(\d+):(\d+)/i);
+    if (matchEn) {
+      const [_, month, day, year, hour, minute] = matchEn;
+      const monthNum = months[month.toLowerCase()] || '01';
+      return `${year}-${monthNum}-${day.padStart(2, '0')}T${hour}:${minute}:00`;
+    }
+  } catch (e) {
+    console.error('Error parsing date:', e);
+  }
+
+  return new Date().toISOString();
+}
+
+// ============================================
+// SINCRONIZACIÓN DE FOLLOWERS (StripChat)
+// ============================================
+
+// Capturar seguidores si estamos en página de broadcast
+if (window.location.pathname.match(/^\/[^\/]+\/?$/) && broadcasterUsername) {
+
+  async function syncFollowers() {
+    // Buscar el contador de seguidores
+    const followersEl = document.querySelector('[class*="followers"] [class*="count"], [class*="FollowersCount"]');
+    let followers = 0;
+
+    if (followersEl) {
+      followers = parseInt(followersEl.textContent.replace(/[^0-9]/g, '')) || 0;
+    } else {
+      // Buscar de otra forma
+      const allElements = document.querySelectorAll('*');
+      for (const el of allElements) {
+        if (el.textContent.includes('followers') && el.children.length === 0) {
+          const match = el.textContent.match(/(\d+)\s*followers/i);
+          if (match) {
+            followers = parseInt(match[1]);
+            break;
+          }
+        }
+      }
+    }
+
+    if (followers >= 0) {
+      const token = localStorage.getItem('model_token');
+      if (token) {
+        try {
+          const response = await fetch('https://camassist.vercel.app/api/sync-followers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token,
+              platform: 'stripchat',
+              followers
+            })
+          });
+          const data = await response.json();
+          console.log('👥 Followers sync:', data);
+        } catch (error) {
+          console.error('❌ Error syncing followers:', error);
+        }
+      }
+    }
+  }
+
+  // Capturar al cargar la página (después de 5 segundos)
+  setTimeout(syncFollowers, 5000);
+
+  // Capturar cada 1 hora mientras transmite
+  setInterval(syncFollowers, 60 * 60 * 1000);
+}
