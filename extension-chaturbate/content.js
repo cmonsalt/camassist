@@ -26,6 +26,15 @@ console.log("CamAssist loaded!");
   console.log('⏰ Time Widget listo');
 })();
 
+// Enviar broadcaster al background para sync
+const syncBroadcaster = window.location.pathname.split('/b/')[1]?.split('/')[0] || '';
+if (syncBroadcaster) {
+  chrome.runtime.sendMessage({
+    type: 'SET_BROADCASTER',
+    username: syncBroadcaster
+  });
+}
+
 // Obtener token de chrome.storage si existe
 chrome.storage.local.get(['model_token'], (result) => {
   if (result.model_token) {
@@ -662,4 +671,118 @@ function sendMessage(text) {
     return true;
   }
   return false;
+}
+
+
+// ============================================
+// SINCRONIZACIÓN DE EARNINGS
+// ============================================
+
+// Enviar broadcaster al background para sync
+if (broadcasterUsername) {
+  chrome.runtime.sendMessage({
+    type: 'SET_BROADCASTER',
+    username: broadcasterUsername
+  });
+}
+
+// Si estamos en la página de tokens, capturar y enviar
+if (window.location.href.includes('tab=tokens')) {
+  setTimeout(async () => {
+    console.log('📊 Detectada página de tokens, capturando...');
+
+    const token = localStorage.getItem('model_token');
+    if (!token) {
+      console.log('❌ No hay token guardado');
+      return;
+    }
+
+    const earnings = [];
+
+    // Buscar la tabla de actividad con selector correcto
+    const activityTable = document.querySelector('table.tokenStatsTable');
+
+    if (!activityTable) {
+      console.log('❌ No se encontró tabla tokenStatsTable');
+      return;
+    }
+
+    // Obtener filas de datos (no el header)
+    const rows = activityTable.querySelectorAll('tr[data-testid="account-activity-row"]');
+
+    console.log(`📊 Encontradas ${rows.length} filas`);
+
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll('td');
+      if (cells.length >= 3) {
+        const dateStr = cells[0]?.textContent?.trim();
+        const actionCell = cells[1];
+        const action = actionCell?.textContent?.trim();
+        const tokens = parseInt(cells[2]?.textContent?.trim()) || 0;
+
+        // Extraer username del link
+        const usernameLink = actionCell?.querySelector('a.hrefColor');
+        const username = usernameLink?.textContent?.trim() || null;
+
+        if (dateStr && tokens > 0) {
+          earnings.push({
+            date: parseCBDate(dateStr),
+            action: action,
+            username: username,
+            tokens: tokens
+          });
+        }
+      }
+    });
+
+    console.log(`📊 Encontrados ${earnings.length} registros`);
+
+    if (earnings.length > 0) {
+      try {
+        const response = await fetch('https://camassist.vercel.app/api/sync-earnings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token,
+            platform: 'chaturbate',
+            earnings
+          })
+        });
+
+        const data = await response.json();
+        console.log('📊 Sync result:', data);
+
+        // Notificar al background que terminamos
+        chrome.runtime.sendMessage({ type: 'SYNC_COMPLETE', result: data });
+
+      } catch (error) {
+        console.error('❌ Error syncing:', error);
+      }
+    }
+  }, 3000); // Esperar que cargue la tabla
+}
+
+// Parsear fecha de CB (ej: "16 ene 2026, 20:55")
+function parseCBDate(dateStr) {
+  const months = {
+    'ene': '01', 'feb': '02', 'mar': '03', 'abr': '04',
+    'may': '05', 'jun': '06', 'jul': '07', 'ago': '08',
+    'sep': '09', 'oct': '10', 'nov': '11', 'dic': '12',
+    'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04',
+    'jun': '06', 'jul': '07', 'aug': '08',
+    'oct': '10', 'nov': '11', 'dec': '12'
+  };
+
+  try {
+    const match = dateStr.match(/(\d+)\s+(\w+)\s+(\d+),?\s*(\d+):(\d+)/);
+    if (match) {
+      const [_, day, month, year, hour, minute] = match;
+      const monthNum = months[month.toLowerCase()] || '01';
+      return `${year}-${monthNum}-${day.padStart(2, '0')}T${hour}:${minute}:00`;
+    }
+  } catch (e) {
+    console.error('Error parsing date:', e);
+  }
+
+  return new Date().toISOString();
 }
