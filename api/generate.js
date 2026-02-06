@@ -939,7 +939,7 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
         })
         .eq('id', modelData.id);
 
-      // Activar trial en primer uso - SIEMPRE 14 días
+      // Activar trial en primer uso - SIEMPRE 7 días
       if (!modelData.trial_started) {
         const trialEndsAt = new Date();
         trialEndsAt.setDate(trialEndsAt.getDate() + 7);
@@ -952,7 +952,7 @@ Máx ${isPM ? '68' : '20'} palabras. SOLO JSON:
           })
           .eq('id', modelData.id);
 
-        console.log('🎁 Trial 14 días activado');
+        console.log('🎁 Trial 7 días activado');
       }
     }
 
