@@ -59,7 +59,8 @@ export default async function handler(req, res) {
           transaction_date: earning.date,
           action_type: earning.action,
           username: earning.username || null,
-          tokens: earning.tokens
+          tokens: earning.tokens,
+          token_balance: earning.token_balance || 0
         }, {
           onConflict: 'model_id,platform,transaction_date,action_type,tokens,token_balance',
           ignoreDuplicates: true

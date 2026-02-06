@@ -737,7 +737,7 @@ if (window.location.href.includes('tab=tokens')) {
       }
     });
 
-    console.log(`📊 Encontrados ${earnings.length} registros`);
+  console.log(`📊 Encontrados ${earnings.length} registros`, earnings[0]);
 
     if (earnings.length > 0) {
       try {
