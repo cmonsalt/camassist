@@ -103,6 +103,26 @@ export default async function handler(req, res) {
       // Filtrar entradas de este modelo
       const modelEntries = (entries || []).filter(e => e.model_id === model.id);
       
+      // Si no hay entradas, el modelo no ha empezado
+      if (modelEntries.length === 0) {
+        return {
+          model_id: model.id,
+          model_name: model.name,
+          shift_name: modelShift?.name || 'Default',
+          expected_minutes: 0,
+          worked_minutes: 0,
+          balance_minutes: 0,
+          days_worked: 0,
+          status: 'ok'
+        };
+      }
+
+      // Encontrar el primer día con actividad de este modelo
+      const firstEntryDate = modelEntries[0].created_at.split('T')[0];
+      
+      // Usar el mayor entre start_date y firstEntryDate
+      const effectiveStartDate = start_date > firstEntryDate ? start_date : firstEntryDate;
+
       // Agrupar por día
       const entriesByDay = {};
       modelEntries.forEach(entry => {
@@ -116,8 +136,8 @@ export default async function handler(req, res) {
       let totalExpectedMinutes = 0;
       let daysWorked = 0;
 
-      // Generar todas las fechas del rango
-      const allDates = getDateRange(start_date, end_date);
+      // Generar fechas desde el primer día de actividad hasta end_date
+      const allDates = getDateRange(effectiveStartDate, end_date);
 
       allDates.forEach(day => {
         // Verificar si es día laboral para este modelo
@@ -162,15 +182,6 @@ export default async function handler(req, res) {
 
           const netWorkedMs = Math.max(0, workedMs - breakMs);
           totalWorkedMinutes += Math.floor(netWorkedMs / 60000);
-        }
-      });
-
-      // Agregar deuda de notas con must_recover = true
-      const modelNotes = (notes || []).filter(n => n.model_id === model.id && n.must_recover === true);
-      modelNotes.forEach(note => {
-        // Solo si es día laboral y no trabajó ese día
-        if (isWorkingDay(note.date, workingDays) && !entriesByDay[note.date]) {
-          // Ya se contó arriba, no agregar doble
         }
       });
 
