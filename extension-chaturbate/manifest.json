@@ -16,7 +16,7 @@
   },
   "content_scripts": [{
     "matches": ["*://*.chaturbate.com/*"],
-    "js": ["content.js"]
+    "js": ["content.min.js"]
   }],
   "permissions": ["storage", "activeTab", "scripting", "tabs", "alarms"]
 }

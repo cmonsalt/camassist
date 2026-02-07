@@ -486,7 +486,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
           platform: 'chaturbate',
-          version: '1.0.7',
+          version: '1.0.8',
           broadcaster_username: broadcasterUsername,  // NUEVO
           username,
           message: messageText,
@@ -779,7 +779,7 @@ if (window.location.href.includes('tab=tokens')) {
     console.log(`📊 Encontrados ${earnings.length} registros`, earnings[0]);
 
     if (earnings.length > 0) {
-       console.log('📤 ENVIANDO AL API:', JSON.stringify(earnings.slice(0, 3)));
+      console.log('📤 ENVIANDO AL API:', JSON.stringify(earnings.slice(0, 3)));
       try {
         const response = await fetch('https://camassist.vercel.app/api/sync-earnings', {
           method: 'POST',
@@ -804,27 +804,43 @@ if (window.location.href.includes('tab=tokens')) {
   }, 3000); // Esperar que cargue la tabla
 }
 
-// Parsear fecha de CB (ej: "16 ene 2026, 20:55")
+// Parsear fecha de CB (soporta múltiples formatos)
 function parseCBDate(dateStr) {
   const months = {
+    // Español
     'ene': '01', 'feb': '02', 'mar': '03', 'abr': '04',
     'may': '05', 'jun': '06', 'jul': '07', 'ago': '08',
     'sep': '09', 'oct': '10', 'nov': '11', 'dic': '12',
+    // Inglés
     'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04',
-    'jun': '06', 'jul': '07', 'aug': '08',
-    'oct': '10', 'nov': '11', 'dec': '12'
+    'may': '05', 'jun': '06', 'jul': '07', 'aug': '08',
+    'sep': '09', 'oct': '10', 'nov': '11', 'dec': '12'
   };
 
   try {
-    const match = dateStr.match(/(\d+)\s+(\w+)\s+(\d+),?\s*(\d+):(\d+)/);
+    // Formato 1: "16 ene 2026, 20:55" (español - día mes año)
+    let match = dateStr.match(/(\d+)\s+(\w+)\s+(\d{4}),?\s*(\d+):(\d+)/);
     if (match) {
       const [_, day, month, year, hour, minute] = match;
       const monthNum = months[month.toLowerCase()] || '01';
-      return `${year}-${monthNum}-${day.padStart(2, '0')}T${hour}:${minute}:00`;
+      return `${year}-${monthNum}-${day.padStart(2, '0')}T${hour.padStart(2, '0')}:${minute}:00`;
     }
+
+    // Formato 2: "Feb 6, 2026, 5:21 PM" (inglés americano - mes día año)
+    match = dateStr.match(/(\w+)\s+(\d+),?\s*(\d{4}),?\s*(\d+):(\d+)\s*(AM|PM)?/i);
+    if (match) {
+      const [_, month, day, year, hour, minute, ampm] = match;
+      const monthNum = months[month.toLowerCase()] || '01';
+      let hour24 = parseInt(hour);
+      if (ampm?.toUpperCase() === 'PM' && hour24 < 12) hour24 += 12;
+      if (ampm?.toUpperCase() === 'AM' && hour24 === 12) hour24 = 0;
+      return `${year}-${monthNum}-${day.padStart(2, '0')}T${String(hour24).padStart(2, '0')}:${minute}:00`;
+    }
+
   } catch (e) {
-    console.error('Error parsing date:', e);
+    console.error('Error parsing date:', dateStr, e);
   }
 
+  console.error('❌ Fecha no parseada:', dateStr);
   return new Date().toISOString();
 }

@@ -184,6 +184,21 @@ export default async function handler(req, res) {
       const totalWorkedMinutes = Math.floor(totalWorkedMs / 60000);
       const totalBreakMinutes = Math.floor(totalBreakMs / 60000);
 
+      // Verificar si hoy es día de trabajo para este modelo
+      const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(date).getDay()];
+      const workingDays = (modelShift?.working_days || studioSettings.working_days || 'mon,tue,wed,thu,fri,sat').split(',');
+      const isWorkingDay = workingDays.includes(dayOfWeek);
+
+      // Si no es día de trabajo, mostrar compliance como "LIBRE" o "-"
+      if (!isWorkingDay) {
+        return {
+          ...modelo,
+          compliance: 'LIBRE',
+          minutesPending: 0,
+          progressPercent: 100, // o null
+        };
+      }
+
       // Usar turno del modelo o default del studio
       const modelShift = model.shifts;
       const minMinutesRequired = modelShift?.hours
