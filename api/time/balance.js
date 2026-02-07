@@ -19,6 +19,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Helper: convertir UTC a fecha Colombia (UTC-5)
+    function toColombiaDate(utcString) {
+      const date = new Date(utcString);
+      // Restar 5 horas para Colombia
+      date.setHours(date.getHours() - 5);
+      return date.toISOString().split('T')[0];
+    }
+
     // 1. Obtener configuración del studio
     const { data: settings } = await supabase
       .from('studio_settings')
@@ -42,7 +50,6 @@ export default async function handler(req, res) {
       .select('id, name, hours, working_days')
       .eq('studio_id', studio_id);
 
-    // Crear mapa de turnos para acceso rápido
     const shiftsMap = {};
     (shifts || []).forEach(s => {
       shiftsMap[s.id] = s;
@@ -55,8 +62,8 @@ export default async function handler(req, res) {
       .eq('studio_id', studio_id)
       .order('created_at', { ascending: true });
 
-    if (start_date) entriesQuery = entriesQuery.gte('created_at', start_date + 'T00:00:00');
-    if (end_date) entriesQuery = entriesQuery.lte('created_at', end_date + 'T23:59:59');
+    if (start_date) entriesQuery = entriesQuery.gte('created_at', start_date + 'T05:00:00Z');
+    if (end_date) entriesQuery = entriesQuery.lte('created_at', end_date + 'T29:59:59Z');
 
     const { data: entries } = await entriesQuery;
 
@@ -71,17 +78,17 @@ export default async function handler(req, res) {
 
     const { data: notes } = await notesQuery;
 
-    // Helper: verificar si un día es laboral para un turno
+    // Helper: verificar si un día es laboral
     function isWorkingDay(dateStr, workingDays) {
-      const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(dateStr).getDay()];
+      const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(dateStr + 'T12:00:00').getDay()];
       return workingDays.split(',').includes(dayOfWeek);
     }
 
     // Helper: generar lista de fechas en el rango
     function getDateRange(start, end) {
       const dates = [];
-      let current = new Date(start);
-      const endDate = new Date(end);
+      let current = new Date(start + 'T12:00:00');
+      const endDate = new Date(end + 'T12:00:00');
       while (current <= endDate) {
         dates.push(current.toISOString().split('T')[0]);
         current.setDate(current.getDate() + 1);
@@ -91,10 +98,8 @@ export default async function handler(req, res) {
 
     // 6. Calcular balance por modelo
     const balances = models.map(model => {
-      // Obtener turno del modelo (si tiene)
       const modelShift = model.shift_id ? shiftsMap[model.shift_id] : null;
       
-      // Minutos esperados por día y días laborales para este modelo
       const expectedMinutesPerDay = modelShift 
         ? modelShift.hours * 60 
         : defaultMinutes;
@@ -103,7 +108,6 @@ export default async function handler(req, res) {
       // Filtrar entradas de este modelo
       const modelEntries = (entries || []).filter(e => e.model_id === model.id);
       
-      // Si no hay entradas, el modelo no ha empezado
       if (modelEntries.length === 0) {
         return {
           model_id: model.id,
@@ -117,53 +121,46 @@ export default async function handler(req, res) {
         };
       }
 
-      // Encontrar el primer día con actividad de este modelo
-      const firstEntryDate = modelEntries[0].created_at.split('T')[0];
-      
-      // Usar el mayor entre start_date y firstEntryDate
-      const effectiveStartDate = start_date > firstEntryDate ? start_date : firstEntryDate;
-
-      // Agrupar por día
+      // Agrupar por día COLOMBIA
       const entriesByDay = {};
       modelEntries.forEach(entry => {
-        const day = entry.created_at.split('T')[0];
+        const day = toColombiaDate(entry.created_at);
         if (!entriesByDay[day]) entriesByDay[day] = [];
         entriesByDay[day].push(entry);
       });
 
-      // Calcular minutos trabajados y esperados
+      // Encontrar el primer día con actividad
+      const firstEntryDate = toColombiaDate(modelEntries[0].created_at);
+      const effectiveStartDate = start_date > firstEntryDate ? start_date : firstEntryDate;
+
       let totalWorkedMinutes = 0;
       let totalExpectedMinutes = 0;
       let daysWorked = 0;
 
-      // Generar fechas desde el primer día de actividad hasta end_date
       const allDates = getDateRange(effectiveStartDate, end_date);
 
       allDates.forEach(day => {
-        // Verificar si es día laboral para este modelo
         if (!isWorkingDay(day, workingDays)) {
-          return; // Saltar días no laborales
+          return;
         }
 
         const dayEntries = entriesByDay[day] || [];
         const checkIn = dayEntries.find(e => e.entry_type === 'check_in');
         const checkOut = dayEntries.find(e => e.entry_type === 'check_out');
 
-        // Solo contar como día esperado si es día laboral
         totalExpectedMinutes += expectedMinutesPerDay;
 
         if (checkIn) {
           daysWorked++;
 
-          // Calcular tiempo trabajado
           let workedMs = 0;
           if (checkOut) {
             workedMs = new Date(checkOut.created_at) - new Date(checkIn.created_at);
           } else {
-            // Si no hay check_out, calcular hasta ahora (solo si es hoy)
             const now = new Date();
             const checkInDate = new Date(checkIn.created_at);
-            if (checkInDate.toDateString() === now.toDateString()) {
+            const todayColombia = toColombiaDate(now.toISOString());
+            if (day === todayColombia) {
               workedMs = now - checkInDate;
             }
           }
