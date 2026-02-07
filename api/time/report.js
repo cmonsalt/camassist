@@ -6,6 +6,19 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 );
 
+// Helper: convertir UTC a fecha Colombia (UTC-5)
+function toColombiaDate(utcString) {
+  const date = new Date(utcString);
+  date.setHours(date.getHours() - 5);
+  return date.toISOString().split('T')[0];
+}
+
+// Helper: verificar si un día es laboral
+function isWorkingDay(dateStr, workingDays) {
+  const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(dateStr + 'T12:00:00').getDay()];
+  return workingDays.split(',').includes(dayOfWeek);
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -38,10 +51,12 @@ export default async function handler(req, res) {
 
     const studioSettings = settings || {
       min_hours_daily: 6,
-      max_break_minutes: 15
+      max_break_minutes: 15,
+      working_days: 'mon,tue,wed,thu,fri,sat'
     };
 
     const defaultMinutes = studioSettings.min_hours_daily * 60;
+    const defaultWorkingDays = studioSettings.working_days || 'mon,tue,wed,thu,fri,sat';
 
     // 3. Obtener modelos del studio (con shift_id)
     const { data: models } = await supabase
@@ -63,16 +78,13 @@ export default async function handler(req, res) {
       shiftsMap[s.id] = s;
     });
 
-    // 5. Obtener todas las entradas del rango de fechas
-    const dateStart = new Date(fecha_inicio + 'T00:00:00-05:00');
-    const dateEnd = new Date(fecha_fin + 'T23:59:59.999-05:00');
-
+    // 5. Obtener todas las entradas del rango de fechas (ajustado para Colombia)
     const { data: allEntries } = await supabase
       .from('time_entries')
       .select('*')
       .eq('studio_id', studio_id)
-      .gte('created_at', dateStart.toISOString())
-      .lte('created_at', dateEnd.toISOString())
+      .gte('created_at', fecha_inicio + 'T05:00:00Z')
+      .lte('created_at', fecha_fin + 'T04:59:59Z')
       .order('created_at', { ascending: true });
 
     // 6. Obtener ganancias del rango
@@ -97,8 +109,8 @@ export default async function handler(req, res) {
 
     // Generar lista de fechas en el rango
     const dates = [];
-    let currentDate = new Date(fecha_inicio);
-    const endDate = new Date(fecha_fin);
+    let currentDate = new Date(fecha_inicio + 'T12:00:00');
+    const endDate = new Date(fecha_fin + 'T12:00:00');
     while (currentDate <= endDate) {
       dates.push(currentDate.toISOString().split('T')[0]);
       currentDate.setDate(currentDate.getDate() + 1);
@@ -108,6 +120,7 @@ export default async function handler(req, res) {
       // Obtener turno del modelo
       const modelShift = model.shift_id ? shiftsMap[model.shift_id] : null;
       const minMinutesRequired = modelShift ? modelShift.hours * 60 : defaultMinutes;
+      const workingDays = modelShift?.working_days || defaultWorkingDays;
 
       modelTotals[model.id] = {
         name: model.name,
@@ -120,16 +133,19 @@ export default async function handler(req, res) {
         totalFollowersGained: 0
       };
 
-      for (const date of dates) {
-        const dayStart = new Date(date + 'T00:00:00-05:00');
-        const dayEnd = new Date(date + 'T23:59:59.999-05:00');
+      // Agrupar entradas por día Colombia
+      const entriesByDay = {};
+      (allEntries || []).filter(e => e.model_id === model.id).forEach(entry => {
+        const day = toColombiaDate(entry.created_at);
+        if (!entriesByDay[day]) entriesByDay[day] = [];
+        entriesByDay[day].push(entry);
+      });
 
-        // Filtrar entradas de este modelo en este día
-        const entries = (allEntries || []).filter(e =>
-          e.model_id === model.id &&
-          new Date(e.created_at) >= dayStart &&
-          new Date(e.created_at) <= dayEnd
-        );
+      for (const date of dates) {
+        // Verificar si es día laboral para este modelo
+        const isDayOff = !isWorkingDay(date, workingDays);
+        
+        const dayEntries = entriesByDay[date] || [];
 
         // Calcular tiempos
         let checkInTime = null;
@@ -139,7 +155,7 @@ export default async function handler(req, res) {
         let currentBreakStart = null;
         let breaksCount = 0;
 
-        for (const entry of entries) {
+        for (const entry of dayEntries) {
           if (entry.entry_type === 'check_in') {
             checkInTime = entry.created_at;
           } else if (entry.entry_type === 'check_out') {
@@ -190,8 +206,16 @@ export default async function handler(req, res) {
         );
         const observacion = dayNote ? `${getNoteLabel(dayNote.note_type, dayNote.custom_name)}${dayNote.note ? ': ' + dayNote.note : ''}` : '';
 
-        // Solo agregar si trabajó ese día O tiene nota
-        if (checkInTime || dayNote) {
+        // Determinar cumplimiento
+        let cumplimiento = '-';
+        if (isDayOff && !checkInTime) {
+          cumplimiento = 'Libre';
+        } else if (checkInTime) {
+          cumplimiento = isCompliant ? 'Sí' : 'No';
+        }
+
+        // Solo agregar si trabajó ese día, tiene nota, o es día laboral sin trabajar
+        if (checkInTime || dayNote || (!isDayOff && !checkInTime)) {
           reportData.push({
             modelo: model.name,
             turno: modelShift?.name || 'Default',
@@ -200,20 +224,20 @@ export default async function handler(req, res) {
             checkOut: checkOutTime ? formatTime(checkOutTime) : '-',
             horasTrabajadas: formatMinutes(totalWorkedMinutes),
             horasDecimal: (totalWorkedMinutes / 60).toFixed(2),
-            horasRequeridas: (minMinutesRequired / 60).toFixed(1),
-            minPendientes: minutesPending,
+            horasRequeridas: isDayOff ? '-' : (minMinutesRequired / 60).toFixed(1),
+            minPendientes: isDayOff ? 0 : minutesPending,
             breaks: breaksCount,
             minBreak: totalBreakMinutes,
             excesoBreak: breakExcessMinutes,
-            cumplimiento: checkInTime ? (isCompliant ? 'Sí' : 'No') : '-',
+            cumplimiento: cumplimiento,
             ganancias: earnings,
             segInicio: followersStart,
             segFin: followersEnd,
             segGanados: followersGained,
-            observacion: observacion
+            observacion: isDayOff && !checkInTime ? '🏖️ Día libre' : observacion
           });
 
-          // Acumular totales
+          // Acumular totales (solo si trabajó)
           if (checkInTime) {
             modelTotals[model.id].totalWorkedMinutes += totalWorkedMinutes;
             modelTotals[model.id].totalBreakMinutes += totalBreakMinutes;
@@ -245,7 +269,7 @@ export default async function handler(req, res) {
     sheetDetalle.getCell('A2').font = { size: 12, color: { argb: 'FF666666' } };
     sheetDetalle.getCell('A2').alignment = { horizontal: 'center' };
 
-    // Headers de tabla (agregamos Turno y Horas Requeridas)
+    // Headers de tabla
     const headers = ['Modelo', 'Turno', 'Fecha', 'Entrada', 'Salida', 'Horas Trabajadas', 'Horas (decimal)', 'Horas Req.', 'Min Pendientes', 'Breaks', 'Min Break', 'Exceso Break', 'Cumplió', 'Ganancias', 'Seg Inicio', 'Seg Fin', 'Seg Ganados', 'Observaciones'];
     sheetDetalle.addRow([]);
     const headerRow = sheetDetalle.addRow(headers);
@@ -267,7 +291,7 @@ export default async function handler(req, res) {
         row.checkOut,
         row.horasTrabajadas,
         parseFloat(row.horasDecimal),
-        parseFloat(row.horasRequeridas),
+        row.horasRequeridas === '-' ? '-' : parseFloat(row.horasRequeridas),
         row.minPendientes,
         row.breaks,
         row.minBreak,
@@ -285,6 +309,13 @@ export default async function handler(req, res) {
         dataRow.getCell(13).font = { color: { argb: 'FFDC2626' } };
       } else if (row.cumplimiento === 'Sí') {
         dataRow.getCell(13).font = { color: { argb: 'FF16A34A' } };
+      } else if (row.cumplimiento === 'Libre') {
+        dataRow.getCell(13).font = { color: { argb: 'FF6B7280' } };
+        dataRow.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFF3F4F6' }
+        };
       }
 
       // Color rojo si hay exceso de break
