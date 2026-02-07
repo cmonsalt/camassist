@@ -27,6 +27,7 @@ export default async function handler(req, res) {
       .single();
 
     const defaultMinutes = (settings?.min_hours_daily || 6) * 60;
+    const defaultWorkingDays = settings?.working_days || 'mon,tue,wed,thu,fri,sat';
 
     // 2. Obtener modelos
     const { data: models } = await supabase
@@ -70,15 +71,34 @@ export default async function handler(req, res) {
 
     const { data: notes } = await notesQuery;
 
+    // Helper: verificar si un día es laboral para un turno
+    function isWorkingDay(dateStr, workingDays) {
+      const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(dateStr).getDay()];
+      return workingDays.split(',').includes(dayOfWeek);
+    }
+
+    // Helper: generar lista de fechas en el rango
+    function getDateRange(start, end) {
+      const dates = [];
+      let current = new Date(start);
+      const endDate = new Date(end);
+      while (current <= endDate) {
+        dates.push(current.toISOString().split('T')[0]);
+        current.setDate(current.getDate() + 1);
+      }
+      return dates;
+    }
+
     // 6. Calcular balance por modelo
     const balances = models.map(model => {
       // Obtener turno del modelo (si tiene)
       const modelShift = model.shift_id ? shiftsMap[model.shift_id] : null;
       
-      // Minutos esperados por día para este modelo
+      // Minutos esperados por día y días laborales para este modelo
       const expectedMinutesPerDay = modelShift 
         ? modelShift.hours * 60 
         : defaultMinutes;
+      const workingDays = modelShift?.working_days || defaultWorkingDays;
 
       // Filtrar entradas de este modelo
       const modelEntries = (entries || []).filter(e => e.model_id === model.id);
@@ -91,28 +111,36 @@ export default async function handler(req, res) {
         entriesByDay[day].push(entry);
       });
 
-      // Calcular minutos trabajados por día
+      // Calcular minutos trabajados y esperados
       let totalWorkedMinutes = 0;
       let totalExpectedMinutes = 0;
       let daysWorked = 0;
 
-      Object.keys(entriesByDay).forEach(day => {
-        const dayEntries = entriesByDay[day];
-        
-        // Buscar check_in y check_out
+      // Generar todas las fechas del rango
+      const allDates = getDateRange(start_date, end_date);
+
+      allDates.forEach(day => {
+        // Verificar si es día laboral para este modelo
+        if (!isWorkingDay(day, workingDays)) {
+          return; // Saltar días no laborales
+        }
+
+        const dayEntries = entriesByDay[day] || [];
         const checkIn = dayEntries.find(e => e.entry_type === 'check_in');
         const checkOut = dayEntries.find(e => e.entry_type === 'check_out');
-        
+
+        // Solo contar como día esperado si es día laboral
+        totalExpectedMinutes += expectedMinutesPerDay;
+
         if (checkIn) {
           daysWorked++;
-          totalExpectedMinutes += expectedMinutesPerDay;
 
           // Calcular tiempo trabajado
           let workedMs = 0;
           if (checkOut) {
             workedMs = new Date(checkOut.created_at) - new Date(checkIn.created_at);
           } else {
-            // Si no hay check_out, calcular hasta ahora (o fin del día)
+            // Si no hay check_out, calcular hasta ahora (solo si es hoy)
             const now = new Date();
             const checkInDate = new Date(checkIn.created_at);
             if (checkInDate.toDateString() === now.toDateString()) {
@@ -140,9 +168,9 @@ export default async function handler(req, res) {
       // Agregar deuda de notas con must_recover = true
       const modelNotes = (notes || []).filter(n => n.model_id === model.id && n.must_recover === true);
       modelNotes.forEach(note => {
-        // Solo si no trabajó ese día
-        if (!entriesByDay[note.date]) {
-          totalExpectedMinutes += expectedMinutesPerDay;
+        // Solo si es día laboral y no trabajó ese día
+        if (isWorkingDay(note.date, workingDays) && !entriesByDay[note.date]) {
+          // Ya se contó arriba, no agregar doble
         }
       });
 
