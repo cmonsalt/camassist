@@ -129,6 +129,7 @@ export default async function handler(req, res) {
         totalBreakMinutes: 0,
         daysWorked: 0,
         daysCompliant: 0,
+        daysExpected: 0,
         totalEarnings: 0,
         totalFollowersGained: 0
       };
@@ -141,10 +142,20 @@ export default async function handler(req, res) {
         entriesByDay[day].push(entry);
       });
 
+      // Encontrar primer día con actividad de este modelo
+      const modelEntries = (allEntries || []).filter(e => e.model_id === model.id);
+      if (modelEntries.length === 0) {
+        // Modelo sin actividad en el rango - no mostrar
+        continue;
+      }
+      const firstEntryDate = toColombiaDate(modelEntries[0].created_at);
+
       for (const date of dates) {
-        // Verificar si es día laboral para este modelo
+        // Solo procesar desde el primer día de actividad
+        if (date < firstEntryDate) continue;
+
+        // Verificar si es día laboral
         const isDayOff = !isWorkingDay(date, workingDays);
-        
         const dayEntries = entriesByDay[date] || [];
 
         // Calcular tiempos
@@ -183,7 +194,7 @@ export default async function handler(req, res) {
         const totalShiftMinutes = totalWorkedMinutes + effectiveBreakMinutes;
         const isCompliant = totalShiftMinutes >= minMinutesRequired;
 
-        // Minutos pendientes (usa el turno del modelo)
+        // Minutos pendientes
         const minutesPending = Math.max(0, minMinutesRequired - totalShiftMinutes);
 
         // Exceso de break
@@ -204,18 +215,28 @@ export default async function handler(req, res) {
         const dayNote = (allNotes || []).find(n =>
           n.model_id === model.id && n.date === date
         );
-        const observacion = dayNote ? `${getNoteLabel(dayNote.note_type, dayNote.custom_name)}${dayNote.note ? ': ' + dayNote.note : ''}` : '';
 
-        // Determinar cumplimiento
+        // Determinar cumplimiento y observación
         let cumplimiento = '-';
+        let observacion = '';
+
         if (isDayOff && !checkInTime) {
           cumplimiento = 'Libre';
+          observacion = '🏖️ Día libre';
         } else if (checkInTime) {
           cumplimiento = isCompliant ? 'Sí' : 'No';
+          if (dayNote) {
+            observacion = `${getNoteLabel(dayNote.note_type, dayNote.custom_name)}${dayNote.note ? ': ' + dayNote.note : ''}`;
+          }
+        } else if (dayNote) {
+          observacion = `${getNoteLabel(dayNote.note_type, dayNote.custom_name)}${dayNote.note ? ': ' + dayNote.note : ''}`;
         }
 
-        // Solo agregar si trabajó ese día, tiene nota, o es día laboral sin trabajar
-        if (checkInTime || dayNote || (!isDayOff && !checkInTime)) {
+        // Decidir si agregar esta fila
+        // Agregar si: trabajó, tiene nota, o es día laboral (para mostrar falta)
+        const shouldAddRow = checkInTime || dayNote || !isDayOff;
+
+        if (shouldAddRow) {
           reportData.push({
             modelo: model.name,
             turno: modelShift?.name || 'Default',
@@ -234,10 +255,13 @@ export default async function handler(req, res) {
             segInicio: followersStart,
             segFin: followersEnd,
             segGanados: followersGained,
-            observacion: isDayOff && !checkInTime ? '🏖️ Día libre' : observacion
+            observacion: observacion
           });
 
-          // Acumular totales (solo si trabajó)
+          // Acumular totales
+          if (!isDayOff) {
+            modelTotals[model.id].daysExpected++;
+          }
           if (checkInTime) {
             modelTotals[model.id].totalWorkedMinutes += totalWorkedMinutes;
             modelTotals[model.id].totalBreakMinutes += totalBreakMinutes;
@@ -335,17 +359,17 @@ export default async function handler(req, res) {
     // === HOJA 2: Resumen por modelo ===
     const sheetResumen = workbook.addWorksheet('Resumen por Modelo');
 
-    sheetResumen.mergeCells('A1:J1');
+    sheetResumen.mergeCells('A1:K1');
     sheetResumen.getCell('A1').value = `Resumen por Modelo - ${studio?.name || 'Studio'}`;
     sheetResumen.getCell('A1').font = { bold: true, size: 16, color: { argb: 'FF9333EA' } };
     sheetResumen.getCell('A1').alignment = { horizontal: 'center' };
 
-    sheetResumen.mergeCells('A2:J2');
+    sheetResumen.mergeCells('A2:K2');
     sheetResumen.getCell('A2').value = `Período: ${fecha_inicio} al ${fecha_fin}`;
     sheetResumen.getCell('A2').font = { size: 12, color: { argb: 'FF666666' } };
     sheetResumen.getCell('A2').alignment = { horizontal: 'center' };
 
-    const resumenHeaders = ['Modelo', 'Turno', 'Días Trabajados', 'Días Cumplió', '% Cumplimiento', 'Total Horas', 'Promedio/Día', 'Total Break', 'Ganancias', 'Seg Ganados'];
+    const resumenHeaders = ['Modelo', 'Turno', 'Días Esperados', 'Días Trabajados', 'Días Cumplió', '% Cumplimiento', 'Total Horas', 'Promedio/Día', 'Total Break', 'Ganancias', 'Seg Ganados'];
     sheetResumen.addRow([]);
     const resumenHeaderRow = sheetResumen.addRow(resumenHeaders);
     resumenHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -359,19 +383,21 @@ export default async function handler(req, res) {
     // Totales generales
     let totalHorasGeneral = 0;
     let totalDiasGeneral = 0;
+    let totalDiasEsperadosGeneral = 0;
     let totalGananciasGeneral = 0;
     let totalSeguidoresGeneral = 0;
 
     Object.values(modelTotals).forEach(model => {
-      if (model.daysWorked > 0) {
+      if (model.daysExpected > 0 || model.daysWorked > 0) {
         const totalHoras = (model.totalWorkedMinutes / 60).toFixed(2);
-        const promedioHoras = (model.totalWorkedMinutes / model.daysWorked / 60).toFixed(2);
+        const promedioHoras = model.daysWorked > 0 ? (model.totalWorkedMinutes / model.daysWorked / 60).toFixed(2) : '0';
         const totalBreakHoras = (model.totalBreakMinutes / 60).toFixed(2);
-        const cumplimientoPct = Math.round((model.daysCompliant / model.daysWorked) * 100);
+        const cumplimientoPct = model.daysExpected > 0 ? Math.round((model.daysCompliant / model.daysExpected) * 100) : 0;
 
         sheetResumen.addRow([
           model.name,
           model.shiftName,
+          model.daysExpected,
           model.daysWorked,
           model.daysCompliant,
           `${cumplimientoPct}%`,
@@ -384,6 +410,7 @@ export default async function handler(req, res) {
 
         totalHorasGeneral += model.totalWorkedMinutes;
         totalDiasGeneral += model.daysWorked;
+        totalDiasEsperadosGeneral += model.daysExpected;
         totalGananciasGeneral += model.totalEarnings;
         totalSeguidoresGeneral += model.totalFollowersGained;
       }
@@ -394,6 +421,7 @@ export default async function handler(req, res) {
     const totalRow = sheetResumen.addRow([
       'TOTAL',
       '-',
+      totalDiasEsperadosGeneral,
       totalDiasGeneral,
       '-',
       '-',
@@ -411,7 +439,7 @@ export default async function handler(req, res) {
     };
 
     sheetResumen.columns = [
-      { width: 18 }, { width: 14 }, { width: 15 }, { width: 12 }, { width: 14 },
+      { width: 18 }, { width: 14 }, { width: 14 }, { width: 14 }, { width: 12 }, { width: 14 },
       { width: 12 }, { width: 12 }, { width: 12 }, { width: 12 }, { width: 12 }
     ];
 
