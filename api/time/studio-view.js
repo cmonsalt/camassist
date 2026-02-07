@@ -184,23 +184,39 @@ export default async function handler(req, res) {
       const totalWorkedMinutes = Math.floor(totalWorkedMs / 60000);
       const totalBreakMinutes = Math.floor(totalBreakMs / 60000);
 
+      // Usar turno del modelo o default del studio
+      const modelShift = model.shifts;
+
       // Verificar si hoy es día de trabajo para este modelo
       const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(date).getDay()];
       const workingDays = (modelShift?.working_days || studioSettings.working_days || 'mon,tue,wed,thu,fri,sat').split(',');
       const isWorkingDay = workingDays.includes(dayOfWeek);
 
-      // Si no es día de trabajo, mostrar compliance como "LIBRE" o "-"
+      // Si no es día de trabajo, retornar con LIBRE
       if (!isWorkingDay) {
+        const modelEarnings = (allEarnings || []).filter(e => e.model_id === model.id);
+        const modelNote = (allNotes || []).find(n => n.model_id === model.id);
         return {
-          ...modelo,
-          compliance: 'LIBRE',
+          id: model.id,
+          name: model.name,
+          token: model.token,
+          shift: modelShift,
+          status: 'offline',
+          checkInTime: null,
+          checkOutTime: null,
+          totalWorkedMinutes: 0,
+          totalBreakMinutes: 0,
+          breaksCount: 0,
           minutesPending: 0,
-          progressPercent: 100, // o null
+          breakExcessMinutes: 0,
+          compliance: 'LIBRE',
+          progressPercent: 100,
+          totalEarnings: modelEarnings.reduce((sum, e) => sum + (e.earnings || 0), 0),
+          earnings: modelEarnings,
+          dayNote: modelNote
         };
       }
 
-      // Usar turno del modelo o default del studio
-      const modelShift = model.shifts;
       const minMinutesRequired = modelShift?.hours
         ? modelShift.hours * 60
         : studioSettings.min_hours_daily * 60;
