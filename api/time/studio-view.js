@@ -191,7 +191,6 @@ export default async function handler(req, res) {
       const dayOfWeek = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'][new Date(date).getDay()];
       const workingDays = (modelShift?.working_days || studioSettings.working_days || 'mon,tue,wed,thu,fri,sat').split(',');
       const isWorkingDay = workingDays.includes(dayOfWeek);
-
       // Si no es día de trabajo, retornar con LIBRE
       if (!isWorkingDay) {
         const modelEarnings = (allEarnings || []).filter(e => e.model_id === model.id);
@@ -213,7 +212,8 @@ export default async function handler(req, res) {
           progressPercent: 100,
           totalEarnings: modelEarnings.reduce((sum, e) => sum + (e.earnings || 0), 0),
           earnings: modelEarnings,
-          dayNote: modelNote
+          dayNote: modelNote,
+          isWorkingDay: false
         };
       }
 
