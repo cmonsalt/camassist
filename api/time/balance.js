@@ -63,7 +63,7 @@ export default async function handler(req, res) {
       .order('created_at', { ascending: true });
 
     if (start_date) entriesQuery = entriesQuery.gte('created_at', start_date + 'T05:00:00Z');
-    if (end_date) entriesQuery = entriesQuery.lte('created_at', end_date + 'T29:59:59Z');
+    if (end_date) entriesQuery = entriesQuery.lte('created_at', end_date + 'T04:59:59Z');
 
     const { data: entries } = await entriesQuery;
 
@@ -99,15 +99,15 @@ export default async function handler(req, res) {
     // 6. Calcular balance por modelo
     const balances = models.map(model => {
       const modelShift = model.shift_id ? shiftsMap[model.shift_id] : null;
-      
-      const expectedMinutesPerDay = modelShift 
-        ? modelShift.hours * 60 
+
+      const expectedMinutesPerDay = modelShift
+        ? modelShift.hours * 60
         : defaultMinutes;
       const workingDays = modelShift?.working_days || defaultWorkingDays;
 
       // Filtrar entradas de este modelo
       const modelEntries = (entries || []).filter(e => e.model_id === model.id);
-      
+
       if (modelEntries.length === 0) {
         return {
           model_id: model.id,
