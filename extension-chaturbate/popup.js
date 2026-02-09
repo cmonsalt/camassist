@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Guardar en chrome.storage
     chrome.storage.local.set({ model_token: token });
     
-    // Guardar en localStorage de la página activa (Chaturbate)
+    // Guardar en localStorage de la página activa (CB)
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       if (tabs[0]) {
         chrome.scripting.executeScript({
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
     
-    alert('✅ Token guardado! Recarga la página de Chaturbate.');
+    alert('✅ Token guardado! Recarga la página de CB.');
   }
 
   saveBtn.textContent = '💾 Guardar Token';

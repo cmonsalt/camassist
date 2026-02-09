@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Guardar en chrome.storage
       chrome.storage.local.set({ model_token: token });
       
-      // Guardar en localStorage de la página activa (StripChat)
+      // Guardar en localStorage de la página activa (SC)
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]) {
           chrome.scripting.executeScript({
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       });
       
-      alert('✅ Token guardado! Recarga la página de StripChat.');
+      alert('✅ Token guardado! Recarga la página de SC.');
     }
 
     saveBtn.textContent = '💾 Guardar Token';

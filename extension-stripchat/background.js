@@ -30,7 +30,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
     console.log('📊 Pestaña de earnings abierta:', tab.id);
 
-    // Cerrar después de 5 segundos
+    // Cerrar después de 30 segundos
     setTimeout(async () => {
       try {
         await chrome.tabs.remove(tab.id);
@@ -38,7 +38,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       } catch (e) {
         // Tab ya cerrada
       }
-    }, 5000);
+    }, 30000);
   }
 });
 

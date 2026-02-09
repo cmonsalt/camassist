@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CamAssist - StripChat",
+  "name": "CamAssist - SC",
   "version": "1.0.4",
-  "description": "AI assistant for webcam models on StripChat",
+  "description": "AI chat assistant for content creators and live streamers",
   "icons": {
     "16": "icon16.png",
     "48": "icon48.png",

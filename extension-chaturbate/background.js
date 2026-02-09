@@ -78,7 +78,7 @@ async function triggerEarningsSync() {
     } catch (e) {
       // Tab ya cerrada
     }
-  }, 10000);
+  }, 30000);
 }
 
 // Guardar broadcaster_username cuando se detecte

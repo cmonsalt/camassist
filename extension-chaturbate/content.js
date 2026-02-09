@@ -486,7 +486,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
           platform: 'chaturbate',
-          version: '1.0.8',
+          version: '1.0.9',
           broadcaster_username: broadcasterUsername,  // NUEVO
           username,
           message: messageText,
