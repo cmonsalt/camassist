@@ -240,7 +240,8 @@ CONTEXTO XMODELS (VIP 1:1):
         // Validar que el token se usa en la sala correcta (si viene broadcaster_username)
         const broadcasterUsername = req.body.broadcaster_username;
         if (broadcasterUsername && broadcasterUsername.length > 1 && broadcasterUsername !== 'Model') {
-          if (expectedUsername.toLowerCase() !== broadcasterUsername.toLowerCase()) {
+          const normalizeUsername = (u) => u.toLowerCase().replace(/[_\s-]/g, '');
+          if (normalizeUsername(expectedUsername) !== normalizeUsername(broadcasterUsername)) {
             console.log('🚫 Token en sala incorrecta:', expectedUsername, '→', broadcasterUsername);
             return res.status(403).json({
               success: false,
