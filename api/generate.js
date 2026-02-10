@@ -295,7 +295,7 @@ CONTEXTO XMODELS (VIP 1:1):
         excitacion_en: 'wet, dripping, soaking',
         orgasmo_es: 'acabar, venirme, correrme',
         orgasmo_en: 'cum, orgasm, finish',
-        genitales_es: 'chocha, cosita, conchita',
+        genitales_es: 'chocha, cosita, conchita, vagina',
         genitales_en: 'pussy, kitty'
       },
       apodos_fan_es: 'papi, amor, bb, cariño, guapo',
