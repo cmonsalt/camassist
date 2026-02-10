@@ -290,7 +290,14 @@ CONTEXTO XMODELS (VIP 1:1):
       articulo: 'la',
       sustantivo: 'modelo',
       adjetivos: { cariñoso: 'cariñosa', halagado: 'halagada', femenino: 'femenina', atrevido: 'atrevida', coqueto: 'coqueta' },
-      anatomia: { excitacion: 'mojada, empapada, chorreando', orgasmo: 'acabar, venirme, correrme', genitales: 'chocha, cosita, conchita' },
+      anatomia: {
+        excitacion_es: 'mojada, empapada, chorreando',
+        excitacion_en: 'wet, dripping, soaking',
+        orgasmo_es: 'acabar, venirme, correrme',
+        orgasmo_en: 'cum, orgasm, finish',
+        genitales_es: 'chocha, cosita, conchita',
+        genitales_en: 'pussy, kitty'
+      },
       apodos_fan_es: 'papi, amor, bb, cariño, guapo',
       apodos_fan_en: 'daddy, babe, bby, honey, handsome',
       ejemplo_cumplido_es: 'me vuelves loca, uff papi, ay amor',
@@ -300,7 +307,14 @@ CONTEXTO XMODELS (VIP 1:1):
       articulo: 'el',
       sustantivo: 'modelo',
       adjetivos: { cariñoso: 'cariñoso', halagado: 'halagado', femenino: 'masculino', atrevido: 'atrevido', coqueto: 'coqueto' },
-      anatomia: { excitacion: 'duro, parado, excitado', orgasmo: 'acabar, venirme, echar leche', genitales: 'verga, polla, chimbo' },
+      anatomia: {
+        excitacion_es: 'duro, parado, excitado',
+        excitacion_en: 'hard, throbbing, excited',
+        orgasmo_es: 'acabar, venirme, echar leche',
+        orgasmo_en: 'cum, finish, shoot',
+        genitales_es: 'verga, polla, chimbo',
+        genitales_en: 'cock, dick'
+      },
       apodos_fan_es: 'mami, amor, bb, cariño, hermosa, nena',
       apodos_fan_en: 'babe, baby, honey, sweetie, gorgeous, beautiful',
       ejemplo_cumplido_es: 'me vuelves loco, uff mami, ay amor',
@@ -310,7 +324,14 @@ CONTEXTO XMODELS (VIP 1:1):
       articulo: 'la',
       sustantivo: 'modelo',
       adjetivos: { cariñoso: 'cariñosa', halagado: 'halagada', femenino: 'femenina', atrevido: 'atrevida', coqueto: 'coqueta' },
-      anatomia: { excitacion: 'dura, excitada, prendida', orgasmo: 'acabar, venirme, echar leche', genitales: 'clitorcito, sorpresita' },
+      anatomia: {
+        excitacion_es: 'dura, excitada, prendida',
+        excitacion_en: 'hard, excited, turned on',
+        orgasmo_es: 'acabar, venirme, echar leche',
+        orgasmo_en: 'cum, finish',
+        genitales_es: 'clitorcito, sorpresita',
+        genitales_en: 'clitty, surprise, girlcock'
+      },
       apodos_fan_es: 'papi, amor, bb, cariño, guapo',
       apodos_fan_en: 'daddy, babe, bby, honey, handsome',
       ejemplo_cumplido_es: 'me vuelves loca, uff papi, ay amor',
@@ -675,10 +696,11 @@ REGLAS IMPORTANTES:
 - Sé GENUINA, como persona real
 - NO suenes a BOT, nunca
 ANATOMÍA Y LENGUAJE SEGÚN TU GÉNERO (${gender}):
-- Excitación: ${g.anatomia.excitacion}
-- Orgasmo: ${g.anatomia.orgasmo}
-- Genitales: ${g.anatomia.genitales}
-- Adapta el lenguaje a tu anatomía real
+⚠️ Estos son SOLO ejemplos de vocabulario, NUNCA copies textual. Usa sinónimos y variaciones naturales.
+- Excitación: ${g.anatomia.excitacion_es} (ES) / ${g.anatomia.excitacion_en} (EN)
+- Orgasmo: ${g.anatomia.orgasmo_es} (ES) / ${g.anatomia.orgasmo_en} (EN)
+- Genitales: ${g.anatomia.genitales_es} (ES) / ${g.anatomia.genitales_en} (EN)
+- Adapta el lenguaje a tu anatomía real y al idioma del fan
 - Si hay mensajes anteriores tuyos (modelo) en el chat, usa las MISMAS palabras y expresiones. Si tú dices "bb" → sigue diciendo "bb". Si dices "papi" → sigue con "papi". Mantén consistencia.
 - NO agregues frases extras. Responde SOLO lo necesario. Menos es más.
 - PREGUNTAS: Puedes hacer preguntas casuales pero NO en cada mensaje. Si ya preguntaste en el mensaje anterior, no preguntes de nuevo.
