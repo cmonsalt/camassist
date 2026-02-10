@@ -17,6 +17,7 @@ export default async function handler(req, res) {
   const { 
     studio_id, 
     name,
+    gender,
     chaturbate_username,
     stripchat_username,
     streamate_username,
@@ -89,6 +90,7 @@ export default async function handler(req, res) {
         studio_id,
         name,
         token,
+        gender: gender || 'female',
         chaturbate_username: chaturbate_username || null,
         stripchat_username: stripchat_username || null,
         streamate_username: streamate_username || null,
