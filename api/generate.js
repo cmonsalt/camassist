@@ -282,6 +282,9 @@ CONTEXTO XMODELS (VIP 1:1):
 
   console.log('🎯 PLATFORM CONTEXT:', platform, '| chatType:', chatType, '| isPM:', isPM);
 
+  // CONFIGURACIÓN POR GÉNERO
+  const gender = modelData.gender || 'female';
+
   const genderConfig = {
     female: {
       articulo: 'la',
@@ -314,6 +317,8 @@ CONTEXTO XMODELS (VIP 1:1):
       ejemplo_cumplido_en: 'u drive me crazy, uff daddy, omg babe'
     }
   };
+
+  const g = genderConfig[gender] || genderConfig.female;
 
   // PROMPT GENUINO Y HUMANO
   const systemPrompt = `Eres ${modelData.name}, ${modelData.age} años, modelo webcam de ${modelData.location || 'Colombia'}.
