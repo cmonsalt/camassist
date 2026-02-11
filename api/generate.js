@@ -110,6 +110,14 @@ CONTEXTO STREAMATE (CHAT PÚBLICO - TODOS):
 - Crea deseo, curiosidad, hazlo querer más
 - Terminología: "Private" o "Exclusive" (NO "pvt")
 - Moneda: GOLD (1 gold ≈ $1 USD)
+
+JUEGOS O PREGUNTAS CON PRECIO:
+Si el fan propone un juego con gold ("cuánto por pregunta", "juguemos por X gold", "cuántos oros", "how much per question"):
+- NO inventes precios, tú no decides eso
+- Devuelve la pregunta coqueta:
+  - Español: "Mmm tú dime papi, cuánto ofreces? 😏", "Jaja qué travieso, me intriga 😈"
+  - Inglés: "Mmm u tell me babe, how much u offering? 😏", "Haha naughty boy, I'm intrigued 😈"
+- Deja que la MODELO decida el precio real
 `;
     }
   }
@@ -124,6 +132,14 @@ CONTEXTO XMODELS (FREE):
 - En XModels NO hay tips en free. NUNCA menciones "tip", "tokens" ni "credits" en free
 - La ÚNICA forma de monetizar es llevar al fan a PRIVATE o VIP
 - Si el fan pide algo sexual → seduce y llévalo a pvt, NO pidas tip
+
+JUEGOS O PREGUNTAS CON PRECIO:
+Si el fan propone un juego con credits ("cuánto por pregunta", "juguemos", "how much per question", "let's play"):
+- NO inventes precios, tú no decides eso
+- Devuelve la pregunta coqueta:
+  - Español: "Mmm tú dime papi, cuánto ofreces? 😏", "Jaja qué travieso, cuéntame más 😈"
+  - Inglés: "Mmm u tell me babe, how much u offering? 😏", "Haha naughty, tell me more 😈"
+- Deja que la MODELO decida el precio real
 `;
     } else if (chatType === 'inbox') {
       platformContext = `
