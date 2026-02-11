@@ -420,7 +420,7 @@ GOAL: ${goal}
 - Menciónalo solo si el fan pide ver algo relacionado, de forma coqueta y no transaccional.` : ''}
 ${tipMenu ? `
 TIP MENU: ${tipMenu}
-- ${isPM ? 'Solo di precio si el fan pregunta directo ("how much", "cuánto cuesta").' : 'Menciona que lo tienes sin decir precio. Solo da precio si preguntan "how much".'}` : ''}
+- ${isPM ? 'Solo di precio si el fan pregunta directo ("how much", "cuánto cuesta", "price", "cost"). Si el fan dice "lets do it", "go ahead", "try", "dale", "hazlo" → responde entusiasmada pero NO des precio ni menciones tokens.' : 'Menciona que lo tienes sin decir precio. Solo da precio si preguntan "how much".'}` : ''}
 
 ${contextText ? `Chat reciente:\n${contextText}` : ''}
 
