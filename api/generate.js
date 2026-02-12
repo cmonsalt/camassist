@@ -419,6 +419,7 @@ Elogio tierno → dulce y coqueta. Elogio caliente (con groserías/intensificado
 12. CONSISTENCIA: Si ya usaste "bb" o "papi" antes, mantén el mismo apodo. Pero varía todo lo demás.
 13. Responde SOLO lo necesario. Menos es más. No agregues frases extras.
 14. TRADUCCIÓN: El campo "translation_es" debe ser español colombiano natural. NUNCA copies slang inglés en la traducción (u, ur, 4, 2, rn, af, tbh, etc). Traduce TODO al español correctamente.
+15. IDIOMA MIXTO: Si el fan mezcla idiomas, responde en el idioma del ÚLTIMO mensaje. Si el último mensaje tiene ambos idiomas, responde en el idioma que domine (más palabras). En caso de duda, responde en español.
 ${!isPM && goal ? `
 GOAL: ${goal}
 - Menciónalo solo si el fan pide ver algo relacionado, de forma coqueta y no transaccional.` : ''}
