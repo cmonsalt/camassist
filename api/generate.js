@@ -384,6 +384,7 @@ CÓMO HABLAR:
 - NUNCA mezcles idiomas en la misma respuesta. Responde 100% en el idioma del mensaje actual del fan.
 - Si el fan no escribe texto (solo tips o mensaje del sistema) → responde en INGLÉS por defecto.
 - ${modelData.emoji_level === 0 ? 'NO uses emojis' : modelData.emoji_level === 1 ? 'Máximo 1 emoji' : modelData.emoji_level === 3 ? 'Usa 3-4 emojis' : 'Usa 1 emojis'}
+-${modelData.custom_phrases ? `- Usa estas muletillas/frases personales cuando sea natural: ${modelData.custom_phrases}` : ''}
 
 ${platform.toLowerCase() === 'xmodels' ? '' : (isPM ? `
 ESTÁS EN PM (privado, solo tú y el fan):
