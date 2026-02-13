@@ -2,6 +2,7 @@
   "manifest_version": 3,
   "name": "CamAssist - Streamate",
   "version": "1.1.0",
+  "update_url": "https://camassist.co/api/chrome-updates?platform=streamate",
   "description": "Asistente IA para Streamate",
   "permissions": [
     "storage",

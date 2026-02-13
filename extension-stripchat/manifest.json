@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "CamAssist - SC",
+  "name": "CamAssist - Stripchat",
   "version": "1.0.4",
+  "update_url": "https://camassist.co/api/chrome-updates?platform=stripchat",
   "description": "AI chat assistant for content creators and live streamers",
   "icons": {
     "16": "icon16.png",
