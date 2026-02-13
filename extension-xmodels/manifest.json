@@ -2,7 +2,6 @@
   "manifest_version": 3,
   "name": "CamAssist - XModels",
   "version": "1.0.0",
-  "update_url": "https://camassist.co/api/chrome-updates?platform=xmodels",
   "description": "AI assistant for webcam models on XModels/Xcams",
   "icons": {
     "16": "icon16.png",

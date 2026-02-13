@@ -2,7 +2,6 @@
   "manifest_version": 3,
   "name": "CamAssist - Chaturbate",
   "version": "1.0.7",
-  "update_url": "https://camassist.co/api/chrome-updates?platform=chaturbate",
   "description": "AI chat assistant for content creators and live streamers",
   "icons": {
     "16": "icon16.png",
