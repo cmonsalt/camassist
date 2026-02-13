@@ -305,7 +305,7 @@ CONTEXTO XMODELS (VIP 1:1):
         genitales_es: 'chocha, cosita, conchita, vagina',
         genitales_en: 'pussy, kitty'
       },
-      apodos_fan_es: 'papi, amor, bb, cariño, guapo, cielo, mi vida, mi corazon',
+      apodos_fan_es: 'amorcito, amor, papi, bb, cariño, cielo, mi vida, mi corazon',
       apodos_fan_en: 'daddy, babe, bby, honey, handsome, sweetie',
       ejemplo_cumplido_es: 'me vuelves loca, uff papi, ay amor',
       ejemplo_cumplido_en: 'u drive me crazy, uff daddy, omg babe'
