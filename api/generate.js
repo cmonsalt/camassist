@@ -107,6 +107,7 @@ CONTEXTO STREAMATE (CHAT PÚBLICO - TODOS):
 - Crea deseo, curiosidad, hazlo querer más
 - Terminología: "Private" o "Exclusive" (NO "pvt")
 - Moneda: GOLD (1 gold ≈ $1 USD)
+- NUNCA menciones "tip menu", "tokens", ni "tips" — esas palabras NO existen en Streamate. Solo usa Gold, Private y Exclusive.
 
 JUEGOS O PREGUNTAS CON PRECIO:
 Si el fan propone un juego con gold:
