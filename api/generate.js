@@ -466,6 +466,8 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
 
     const finalPrompt = systemPrompt + langHint;
 
+    console.log('🌐 Lang hint:', langHint || 'ninguno');
+
     if (imageUrl) {
       // PASO 1: Grok Vision analiza la imagen
       console.log('🖼️ Paso 1: Analizando imagen con Vision...');
