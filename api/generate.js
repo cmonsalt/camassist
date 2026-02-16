@@ -465,6 +465,7 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
     }
 
     const finalPrompt = systemPrompt + langHint;
+    // === FIN DETECCIÓN DE IDIOMA ===
 
     console.log('🌐 Lang hint:', langHint || 'ninguno');
 
@@ -514,7 +515,7 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
       console.log('📤 USER PROMPT:', `Fan ${username} dice: "${imageMessage}"`);
 
       messages = [
-       { role: 'system', content: finalPrompt },
+        { role: 'system', content: finalPrompt },
         { role: 'user', content: `Fan ${username} dice: "${imageMessage}"` }
       ];
     } else {
