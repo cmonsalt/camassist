@@ -450,6 +450,22 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
     console.log('🤖 Usando modelo:', model);
 
     let messages;
+
+    // === DETECCIÓN DE IDIOMA ===
+    const isEnglishMsg = /^[a-zA-Z0-9\s.,!?'":;\-@#$%&*()\[\]{}\/\\💋🔥❤️😏😍🤤]+$/.test(message);
+    const isSpanishMsg = /[áéíóúñ¿¡]/.test(message) || /\b(hola|como|quiero|amor|papi|rico|donde|eres|bien|dame|hazlo|para|tengo|puedo)\b/i.test(message);
+
+    let langHint = '';
+    if (isEnglishMsg && !isSpanishMsg) {
+      langHint = "\n\nIMPORTANT: The fan wrote in ENGLISH. You MUST respond 100% in ENGLISH. Zero spanish words.";
+    } else if (isSpanishMsg) {
+      langHint = "\n\nIMPORTANTE: El fan escribió en ESPAÑOL. DEBES responder 100% en ESPAÑOL. Cero palabras en inglés.";
+    } else if (!isEnglishMsg && !isSpanishMsg) {
+      langHint = "\n\nIMPORTANT: The fan wrote in another language. Respond 100% in THAT language. Zero english or spanish.";
+    }
+
+    const finalPrompt = systemPrompt + langHint;
+
     if (imageUrl) {
       // PASO 1: Grok Vision analiza la imagen
       console.log('🖼️ Paso 1: Analizando imagen con Vision...');
@@ -496,14 +512,14 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
       console.log('📤 USER PROMPT:', `Fan ${username} dice: "${imageMessage}"`);
 
       messages = [
-        { role: 'system', content: systemPrompt },
+       { role: 'system', content: finalPrompt },
         { role: 'user', content: `Fan ${username} dice: "${imageMessage}"` }
       ];
     } else {
       console.log('📤 PROMPT TEXTO:', systemPrompt);
       console.log('📤 USER PROMPT:', userPrompt);
       messages = [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: finalPrompt },
         { role: 'user', content: userPrompt }
       ];
     }
