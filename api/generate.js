@@ -37,7 +37,7 @@ export default async function handler(req, res) {
   const rateLimitMap = global.rateLimitMap || (global.rateLimitMap = new Map());
   const now = Date.now();
   const windowMs = 60 * 1000; // 1 minuto
-  const maxRequests = 60;
+  const maxRequests = 30;
 
   if (token) {
     const tokenData = rateLimitMap.get(token) || { count: 0, resetTime: now + windowMs };
