@@ -451,17 +451,12 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
 
     let messages;
 
-   // === DETECCIÓN DE IDIOMA + CHATBOX LOVENSE ===
-    const isChatbox = /Impulsado por Chatbox|Powered by Chatbox/i.test(message);
-    const cleanMessage = message.replace(/-\s*(Impulsado por Chatbox|Powered by Chatbox)/gi, '').trim();
-
-    const isEnglishMsg = /^[a-zA-Z0-9\s.,!?'":;\-@#$%&*()\[\]{}\/\\💋🔥❤️😏😍🤤]+$/.test(cleanMessage);
-    const isSpanishMsg = /[áéíóúñ¿¡]/.test(cleanMessage) || /\b(hola|como|quiero|amor|papi|rico|donde|eres|bien|dame|hazlo|para|tengo|puedo)\b/i.test(cleanMessage);
+    // === DETECCIÓN DE IDIOMA ===
+    const isEnglishMsg = /^[a-zA-Z0-9\s.,!?'":;\-@#$%&*()\[\]{}\/\\💋🔥❤️😏😍🤤]+$/.test(message);
+    const isSpanishMsg = /[áéíóúñ¿¡]/.test(message) || /\b(hola|como|quiero|amor|papi|rico|donde|eres|bien|dame|hazlo|para|tengo|puedo)\b/i.test(message);
 
     let langHint = '';
-    if (isChatbox) {
-      langHint = "\n\nIMPORTANT: This message comes from Lovense Chatbox (auto-translated). The fan ORIGINALLY wrote in ENGLISH. You MUST respond 100% in ENGLISH. Zero spanish words.";
-    } else if (isEnglishMsg && !isSpanishMsg) {
+    if (isEnglishMsg && !isSpanishMsg) {
       langHint = "\n\nIMPORTANT: The fan wrote in ENGLISH. You MUST respond 100% in ENGLISH. Zero spanish words.";
     } else if (isSpanishMsg) {
       langHint = "\n\nIMPORTANTE: El fan escribió en ESPAÑOL. DEBES responder 100% en ESPAÑOL. Cero palabras en inglés.";
@@ -470,8 +465,9 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
     }
 
     const finalPrompt = systemPrompt + langHint;
-    console.log('🌐 Lang hint:', langHint || 'ninguno');
     // === FIN DETECCIÓN DE IDIOMA ===
+
+    console.log('🌐 Lang hint:', langHint || 'ninguno');
 
     if (imageUrl) {
       // PASO 1: Grok Vision analiza la imagen
