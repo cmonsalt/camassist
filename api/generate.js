@@ -473,6 +473,10 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
       langHint = '';
     }
 
+    if (/Impulsado por Chatbox|Powered by Chatbox/i.test(message)) {
+      langHint = '';
+    }
+
     const finalPrompt = systemPrompt + langHint;
     // === FIN DETECCIÓN DE IDIOMA ===
 
