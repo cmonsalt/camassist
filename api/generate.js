@@ -453,7 +453,7 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
 
     // === DETECCIÓN DE IDIOMA ===
     const isEnglishMsg = /^[a-zA-Z0-9\s.,!?'":;\-@#$%&*()\[\]{}\/\\💋🔥❤️😏😍🤤]+$/.test(message);
-    const isSpanishMsg = /[áéíóúñ¿¡]/.test(message) || /\b(hola|como|quiero|amor|papi|rico|donde|eres|bien|dame|hazlo|para|tengo|puedo)\b/i.test(message);
+   const isSpanishMsg = /[áéíóúñ¿¡]/.test(message) || /\b(hola|como|quiero|amor|papi|rico|donde|eres|bien|dame|hazlo|para|tengo|puedo|todo|culo|tetas|verga|jajaj|jaja|siii|pero|cuando|porque|siempre|también|aqui|esta|estas|bueno|buena|mucho|mucha|lindo|linda|hermosa|hermoso|gracias|besos|te gusta|mami|cielo|cariño|vida|corazon)\b/i.test(message);
 
     let langHint = '';
     const cleanMessage = message.replace(/-\s*(Impulsado por Chatbox|Powered by Chatbox)/gi, '').trim();
