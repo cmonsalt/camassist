@@ -452,28 +452,26 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
     let messages;
 
     // === DETECCIÓN DE IDIOMA ===
-    const isEnglishMsg = /^[a-zA-Z0-9\s.,!?'":;\-@#$%&*()\[\]{}\/\\💋🔥❤️😏😍🤤]+$/.test(message);
-   const isSpanishMsg = /[áéíóúñ¿¡]/.test(message) || /\b(hola|como|quiero|amor|papi|rico|donde|eres|bien|dame|hazlo|para|tengo|puedo|todo|culo|tetas|verga|jajaj|jaja|siii|pero|cuando|porque|siempre|también|aqui|esta|estas|bueno|buena|mucho|mucha|lindo|linda|hermosa|hermoso|gracias|besos|te gusta|mami|cielo|cariño|vida|corazon)\b/i.test(message);
+    const cleanMessage = message.replace(/-\s*(Impulsado por Chatbox|Powered by Chatbox)/gi, '').trim();
+
+    const isEnglishMsg = /\b(the|you|your|what|how|want|like|love|fuck|cock|pussy|ass|dick|hard|come|show|give|make|take|put|let|get|see|look|hey|yes|please|more|daddy|baby|hot|sexy|nice|good|bad|big|are|can|will|would|have|has|do|does|did|was|were|been|its|im|iam|wanna|gonna|should|could|horny|wet|suck|lick|tits|boobs|private|pvt|hi|hello)\b/i.test(cleanMessage);
+
+    const isSpanishMsg = /[áéíóúñ¿¡]/.test(cleanMessage) || /\b(hola|como|quiero|amor|papi|rico|rica|donde|eres|bien|dame|hazlo|para|tengo|puedo|que|pero|jaja|jajaj|mami|cielo|verga|culo|tetas|hermosa|hermoso|gracias|besos|bueno|buena|mucho|lindo|linda|todo|siempre|también|esta|cuando|porque|muy|mas|mejor|quien|cual|vamos|mira|dime|ay|uff|asi|sexy)\b/i.test(cleanMessage);
 
     let langHint = '';
-    const cleanMessage = message.replace(/-\s*(Impulsado por Chatbox|Powered by Chatbox)/gi, '').trim();
 
     if (cleanMessage.split(/\s+/).length <= 2) {
       langHint = '';
     } else if (isEnglishMsg && !isSpanishMsg) {
       langHint = "\n\nIMPORTANT: The fan wrote in ENGLISH. You MUST respond 100% in ENGLISH. Zero spanish words.";
-    } else if (isSpanishMsg) {
+    } else if (isSpanishMsg && !isEnglishMsg) {
       langHint = "\n\nIMPORTANTE: El fan escribió en ESPAÑOL. DEBES responder 100% en ESPAÑOL. Cero palabras en inglés.";
-    } else if (!isEnglishMsg && !isSpanishMsg) {
-      langHint = "\n\nIMPORTANT: The fan wrote in another language. Respond 100% in THAT language. Zero english or spanish.";
-    }
-
-    // Si es imagen, no forzar idioma (el message no es del fan)
-    if (imageUrl) {
+    } else {
       langHint = '';
     }
 
-    if (/Impulsado por Chatbox|Powered by Chatbox/i.test(message)) {
+    // Si es imagen o Chatbox, no forzar idioma
+    if (imageUrl || /Impulsado por Chatbox|Powered by Chatbox/i.test(message)) {
       langHint = '';
     }
 
