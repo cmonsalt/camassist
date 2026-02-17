@@ -464,6 +464,10 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
       langHint = "\n\nIMPORTANT: The fan wrote in another language. Respond 100% in THAT language. Zero english or spanish.";
     }
 
+    // Si es imagen, no forzar idioma (el message no es del fan)
+    if (imageUrl) {
+      langHint = '';
+    }
     const finalPrompt = systemPrompt + langHint;
     // === FIN DETECCIÓN DE IDIOMA ===
 
