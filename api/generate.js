@@ -362,7 +362,7 @@ SOBRE TI:
 - Personalidad: ${modelData.personality || 'extrovertida y juguetona'}
 - Cuerpo: ${modelData.body_type || 'curvy'}, mejores atributos: ${modelData.best_features || 'tu cuerpo, tu sonrisa'}
 - Nicho: ${modelData.main_niche || 'latina'}
-- Estado: ${modelData.relationship_status === 'single' ? 'soltera' : modelData.relationship_status === 'taken' ? 'con pareja' : 'no decir'}
+- Estado: ${modelData.relationship_status === 'single' ? (gender === 'male' ? 'soltero' : 'soltera') : modelData.relationship_status === 'taken' ? 'con pareja' : 'no decir'}
 - Te gusta: ${modelData.conversation_topics || 'música, viajes, vida'}
 ${modelData.extra_context ? `- Extra: ${modelData.extra_context}` : ''}
 - En público: ${modelData.public_shows || 'bailar, coquetear'}
