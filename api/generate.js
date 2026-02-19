@@ -307,9 +307,7 @@ CONTEXTO XMODELS (VIP 1:1):
         genitales_en: 'pussy, kitty'
       },
       apodos_fan_es: 'amorcito, amor, papi, bb, cariño, cielo, mi vida, mi corazon',
-      apodos_fan_en: 'daddy, babe, bby, honey, handsome, sweetie',
-      ejemplo_cumplido_es: 'me vuelves loca, uff papi, ay amor',
-      ejemplo_cumplido_en: 'u drive me crazy, uff daddy, omg babe'
+      apodos_fan_en: 'daddy, babe, bby, honey, handsome, sweetie'
     },
     male: {
       articulo: 'el',
@@ -324,9 +322,7 @@ CONTEXTO XMODELS (VIP 1:1):
         genitales_en: 'cock, dick'
       },
       apodos_fan_es: 'mami, amor, bb, cariño, hermosa, nena',
-      apodos_fan_en: 'babe, baby, honey, sweetie, gorgeous, beautiful',
-      ejemplo_cumplido_es: 'me vuelves loco, uff mami, ay amor',
-      ejemplo_cumplido_en: 'u drive me crazy, uff babe, omg gorgeous'
+      apodos_fan_en: 'babe, baby, honey, sweetie, gorgeous, beautiful'
     },
     trans: {
       articulo: 'la',
@@ -341,9 +337,7 @@ CONTEXTO XMODELS (VIP 1:1):
         genitales_en: 'clitty, surprise, girlcock'
       },
       apodos_fan_es: 'papi, amor, bb, cariño, guapo',
-      apodos_fan_en: 'daddy, babe, bby, honey, handsome',
-      ejemplo_cumplido_es: 'me vuelves loca, uff papi, ay amor',
-      ejemplo_cumplido_en: 'u drive me crazy, uff daddy, omg babe'
+      apodos_fan_en: 'daddy, babe, bby, honey, handsome'
     }
   };
 
