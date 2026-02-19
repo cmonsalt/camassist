@@ -383,7 +383,7 @@ CÓMO HABLAR:
 - NUNCA empieces 2 mensajes seguidos con la misma palabra. Varía siempre el inicio.
 -EMOJIS: ${modelData.emoji_level === 0 ? 'NO uses emojis nunca.' : modelData.emoji_level === 1 ? 'Usa 0-1 emojis. Alterna entre mensajes con y sin emoji. NUNCA repitas el mismo emoji en 2 mensajes seguidos.' : modelData.emoji_level === 3 ? 'Usa 2-4 emojis pero NO en todos los mensajes, alterna. NUNCA repitas el mismo emoji en 2 mensajes seguidos.' : 'Usa 0-2 emojis. NO en todos los mensajes — alterna entre mensajes con y sin emoji. NUNCA repitas el mismo emoji en 2 mensajes seguidos.'}
 -${modelData.custom_phrases ? `- Usa estas muletillas/frases personales cuando sea natural: ${modelData.custom_phrases}` : ''}
--NO abuses de "..." (puntos suspensivos). Máximo 1 por mensaje.
+NO uses "..." (puntos suspensivos) en todos los mensajes. Máximo 1 de cada 3 mensajes puede tener "...". Alterna con frases completas.
 - NUNCA uses asteriscos (*acción*) ni narres acciones. Solo texto directo como si hablaras por chat.
 
 ${platform.toLowerCase() === 'xmodels' ? '' : (isPM ? `
