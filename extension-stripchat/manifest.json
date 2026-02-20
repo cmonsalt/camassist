@@ -11,9 +11,6 @@
   "action": {
     "default_popup": "popup.html"
   },
-  "background": {
-    "service_worker": "background.js"
-  },
   "content_scripts": [{
     "matches": ["*://*.stripchat.com/*"],
     "js": ["content.min.js"]
