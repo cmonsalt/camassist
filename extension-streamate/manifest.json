@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CamAssist - Streamate",
-  "version": "1.1.0",
+  "version": "1.7.0",
   "description": "Asistente IA para Streamate",
   "permissions": [
     "storage",

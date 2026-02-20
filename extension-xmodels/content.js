@@ -348,7 +348,7 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
         body: JSON.stringify({
           token: localStorage.getItem('model_token') || 'demo_token',
           platform: 'xmodels',
-          version: '1.0.6',
+          version: '1.0.7',
           broadcaster_username: broadcasterUsername,
           username,
           message: messageText,
@@ -376,7 +376,7 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
       // Crear popup
       const popup = document.createElement('div');
       popup.id = 'ai-popup';
-      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;';
+      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;cursor:move;';
 
       // Título con tipo de chat
       const chatTypeLabel = {
@@ -391,10 +391,11 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
       title.textContent = `💬 ${chatTypeLabel[chatType] || chatType} - @${username} ✅ Copiado!`;
 
       // Respuesta
-      const responseText = document.createElement('p');
+      const responseText = document.createElement('textarea');
       responseText.id = 'ai-response';
-      responseText.style.cssText = 'background:#f0f0f0;padding:12px;border-radius:5px;max-height:200px;overflow-y:auto;word-wrap:break-word;margin-bottom:10px;color:#333;';
-      responseText.textContent = data.suggestion;
+      responseText.style.cssText = 'background:#f0f0f0;padding:12px;border-radius:5px;height:80px;width:100%;resize:vertical;margin-bottom:10px;color:#333;border:1px solid #ccc;font-family:inherit;font-size:14px;box-sizing:border-box';
+      responseText.value = data.suggestion;
+      responseText.addEventListener('keydown', (e) => e.stopPropagation());
 
       // Traducción (si existe y es diferente)
       let translationText = null;
@@ -418,7 +419,7 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
         regenBtn.textContent = '⏳...';
         try {
           const newData = await getResponse();
-          responseText.textContent = newData.suggestion;
+          responseText.value = newData.suggestion;
           navigator.clipboard.writeText(newData.suggestion);
         } catch (error) {
           console.error('Error regenerando:', error);
@@ -444,6 +445,25 @@ function addAIButton(container, username, messageText, chatType, tipAmount) {
       if (oldPopup) oldPopup.remove();
 
       document.body.appendChild(popup);
+
+      let isDragging = false, offsetX, offsetY;
+      popup.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+        isDragging = true;
+        offsetX = e.clientX - popup.getBoundingClientRect().left;
+        offsetY = e.clientY - popup.getBoundingClientRect().top;
+        popup.style.transform = 'none';
+      });
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        popup.style.left = (e.clientX - offsetX) + 'px';
+        popup.style.top = (e.clientY - offsetY) + 'px';
+      });
+      document.addEventListener('mouseup', () => { isDragging = false; });
+
+      popup.querySelector('#ai-response').addEventListener('keydown', (e) => e.stopPropagation());
+
+
 
       btn.textContent = '✓';
       setTimeout(() => btn.textContent = '🤖', 2000);
@@ -530,7 +550,7 @@ function initInbox() {
               body: JSON.stringify({
                 token: localStorage.getItem('model_token') || 'demo_token',
                 platform: 'xmodels',
-                version: '1.0.6',
+                version: '1.0.7',
                 broadcaster_username: broadcasterUsername,
                 username: sender || 'Fan',
                 message: messageText,
@@ -551,7 +571,7 @@ function initInbox() {
             // Mostrar popup
             const popup = document.createElement('div');
             popup.id = 'ai-popup';
-            popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;';
+            popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;cursor:move;';
 
             let translationHtml = '';
             if (data.translation) {
@@ -565,7 +585,7 @@ function initInbox() {
 
             popup.innerHTML = `
   <h3 style="margin:0 0 15px 0;color:#333;">📬 INBOX - @${sender || 'Fan'} ✅ Copiado!</h3>
-  <p style="background:#f0f0f0;padding:12px;border-radius:5px;color:#333;margin-bottom:10px;">${data.suggestion}</p>
+  <textarea id="ai-response" style="background:#f0f0f0;padding:12px;border-radius:5px;height:80px;width:100%;resize:vertical;margin-bottom:10px;color:#333;border:1px solid #ccc;font-family:inherit;font-size:14px;box-sizing:border-box">${data.suggestion}</textarea>
   ${translationHtml}
   <button onclick="this.parentElement.remove()" style="padding:8px 15px;cursor:pointer;border:none;background:#EF4444;color:white;border-radius:5px;">❌ Cerrar</button>
 `;
@@ -574,6 +594,24 @@ function initInbox() {
             if (oldPopup) oldPopup.remove();
 
             document.body.appendChild(popup);
+
+            let isDragging = false, offsetX, offsetY;
+            popup.addEventListener('mousedown', (e) => {
+              if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+              isDragging = true;
+              offsetX = e.clientX - popup.getBoundingClientRect().left;
+              offsetY = e.clientY - popup.getBoundingClientRect().top;
+              popup.style.transform = 'none';
+            });
+            document.addEventListener('mousemove', (e) => {
+              if (!isDragging) return;
+              popup.style.left = (e.clientX - offsetX) + 'px';
+              popup.style.top = (e.clientY - offsetY) + 'px';
+            });
+            document.addEventListener('mouseup', () => { isDragging = false; });
+
+            popup.querySelector('#ai-response').addEventListener('keydown', (e) => e.stopPropagation());
+
             btn.textContent = '✓';
             setTimeout(() => btn.textContent = '🤖', 2000);
 

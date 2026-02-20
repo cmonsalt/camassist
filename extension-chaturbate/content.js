@@ -595,7 +595,7 @@ function addAIButton(container, username, messageText, isPM, context, tipAmount,
           const newData = await getResponse();
 
           if (newData.suggestion && !newData.suggestion.includes('Error')) {
-            responseText.textContent = newData.suggestion;
+            responseText.value = newData.suggestion;
             try {
               navigator.clipboard.writeText(newData.suggestion);
             } catch (e) {

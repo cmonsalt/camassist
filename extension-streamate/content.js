@@ -10,7 +10,7 @@
   const CONFIG = {
     API_URL: 'https://www.camassist.co/api/generate',
     PLATFORM: 'streamate',
-    VERSION: '1.6.0',
+    VERSION: '1.7.0',
     CURRENCY: 'gold',
     MAX_CONTEXT_MESSAGES: 70
   };
@@ -253,11 +253,11 @@
 
       const popup = document.createElement('div');
       popup.id = 'ai-popup';
-      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;';
+      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;cursor:move;';
 
       popup.innerHTML = `
         <h3 style="margin:0 0 15px 0;color:#333;">${modeLabel[mode] || mode} - @${username} ✅ Copiado!</h3>
-        <p id="ai-response" style="background:#f0f0f0;padding:12px;border-radius:5px;color:#333;margin-bottom:10px;">${suggestion}</p>
+       <textarea id="ai-response" style="background:#f0f0f0;padding:12px;border-radius:5px;height:80px;width:100%;resize:vertical;margin-bottom:10px;color:#333;border:1px solid #ccc;font-family:inherit;font-size:14px;box-sizing:border-box">${suggestion}</textarea>
         ${translationHtml}
         <div style="display:flex;gap:10px;">
           <button id="btn-regen" style="padding:8px 15px;cursor:pointer;border:none;background:#10B981;color:white;border-radius:5px;">🔄 Regenerar</button>
@@ -267,13 +267,30 @@
       `;
 
       document.body.appendChild(popup);
+
+      let isDragging = false, offsetX, offsetY;
+      popup.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+        isDragging = true;
+        offsetX = e.clientX - popup.getBoundingClientRect().left;
+        offsetY = e.clientY - popup.getBoundingClientRect().top;
+        popup.style.transform = 'none';
+      });
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        popup.style.left = (e.clientX - offsetX) + 'px';
+        popup.style.top = (e.clientY - offsetY) + 'px';
+      });
+      document.addEventListener('mouseup', () => { isDragging = false; });
+      popup.querySelector('#ai-response').addEventListener('keydown', (e) => e.stopPropagation());
       popup.querySelector('#btn-close').onclick = () => popup.remove();
 
       popup.querySelector('#btn-insert').onclick = () => {
         const input = document.querySelector('#message_text_input');
         if (input) {
           const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-          nativeInputValueSetter.call(input, suggestion);
+          const text = popup.querySelector('#ai-response').value;
+          nativeInputValueSetter.call(input, text);
           input.dispatchEvent(new Event('input', { bubbles: true }));
           setTimeout(() => {
             input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true }));
@@ -299,7 +316,7 @@
         });
 
         if (data) {
-          popup.querySelector('#ai-response').textContent = data.suggestion;
+          popup.querySelector('#ai-response').value = data.suggestion;
           suggestion = data.suggestion;
           navigator.clipboard.writeText(data.suggestion);
         }
@@ -433,7 +450,7 @@
 
       const popup = document.createElement('div');
       popup.id = 'ai-popup';
-      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;';
+      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:2px solid #8B5CF6;z-index:99999;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:450px;font-family:Arial,sans-serif;cursor:move;';
 
       popup.innerHTML = `
         <h3 style="margin:0 0 15px 0;color:#333;">📬 INBOX - @${username} ✅ Copiado!</h3>
@@ -447,6 +464,21 @@
       `;
 
       document.body.appendChild(popup);
+
+      let isDragging = false, offsetX, offsetY;
+      popup.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+        isDragging = true;
+        offsetX = e.clientX - popup.getBoundingClientRect().left;
+        offsetY = e.clientY - popup.getBoundingClientRect().top;
+        popup.style.transform = 'none';
+      });
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        popup.style.left = (e.clientX - offsetX) + 'px';
+        popup.style.top = (e.clientY - offsetY) + 'px';
+      });
+      document.addEventListener('mouseup', () => { isDragging = false; });
 
       popup.querySelector('#ai-response').addEventListener('keydown', (e) => e.stopPropagation());
 
