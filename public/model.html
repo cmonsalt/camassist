@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +8,12 @@
     <link rel="icon" href="/icon48.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Outfit', sans-serif;
             background: #0f0f1a;
@@ -33,7 +38,7 @@
             max-width: 420px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
 
         .login-logo {
@@ -59,7 +64,7 @@
         .token-input {
             width: 100%;
             padding: 14px 18px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(139, 92, 246, 0.3);
             border-radius: 12px;
             color: white;
@@ -73,7 +78,9 @@
             border-color: #8B5CF6;
         }
 
-        .token-input::placeholder { color: #555; }
+        .token-input::placeholder {
+            color: #555;
+        }
 
         .login-btn {
             width: 100%;
@@ -128,7 +135,7 @@
             justify-content: space-between;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .settings-header-left h1 {
@@ -157,11 +164,13 @@
             transition: background 0.2s;
         }
 
-        .logout-btn:hover { background: rgba(239, 68, 68, 0.25); }
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
 
         .card {
             background: linear-gradient(145deg, #1a1a2e, #16213e);
-            border: 1px solid rgba(255,255,255,0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 16px;
             padding: 24px;
             margin-bottom: 20px;
@@ -195,11 +204,13 @@
             margin-top: 4px;
         }
 
-        .field-input, .field-select, .field-textarea {
+        .field-input,
+        .field-select,
+        .field-textarea {
             width: 100%;
             padding: 11px 14px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
             border-radius: 10px;
             color: #e0e0e0;
             font-size: 14px;
@@ -208,7 +219,9 @@
             transition: border-color 0.3s;
         }
 
-        .field-input:focus, .field-select:focus, .field-textarea:focus {
+        .field-input:focus,
+        .field-select:focus,
+        .field-textarea:focus {
             border-color: #8B5CF6;
         }
 
@@ -217,10 +230,19 @@
             cursor: not-allowed;
         }
 
-        .field-select { cursor: pointer; }
-        .field-select option { background: #1a1a2e; color: #e0e0e0; }
+        .field-select {
+            cursor: pointer;
+        }
 
-        .field-textarea { resize: vertical; min-height: 60px; }
+        .field-select option {
+            background: #1a1a2e;
+            color: #e0e0e0;
+        }
+
+        .field-textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
 
         .grid-2 {
             display: grid;
@@ -243,8 +265,8 @@
         .emoji-btn {
             flex: 1;
             padding: 10px 8px;
-            background: rgba(255,255,255,0.05);
-            border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             color: #aaa;
             font-size: 12px;
@@ -254,7 +276,9 @@
             transition: all 0.2s;
         }
 
-        .emoji-btn:hover { border-color: rgba(139, 92, 246, 0.4); }
+        .emoji-btn:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+        }
 
         .emoji-btn.active {
             border-color: #8B5CF6;
@@ -271,7 +295,7 @@
             padding: 16px 20px;
             background: rgba(15, 15, 26, 0.95);
             backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: center;
             z-index: 100;
@@ -330,329 +354,349 @@
         }
 
         @media (max-width: 600px) {
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
-            .login-card { padding: 30px 24px; }
-            .settings-screen { padding: 20px 16px 80px; }
+
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .login-card {
+                padding: 30px 24px;
+            }
+
+            .settings-screen {
+                padding: 20px 16px 80px;
+            }
         }
     </style>
 </head>
+
 <body>
 
-<!-- LOGIN SCREEN -->
-<div id="loginScreen" class="login-screen">
-    <div class="login-card">
-        <div class="login-logo">🤖</div>
-        <h1 class="login-title">CamAssist</h1>
-        <p class="login-subtitle">Configura tu asistente de IA</p>
-        
-        <input type="text" id="tokenInput" class="token-input" placeholder="Pega tu token aquí" autocomplete="off">
-        <button id="loginBtn" class="login-btn" onclick="doLogin()">Entrar</button>
-        <p id="loginError" class="login-error"></p>
-        <p class="login-hint">Tu token está en la extensión de Chrome 🧩</p>
-    </div>
-</div>
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <div class="login-logo">🤖</div>
+            <h1 class="login-title">CamAssist</h1>
+            <p class="login-subtitle">Configura tu asistente de IA</p>
 
-<!-- SETTINGS SCREEN -->
-<div id="settingsScreen" class="settings-screen">
-    
-    <div class="settings-header">
-        <div class="settings-header-left">
-            <h1>⚙️ Mi IA</h1>
-            <p id="modelNameHeader">Configuración de tu asistente</p>
-        </div>
-        <button class="logout-btn" onclick="doLogout()">Salir</button>
-    </div>
-
-    <!-- Info (read-only) -->
-    <div class="card">
-        <div class="card-title">👤 Tu info</div>
-        <div id="infoContainer">
-            <!-- Filled by JS -->
-        </div>
-        <p class="info-note">Para cambiar nombre o plataformas, contacta a tu estudio.</p>
-    </div>
-
-    <!-- Personalidad -->
-    <div class="card">
-        <div class="card-title">💃 Personalidad</div>
-        <div class="field-group">
-            <label class="field-label">¿Cómo eres?</label>
-            <select id="personality" class="field-select">
-                <option value="shy_flirty">Tímida pero coqueta</option>
-                <option value="extrovert_playful">Extrovertida y juguetona</option>
-                <option value="intellectual">Intelectual, me gusta conversar profundo</option>
-                <option value="funny">Divertida, bromista</option>
-                <option value="dominant">Dominante, me gusta llevar el control</option>
-                <option value="submissive">Sumisa, me gusta complacer</option>
-            </select>
-        </div>
-        <div class="field-group">
-            <label class="field-label">Temas que te gusta conversar</label>
-            <input type="text" id="conversation_topics" class="field-input" placeholder="Ej: Reggaeton, viajar, gym, películas">
-            <p class="field-hint">Separa con comas</p>
-        </div>
-        <div class="field-group">
-            <label class="field-label">Frases o muletillas personales</label>
-            <input type="text" id="custom_phrases" class="field-input" placeholder="Ej: ay papa, uff que rico, jiji">
-            <p class="field-hint">La IA las usará de forma natural en las respuestas</p>
+            <input type="text" id="tokenInput" class="token-input" placeholder="Pega tu token aquí" autocomplete="off">
+            <button id="loginBtn" class="login-btn" onclick="doLogin()">Entrar</button>
+            <p id="loginError" class="login-error"></p>
+            <p class="login-hint">Tu token está en la extensión de Chrome 🧩</p>
         </div>
     </div>
 
-    <!-- Físico -->
-    <div class="card">
-        <div class="card-title">🔥 Físico y Nicho</div>
-        <div class="grid-3">
+    <!-- SETTINGS SCREEN -->
+    <div id="settingsScreen" class="settings-screen">
+
+        <div class="settings-header">
+            <div class="settings-header-left">
+                <h1>⚙️ Mi IA</h1>
+                <p id="modelNameHeader">Configuración de tu asistente</p>
+            </div>
+            <button class="logout-btn" onclick="doLogout()">Salir</button>
+        </div>
+
+        <!-- Info (read-only) -->
+        <div class="card">
+            <div class="card-title">👤 Tu info</div>
+            <div id="infoContainer">
+                <!-- Filled by JS -->
+            </div>
+            <p class="info-note">Para cambiar nombre o plataformas, contacta a tu estudio.</p>
+        </div>
+
+        <!-- Personalidad -->
+        <div class="card">
+            <div class="card-title">💃 Personalidad</div>
             <div class="field-group">
-                <label class="field-label">Género</label>
-                <select id="gender" class="field-select">
-                    <option value="female">👩 Mujer</option>
-                    <option value="male">👨 Hombre</option>
-                    <option value="trans">🏳️‍⚧️ Trans</option>
+                <label class="field-label">¿Cómo eres?</label>
+                <select id="personality" class="field-select">
+                    <option value="shy_flirty">Tímida pero coqueta</option>
+                    <option value="extrovert_playful">Extrovertida y juguetona</option>
+                    <option value="intellectual">Intelectual, me gusta conversar profundo</option>
+                    <option value="funny">Divertida, bromista</option>
+                    <option value="dominant">Dominante, me gusta llevar el control</option>
+                    <option value="submissive">Sumisa, me gusta complacer</option>
                 </select>
             </div>
             <div class="field-group">
-                <label class="field-label">Tipo de cuerpo</label>
-                <select id="body_type" class="field-select">
-                    <option value="petite">Petite / Delgada</option>
-                    <option value="curvy">Curvy / Con curvas</option>
-                    <option value="bbw">BBW / Plus size</option>
-                    <option value="athletic">Athletic / Fitness</option>
-                    <option value="milf">MILF (30+)</option>
-                </select>
+                <label class="field-label">Temas que te gusta conversar</label>
+                <input type="text" id="conversation_topics" class="field-input"
+                    placeholder="Ej: Reggaeton, viajar, gym, películas">
+                <p class="field-hint">Separa con comas</p>
             </div>
             <div class="field-group">
-                <label class="field-label">Nicho principal</label>
-                <input type="text" id="main_niche" class="field-input" placeholder="Ej: Latina caliente">
+                <label class="field-label">Frases o muletillas personales</label>
+                <input type="text" id="custom_phrases" class="field-input"
+                    placeholder="Ej: ay papa, uff que rico, jiji">
+                <p class="field-hint">La IA las usará de forma natural en las respuestas</p>
             </div>
         </div>
-        <div class="field-group">
-            <label class="field-label">Tus mejores atributos</label>
-            <input type="text" id="best_features" class="field-input" placeholder="Ej: big ass, ojos, sonrisa, tatuajes">
+
+        <!-- Físico -->
+        <div class="card">
+            <div class="card-title">🔥 Físico y Nicho</div>
+            <div class="grid-3">
+                <div class="field-group">
+                    <label class="field-label">Género</label>
+                    <select id="gender" class="field-select">
+                        <option value="female">👩 Mujer</option>
+                        <option value="male">👨 Hombre</option>
+                        <option value="trans">🏳️‍⚧️ Trans</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Tipo de cuerpo</label>
+                    <select id="body_type" class="field-select">
+                        <option value="petite">Petite / Delgada</option>
+                        <option value="curvy">Curvy / Con curvas</option>
+                        <option value="bbw">BBW / Plus size</option>
+                        <option value="athletic">Athletic / Fitness</option>
+                        <option value="milf">MILF (30+)</option>
+                    </select>
+                </div>
+                <div class="field-group">
+                    <label class="field-label">Nicho principal</label>
+                    <input type="text" id="main_niche" class="field-input" placeholder="Ej: Latina caliente">
+                </div>
+            </div>
+            <div class="field-group">
+                <label class="field-label">Tus mejores atributos</label>
+                <input type="text" id="best_features" class="field-input"
+                    placeholder="Ej: big ass, ojos, sonrisa, tatuajes">
+            </div>
+            <div class="field-group">
+                <label class="field-label">Estado sentimental</label>
+                <select id="relationship_status" class="field-select">
+                    <option value="single">Soltera</option>
+                    <option value="taken">Con pareja (no lo menciono)</option>
+                    <option value="secret">Prefiero no decir</option>
+                </select>
+            </div>
         </div>
-        <div class="field-group">
-            <label class="field-label">Estado sentimental</label>
-            <select id="relationship_status" class="field-select">
-                <option value="single">Soltera</option>
-                <option value="taken">Con pareja (no lo menciono)</option>
-                <option value="secret">Prefiero no decir</option>
-            </select>
+
+        <!-- Shows -->
+        <div class="card">
+            <div class="card-title">✅ Lo que SÍ haces</div>
+            <div class="field-group">
+                <label class="field-label">En chat PÚBLICO</label>
+                <textarea id="public_shows" class="field-textarea" rows="2"
+                    placeholder="Ej: bailar, twerk, topless, lencería"></textarea>
+            </div>
+            <div class="field-group">
+                <label class="field-label">En PRIVADO</label>
+                <textarea id="private_shows" class="field-textarea" rows="2"
+                    placeholder="Ej: desnudo completo, masturbación, dildo"></textarea>
+            </div>
+        </div>
+
+        <!-- Limits -->
+        <div class="card">
+            <div class="card-title">❌ Lo que NO haces (nunca)</div>
+            <div class="field-group">
+                <textarea id="hard_limits" class="field-textarea" rows="2"
+                    placeholder="Ej: anal, mostrar cara, humillación"></textarea>
+                <p class="field-hint">La IA ofrecerá alternativas cuando pidan esto</p>
+            </div>
+        </div>
+
+        <!-- Condiciones -->
+        <div class="card">
+            <div class="card-title">⚠️ Condiciones especiales</div>
+            <div class="field-group">
+                <textarea id="partial_conditions" class="field-textarea" rows="2"
+                    placeholder="Ej: anal solo en privado, squirt solo con lovense"></textarea>
+                <p class="field-hint">Cosas que haces pero con condiciones</p>
+            </div>
+        </div>
+
+        <!-- Emojis -->
+        <div class="card">
+            <div class="card-title">😊 Emojis</div>
+            <div class="emoji-options">
+                <button class="emoji-btn" data-level="0" onclick="setEmoji(0)">🚫<br>Ninguno</button>
+                <button class="emoji-btn" data-level="1" onclick="setEmoji(1)">😊<br>Mínimo</button>
+                <button class="emoji-btn active" data-level="2" onclick="setEmoji(2)">😏🔥<br>Normal</button>
+                <button class="emoji-btn" data-level="3" onclick="setEmoji(3)">🥵😈💦<br>Muchos</button>
+            </div>
+        </div>
+
+        <!-- Extra -->
+        <div class="card">
+            <div class="card-title">📝 Contexto extra</div>
+            <div class="field-group">
+                <textarea id="extra_context" class="field-textarea" rows="3"
+                    placeholder="Cualquier otra cosa que la IA deba saber sobre ti..."></textarea>
+                <p class="field-hint">Ej: tengo novio pero no lo menciono, estoy embarazada, tengo acento paisa</p>
+            </div>
+        </div>
+
+        <p id="saveMsg" class="save-msg">✅ Guardado correctamente</p>
+
+        <!-- Save bar -->
+        <div class="save-bar">
+            <button id="saveBtn" class="save-btn" onclick="saveSettings()">💾 Guardar</button>
         </div>
     </div>
 
-    <!-- Shows -->
-    <div class="card">
-        <div class="card-title">✅ Lo que SÍ haces</div>
-        <div class="field-group">
-            <label class="field-label">En chat PÚBLICO</label>
-            <textarea id="public_shows" class="field-textarea" rows="2" placeholder="Ej: bailar, twerk, topless, lencería"></textarea>
-        </div>
-        <div class="field-group">
-            <label class="field-label">En PRIVADO</label>
-            <textarea id="private_shows" class="field-textarea" rows="2" placeholder="Ej: desnudo completo, masturbación, dildo"></textarea>
-        </div>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const db = window.supabase.createClient(
+            'https://wptjtwbvophyszijeupc.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwdGp0d2J2b3BoeXN6aWpldXBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NTYyNzAsImV4cCI6MjA3OTMzMjI3MH0.CkpvCyuyr1P66xXedm936jc3B-6t4Crlhwbij_5A3QE'
+        );
 
-    <!-- Limits -->
-    <div class="card">
-        <div class="card-title">❌ Lo que NO haces (nunca)</div>
-        <div class="field-group">
-            <textarea id="hard_limits" class="field-textarea" rows="2" placeholder="Ej: anal, mostrar cara, humillación"></textarea>
-            <p class="field-hint">La IA ofrecerá alternativas cuando pidan esto</p>
-        </div>
-    </div>
+        let modelData = null;
+        let emojiLevel = 2;
 
-    <!-- Condiciones -->
-    <div class="card">
-        <div class="card-title">⚠️ Condiciones especiales</div>
-        <div class="field-group">
-            <textarea id="partial_conditions" class="field-textarea" rows="2" placeholder="Ej: anal solo en privado, squirt solo con lovense"></textarea>
-            <p class="field-hint">Cosas que haces pero con condiciones</p>
-        </div>
-    </div>
 
-    <!-- Emojis -->
-    <div class="card">
-        <div class="card-title">😊 Emojis</div>
-        <div class="emoji-options">
-            <button class="emoji-btn" data-level="0" onclick="setEmoji(0)">🚫<br>Ninguno</button>
-            <button class="emoji-btn" data-level="1" onclick="setEmoji(1)">😊<br>Mínimo</button>
-            <button class="emoji-btn active" data-level="2" onclick="setEmoji(2)">😏🔥<br>Normal</button>
-            <button class="emoji-btn" data-level="3" onclick="setEmoji(3)">🥵😈💦<br>Muchos</button>
-        </div>
-    </div>
+        async function doLogin() {
+            const token = document.getElementById('tokenInput').value.trim();
+            if (!token) return;
 
-    <!-- Extra -->
-    <div class="card">
-        <div class="card-title">📝 Contexto extra</div>
-        <div class="field-group">
-            <textarea id="extra_context" class="field-textarea" rows="3" placeholder="Cualquier otra cosa que la IA deba saber sobre ti..."></textarea>
-            <p class="field-hint">Ej: tengo novio pero no lo menciono, estoy embarazada, tengo acento paisa</p>
-        </div>
-    </div>
+            const btn = document.getElementById('loginBtn');
+            const err = document.getElementById('loginError');
+            btn.disabled = true;
+            btn.textContent = 'Verificando...';
+            err.style.display = 'none';
 
-    <p id="saveMsg" class="save-msg">✅ Guardado correctamente</p>
+            try {
+                const { data, error } = await db
+                    .from('models')
+                    .select('*')
+                    .eq('token', token)
+                    .is('deleted_at', null)
+                    .single();
 
-    <!-- Save bar -->
-    <div class="save-bar">
-        <button id="saveBtn" class="save-btn" onclick="saveSettings()">💾 Guardar</button>
-    </div>
-</div>
+                if (error || !data) {
+                    err.textContent = 'Token inválido o modelo eliminada';
+                    err.style.display = 'block';
+                    btn.disabled = false;
+                    btn.textContent = 'Entrar';
+                    return;
+                }
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    const db = window.supabase.createClient(
-        'https://wptjtwbvophyszijeupc.supabase.co',
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndwdGp0d2J2b3BoeXN6aWpldXBjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3NTYyNzAsImV4cCI6MjA3OTMzMjI3MH0.CkpvCyuyr1P66xXedm936jc3B-6t4Crlhwbij_5A3QE'
-    );
+                modelData = data;
+                showSettings();
 
-    let modelData = null;
-    let emojiLevel = 2;
-
- 
-    async function doLogin() {
-        const token = document.getElementById('tokenInput').value.trim();
-        if (!token) return;
-
-        const btn = document.getElementById('loginBtn');
-        const err = document.getElementById('loginError');
-        btn.disabled = true;
-        btn.textContent = 'Verificando...';
-        err.style.display = 'none';
-
-        try {
-            const { data, error } = await db
-                .from('models')
-                .select('*')
-                .eq('token', token)
-                .is('deleted_at', null)
-                .single();
-
-            if (error || !data) {
-                err.textContent = 'Token inválido o modelo eliminada';
+            } catch (e) {
+                err.textContent = 'Error de conexión';
                 err.style.display = 'block';
                 btn.disabled = false;
                 btn.textContent = 'Entrar';
-                return;
+            }
+        }
+
+        function doLogout() {
+            modelData = null;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('settingsScreen').style.display = 'none';
+            document.getElementById('tokenInput').value = '';
+            document.getElementById('loginBtn').disabled = false;
+            document.getElementById('loginBtn').textContent = 'Entrar';
+        }
+
+        function showSettings() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('settingsScreen').style.display = 'block';
+
+            // Header
+            document.getElementById('modelNameHeader').textContent = `Hola ${modelData.name} 👋`;
+
+            // Info badges (read-only)
+            const infoHtml = [];
+            if (modelData.name) infoHtml.push(`<span class="info-badge">👤 ${modelData.name}</span>`);
+            if (modelData.age) infoHtml.push(`<span class="info-badge">🎂 ${modelData.age} años</span>`);
+            if (modelData.location) infoHtml.push(`<span class="info-badge">📍 ${modelData.location}</span>`);
+
+            const platforms = [];
+            if (modelData.chaturbate_username) platforms.push(`CB: ${modelData.chaturbate_username}`);
+            if (modelData.stripchat_username) platforms.push(`SC: ${modelData.stripchat_username}`);
+            if (modelData.streamate_username) platforms.push(`SM: ${modelData.streamate_username}`);
+            if (modelData.xmodels_username) platforms.push(`XM: ${modelData.xmodels_username}`);
+            if (platforms.length) infoHtml.push(`<span class="info-badge">🌐 ${platforms.join(' | ')}</span>`);
+
+            document.getElementById('infoContainer').innerHTML = infoHtml.join('');
+
+            // Fill editable fields
+            document.getElementById('personality').value = modelData.personality || 'extrovert_playful';
+            document.getElementById('conversation_topics').value = modelData.conversation_topics || '';
+            document.getElementById('custom_phrases').value = modelData.custom_phrases || '';
+            document.getElementById('gender').value = modelData.gender || 'female';
+            document.getElementById('body_type').value = modelData.body_type || 'curvy';
+            document.getElementById('main_niche').value = modelData.main_niche || '';
+            document.getElementById('best_features').value = modelData.best_features || '';
+            document.getElementById('relationship_status').value = modelData.relationship_status || 'single';
+            document.getElementById('public_shows').value = modelData.public_shows || '';
+            document.getElementById('private_shows').value = modelData.private_shows || '';
+            document.getElementById('hard_limits').value = modelData.hard_limits || '';
+            document.getElementById('partial_conditions').value = modelData.partial_conditions || '';
+            document.getElementById('extra_context').value = modelData.extra_context || '';
+
+            emojiLevel = modelData.emoji_level ?? 2;
+            setEmoji(emojiLevel, false);
+        }
+
+        function setEmoji(level, updateState = true) {
+            document.querySelectorAll('.emoji-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.level) === level);
+            });
+            if (updateState) emojiLevel = level;
+        }
+
+        async function saveSettings() {
+            const btn = document.getElementById('saveBtn');
+            const msg = document.getElementById('saveMsg');
+            btn.disabled = true;
+            btn.textContent = '⏳ Guardando...';
+            msg.style.display = 'none';
+
+            try {
+                const { error } = await db
+                    .from('models')
+                    .update({
+                        personality: document.getElementById('personality').value,
+                        conversation_topics: document.getElementById('conversation_topics').value,
+                        custom_phrases: document.getElementById('custom_phrases').value,
+                        gender: document.getElementById('gender').value,
+                        body_type: document.getElementById('body_type').value,
+                        main_niche: document.getElementById('main_niche').value,
+                        best_features: document.getElementById('best_features').value,
+                        relationship_status: document.getElementById('relationship_status').value,
+                        public_shows: document.getElementById('public_shows').value,
+                        private_shows: document.getElementById('private_shows').value,
+                        hard_limits: document.getElementById('hard_limits').value,
+                        partial_conditions: document.getElementById('partial_conditions').value,
+                        extra_context: document.getElementById('extra_context').value,
+                        emoji_level: emojiLevel
+                    })
+                    .eq('token', modelData.token);  // ✅ ahora sí existe modelData
+
+                if (error) throw error;
+
+                msg.textContent = '✅ Guardado correctamente';
+                msg.style.color = '#10B981';
+                msg.style.display = 'block';
+
+            } catch (e) {
+                msg.textContent = '❌ Error al guardar';
+                msg.style.color = '#EF4444';
+                msg.style.display = 'block';
             }
 
-            modelData = data;
-            showSettings();
-
-        } catch (e) {
-            err.textContent = 'Error de conexión';
-            err.style.display = 'block';
             btn.disabled = false;
-            btn.textContent = 'Entrar';
+            btn.textContent = '💾 Guardar';
+            setTimeout(() => msg.style.display = 'none', 3000);
         }
-    }
 
-    function doLogout() {
-        modelData = null;
-        document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('settingsScreen').style.display = 'none';
-        document.getElementById('tokenInput').value = '';
-        document.getElementById('loginBtn').disabled = false;
-        document.getElementById('loginBtn').textContent = 'Entrar';
-    }
-
-    function showSettings() {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('settingsScreen').style.display = 'block';
-
-        // Header
-        document.getElementById('modelNameHeader').textContent = `Hola ${modelData.name} 👋`;
-
-        // Info badges (read-only)
-        const infoHtml = [];
-        if (modelData.name) infoHtml.push(`<span class="info-badge">👤 ${modelData.name}</span>`);
-        if (modelData.age) infoHtml.push(`<span class="info-badge">🎂 ${modelData.age} años</span>`);
-        if (modelData.location) infoHtml.push(`<span class="info-badge">📍 ${modelData.location}</span>`);
-        
-        const platforms = [];
-        if (modelData.chaturbate_username) platforms.push(`CB: ${modelData.chaturbate_username}`);
-        if (modelData.stripchat_username) platforms.push(`SC: ${modelData.stripchat_username}`);
-        if (modelData.streamate_username) platforms.push(`SM: ${modelData.streamate_username}`);
-        if (modelData.xmodels_username) platforms.push(`XM: ${modelData.xmodels_username}`);
-        if (platforms.length) infoHtml.push(`<span class="info-badge">🌐 ${platforms.join(' | ')}</span>`);
-        
-        document.getElementById('infoContainer').innerHTML = infoHtml.join('');
-
-        // Fill editable fields
-        document.getElementById('personality').value = modelData.personality || 'extrovert_playful';
-        document.getElementById('conversation_topics').value = modelData.conversation_topics || '';
-        document.getElementById('custom_phrases').value = modelData.custom_phrases || '';
-        document.getElementById('gender').value = modelData.gender || 'female';
-        document.getElementById('body_type').value = modelData.body_type || 'curvy';
-        document.getElementById('main_niche').value = modelData.main_niche || '';
-        document.getElementById('best_features').value = modelData.best_features || '';
-        document.getElementById('relationship_status').value = modelData.relationship_status || 'single';
-        document.getElementById('public_shows').value = modelData.public_shows || '';
-        document.getElementById('private_shows').value = modelData.private_shows || '';
-        document.getElementById('hard_limits').value = modelData.hard_limits || '';
-        document.getElementById('partial_conditions').value = modelData.partial_conditions || '';
-        document.getElementById('extra_context').value = modelData.extra_context || '';
-        
-        emojiLevel = modelData.emoji_level ?? 2;
-        setEmoji(emojiLevel, false);
-    }
-
-    function setEmoji(level, updateState = true) {
-        document.querySelectorAll('.emoji-btn').forEach(btn => {
-            btn.classList.toggle('active', parseInt(btn.dataset.level) === level);
+        // Enter key on token input
+        document.getElementById('tokenInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') doLogin();
         });
-        if (updateState) emojiLevel = level;
-    }
-
-    async function saveSettings() {
-        const btn = document.getElementById('saveBtn');
-        const msg = document.getElementById('saveMsg');
-        btn.disabled = true;
-        btn.textContent = '⏳ Guardando...';
-        msg.style.display = 'none';
-
-        try {
-            const { error } = await db
-                .from('models')
-                .update({
-                    personality: document.getElementById('personality').value,
-                    conversation_topics: document.getElementById('conversation_topics').value,
-                    custom_phrases: document.getElementById('custom_phrases').value,
-                    gender: document.getElementById('gender').value,
-                    body_type: document.getElementById('body_type').value,
-                    main_niche: document.getElementById('main_niche').value,
-                    best_features: document.getElementById('best_features').value,
-                    relationship_status: document.getElementById('relationship_status').value,
-                    public_shows: document.getElementById('public_shows').value,
-                    private_shows: document.getElementById('private_shows').value,
-                    hard_limits: document.getElementById('hard_limits').value,
-                    partial_conditions: document.getElementById('partial_conditions').value,
-                    extra_context: document.getElementById('extra_context').value,
-                    emoji_level: emojiLevel
-                })
-                .eq('token', localStorage.getItem('camassist_model_token'));
-
-            if (error) throw error;
-
-            msg.textContent = '✅ Guardado correctamente';
-            msg.style.color = '#10B981';
-            msg.style.display = 'block';
-
-        } catch (e) {
-            msg.textContent = '❌ Error al guardar';
-            msg.style.color = '#EF4444';
-            msg.style.display = 'block';
-        }
-
-        btn.disabled = false;
-        btn.textContent = '💾 Guardar';
-        setTimeout(() => msg.style.display = 'none', 3000);
-    }
-
-    // Enter key on token input
-    document.getElementById('tokenInput').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') doLogin();
-    });
-</script>
+    </script>
 
 </body>
+
 </html>
