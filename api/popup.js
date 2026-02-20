@@ -98,6 +98,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (link && data.download_url) {
           link.href = data.download_url;
         }
+        // Mostrar changelog si existe
+        if (data.changelog) {
+          const changelogEl = updateBanner.querySelector('.changelog');
+          if (changelogEl) changelogEl.textContent = data.changelog;
+        }
       }
     } catch (e) {
       // Silently fail

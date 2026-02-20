@@ -1,3 +1,10 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -7,24 +14,59 @@ export default async function handler(req, res) {
 
   const { platform, version } = req.query;
 
-  // Versiones más recientes por plataforma
-  const latestVersions = {
-    chaturbate: '1.1.0',
-    stripchat: '1.1.0',
-    streamate: '1.4.0',
-    xmodels: '1.1.0'
-  };
+  if (!platform || !version) {
+    return res.status(400).json({ error: 'platform y version requeridos' });
+  }
 
-  const latest = latestVersions[platform] || '1.0.0';
-  const updateAvailable = version && compareVersions(version, latest) < 0;
+  try {
+    // Buscar última versión de la plataforma en BD
+    const { data: latest, error } = await supabase
+      .from('extension_versions')
+      .select('*')
+      .eq('platform', platform)
+      .eq('is_latest', true)
+      .single();
 
-  return res.status(200).json({
-    platform,
-    current_version: version,
-    latest_version: latest,
-    update_available: updateAvailable,
-    download_url: updateAvailable ? 'https://www.camassist.co/downloads' : null
-  });
+    if (error || !latest) {
+      return res.status(200).json({
+        platform,
+        current_version: version,
+        latest_version: version,
+        update_available: false
+      });
+    }
+
+    const updateAvailable = compareVersions(version, latest.version) < 0;
+
+    let download_url = null;
+    if (updateAvailable) {
+      // Generar URL firmada de Supabase Storage (expira en 10 min)
+      const filePath = `${platform}/${latest.filename}`;
+      const { data: signedUrl } = await supabase
+        .storage
+        .from('extensions')
+        .createSignedUrl(filePath, 600);
+
+      download_url = signedUrl?.signedUrl || null;
+    }
+
+    return res.status(200).json({
+      platform,
+      current_version: version,
+      latest_version: latest.version,
+      update_available: updateAvailable,
+      download_url,
+      changelog: latest.changelog || null
+    });
+
+  } catch (e) {
+    return res.status(200).json({
+      platform,
+      current_version: version,
+      latest_version: version,
+      update_available: false
+    });
+  }
 }
 
 function compareVersions(a, b) {

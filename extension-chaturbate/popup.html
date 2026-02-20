@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <style>
@@ -10,15 +11,34 @@
       background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
       margin: 0;
     }
+
     .container {
       background: white;
       border-radius: 12px;
       padding: 20px;
     }
-    .logo { text-align: center; font-size: 24px; margin-bottom: 5px; }
-    .title { text-align: center; font-size: 18px; font-weight: bold; color: #333; margin-bottom: 3px; }
-    .platform { text-align: center; font-size: 11px; color: #EC4899; margin-bottom: 12px; }
-    
+
+    .logo {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 3px;
+    }
+
+    .platform {
+      text-align: center;
+      font-size: 11px;
+      color: #EC4899;
+      margin-bottom: 12px;
+    }
+
     .config-link {
       display: block;
       text-align: center;
@@ -32,7 +52,10 @@
       margin-bottom: 12px;
       transition: opacity 0.2s;
     }
-    .config-link:hover { opacity: 0.9; }
+
+    .config-link:hover {
+      opacity: 0.9;
+    }
 
     .update-banner {
       display: none;
@@ -45,6 +68,7 @@
       color: #92400E;
       text-align: center;
     }
+
     .update-banner a {
       color: #D97706;
       font-weight: bold;
@@ -57,9 +81,24 @@
       margin-bottom: 15px;
       font-size: 13px;
     }
-    .status.connected { background: #D1FAE5; color: #065F46; }
-    .status.disconnected { background: #FEE2E2; color: #991B1B; }
-    label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
+
+    .status.connected {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+
+    .status.disconnected {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
     input {
       width: 100%;
       padding: 10px;
@@ -69,7 +108,12 @@
       box-sizing: border-box;
       margin-bottom: 15px;
     }
-    input:focus { outline: none; border-color: #8B5CF6; }
+
+    input:focus {
+      outline: none;
+      border-color: #8B5CF6;
+    }
+
     button {
       width: 100%;
       padding: 12px;
@@ -81,45 +125,61 @@
       font-weight: bold;
       cursor: pointer;
     }
-    button:hover { opacity: 0.9; }
-    .model-name { text-align: center; font-weight: bold; color: #8B5CF6; margin-top: 10px; }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .model-name {
+      text-align: center;
+      font-weight: bold;
+      color: #8B5CF6;
+      margin-top: 10px;
+    }
+
     .footer {
       text-align: center;
       font-size: 10px;
       color: #999;
       margin-top: 12px;
     }
-    .footer a { color: #8B5CF6; text-decoration: none; }
+
+    .footer a {
+      color: #8B5CF6;
+      text-decoration: none;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="logo">🤖</div>
     <div class="title">CamAssist</div>
     <div class="platform">Chaturbate</div>
     <input type="hidden" id="platformId" value="chaturbate">
-    
-    <a href="https://www.camassist.co/model" target="_blank" class="config-link">⚙️ Configurar mi IA</a>
-    
+
+    <a href="https://www.camassist.co/model.html" target="_blank" class="config-link">⚙️ Configurar mi IA</a>
+
     <div id="updateBanner" class="update-banner">
       ⚠️ Nueva versión disponible.<br>
-      <a href="https://www.camassist.co/downloads" target="_blank">📥 Descargar actualización</a>
+      <a id="downloadLink" href="#" target="_blank">📥 Descargar actualización</a>
     </div>
-    
+
     <div id="status" class="status disconnected">⚠️ No conectado</div>
-    
+
     <label>Tu token de modelo:</label>
     <input type="text" id="token" placeholder="mdl_xxxxxx">
-    
+
     <button id="saveBtn">💾 Guardar Token</button>
-    
+
     <div id="modelName" class="model-name"></div>
-    
+
     <div class="footer">
       <span id="currentVersion">v1.0.0</span> · <a href="https://www.camassist.co" target="_blank">camassist.co</a>
     </div>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
+
 </html>
