@@ -508,13 +508,7 @@
     let modelData = null;
     let emojiLevel = 2;
 
-    // Check if already logged in
-    const savedToken = localStorage.getItem('camassist_model_token');
-    if (savedToken) {
-        document.getElementById('tokenInput').value = savedToken;
-        doLogin();
-    }
-
+ 
     async function doLogin() {
         const token = document.getElementById('tokenInput').value.trim();
         if (!token) return;
@@ -529,7 +523,7 @@
             const { data, error } = await db
                 .from('models')
                 .select('*')
-                .eq('token', token)
+                .eq('token', modelData.token)
                 .is('deleted_at', null)
                 .single();
 
@@ -542,7 +536,6 @@
             }
 
             modelData = data;
-            localStorage.setItem('camassist_model_token', token);
             showSettings();
 
         } catch (e) {
@@ -554,7 +547,6 @@
     }
 
     function doLogout() {
-        localStorage.removeItem('camassist_model_token');
         modelData = null;
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('settingsScreen').style.display = 'none';
