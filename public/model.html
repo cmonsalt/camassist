@@ -523,7 +523,7 @@
             const { data, error } = await db
                 .from('models')
                 .select('*')
-                .eq('token', modelData.token)
+                .eq('token', token)
                 .is('deleted_at', null)
                 .single();
 
