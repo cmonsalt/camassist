@@ -457,18 +457,33 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
 
     const isSpanishMsg = /[áéíóúñ¿¡]/.test(cleanMessage) || /\b(hola|como|quiero|amor|papi|rico|rica|donde|eres|bien|dame|hazlo|para|tengo|puedo|que|pero|jaja|jajaj|mami|cielo|verga|culo|tetas|hermosa|hermoso|gracias|besos|bueno|buena|mucho|lindo|linda|todo|siempre|también|esta|cuando|porque|muy|mas|mejor|quien|cual|vamos|mira|dime|ay|uff|asi|sexy)\b/i.test(cleanMessage);
 
+    const isFrenchMsg = /\b(je|tu|il|elle|nous|vous|ils|elles|mon|ton|son|ma|ta|sa|dans|avec|pour|sur|mais|est|sont|suis|avoir|être|faire|aller|veux|peux|vais|très|aussi|bien|ici|oui|non|merci|bonjour|bonsoir|salut|chéri|bisou|chatte|queue|jouir|baiser|lécher|sucer)\b/i.test(cleanMessage);
+
+    const isDutchMsg = /\b(ik|je|jij|hij|zij|wij|het|een|van|voor|met|maar|ook|niet|wel|heb|ben|heeft|zijn|dit|dat|nog|heel|mooi|lekker|goed|tong|magische)\b/i.test(cleanMessage);
+
+    const isPortugueseMsg = /\b(eu|voce|você|ele|ela|nos|eles|elas|meu|minha|seu|sua|com|para|mas|muito|bem|amor|tudo|gostoso|beijo|tesão|quero|gata|delicia|obrigado|obrigada|oi|olá)\b/i.test(cleanMessage);
+
+    const isItalianMsg = /\b(io|tu|lui|lei|noi|voi|loro|mio|mia|tuo|tua|suo|sua|con|per|molto|bene|amore|ciao|bello|bella|tesoro|voglio|cazzo|fica|scopare|leccare|succhiare)\b/i.test(cleanMessage);
+
     let langHint = '';
 
     if (cleanMessage.split(/\s+/).length <= 2) {
       langHint = '';
+    } else if (isFrenchMsg && !isEnglishMsg && !isSpanishMsg) {
+      langHint = "\n\nIMPORTANT: The fan wrote in FRENCH...";
+    } else if (isDutchMsg && !isEnglishMsg && !isSpanishMsg) {
+      langHint = "\n\nIMPORTANT: The fan wrote in DUTCH...";
+    } else if (isPortugueseMsg && !isEnglishMsg && !isSpanishMsg) {
+      langHint = "\n\nIMPORTANT: The fan wrote in PORTUGUESE...";
+    } else if (isItalianMsg && !isEnglishMsg && !isSpanishMsg) {
+      langHint = "\n\nIMPORTANT: The fan wrote in ITALIAN...";
     } else if (isEnglishMsg && !isSpanishMsg) {
-      langHint = "\n\nIMPORTANT: The fan wrote in ENGLISH. You MUST respond 100% in ENGLISH. Zero spanish words.";
+      langHint = "\n\nIMPORTANT: The fan wrote in ENGLISH...";
     } else if (isSpanishMsg && !isEnglishMsg) {
-      langHint = "\n\nIMPORTANTE: El fan escribió en ESPAÑOL. DEBES responder 100% en ESPAÑOL. Cero palabras en inglés.";
+      langHint = "\n\nIMPORTANTE: El fan escribió en ESPAÑOL...";
     } else {
-      langHint = '';
+      langHint = '';  // ← sí se queda, es el fallback
     }
-
     // Si es imagen o Chatbox, no forzar idioma
     if (imageUrl || /Impulsado por Chatbox|Powered by Chatbox/i.test(message)) {
       langHint = '';
