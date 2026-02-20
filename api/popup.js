@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function verifyToken(token) {
     try {
-      const response = await fetch('https://www.camassist.co/api/verify-token', {
+      const response = await fetch('https://camassist.vercel.app/api/verify-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token })
