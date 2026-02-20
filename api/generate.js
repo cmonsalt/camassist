@@ -594,7 +594,7 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
 
       const parsed = JSON.parse(responseText);
       suggestion = parsed.response;
-      translation = parsed.translation_es;
+      translation = (parsed.translation_es && parsed.translation_es !== 'null') ? parsed.translation_es : null;
 
       // Si el mensaje del fan es en español, no mostrar traducción
       const isSpanish = /[áéíóúñ¿¡]/.test(message) || /^(hola|como|que|quiero|amor|rico|bien|donde|eres)/i.test(message);
