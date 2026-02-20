@@ -1,122 +1,185 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <style>
     body {
-      width: 280px;
+      width: 300px;
       padding: 15px;
       font-family: 'Segoe UI', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
       margin: 0;
     }
+
     .container {
       background: white;
       border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
-    h1 {
-      margin: 0 0 5px 0;
+
+    .logo {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .title {
+      text-align: center;
       font-size: 18px;
+      font-weight: bold;
       color: #333;
+      margin-bottom: 3px;
     }
-    .subtitle {
-      color: #888;
+
+    .platform {
+      text-align: center;
       font-size: 11px;
-      margin-bottom: 15px;
+      color: #EC4899;
+      margin-bottom: 12px;
     }
-    .platform-badge {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+
+    .config-link {
+      display: block;
+      text-align: center;
+      padding: 8px;
+      background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
       color: white;
-      padding: 3px 8px;
-      border-radius: 10px;
-      font-size: 10px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      transition: opacity 0.2s;
+    }
+
+    .config-link:hover {
+      opacity: 0.9;
+    }
+
+    .update-banner {
+      display: none;
+      background: #FEF3C7;
+      border: 1px solid #F59E0B;
+      border-radius: 8px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #92400E;
+      text-align: center;
+    }
+
+    .update-banner a {
+      color: #D97706;
       font-weight: bold;
     }
+
+    .status {
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+
+    .status.connected {
+      background: #D1FAE5;
+      color: #065F46;
+    }
+
+    .status.disconnected {
+      background: #FEE2E2;
+      color: #991B1B;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
     input {
       width: 100%;
       padding: 10px;
-      border: 2px solid #e0e0e0;
+      border: 2px solid #E5E7EB;
       border-radius: 8px;
-      font-size: 12px;
+      font-size: 14px;
       box-sizing: border-box;
-      margin-bottom: 10px;
-      transition: border-color 0.3s;
+      margin-bottom: 15px;
     }
+
     input:focus {
       outline: none;
       border-color: #8B5CF6;
     }
+
     button {
       width: 100%;
       padding: 12px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
       color: white;
       border: none;
       border-radius: 8px;
       font-size: 14px;
       font-weight: bold;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
     }
+
     button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      opacity: 0.9;
     }
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .status {
-      margin-top: 12px;
-      padding: 8px;
-      border-radius: 6px;
-      font-size: 12px;
+
+    .model-name {
       text-align: center;
+      font-weight: bold;
+      color: #8B5CF6;
+      margin-top: 10px;
     }
-    .status.connected {
-      background: #d4edda;
-      color: #155724;
-    }
-    .status.disconnected {
-      background: #f8d7da;
-      color: #721c24;
-    }
-    #modelName {
-      font-size: 11px;
-      color: #666;
-      text-align: center;
-      margin-top: 5px;
-    }
+
     .footer {
       text-align: center;
-      margin-top: 12px;
       font-size: 10px;
       color: #999;
+      margin-top: 12px;
+    }
+
+    .footer a {
+      color: #8B5CF6;
+      text-decoration: none;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
-    <h1>🤖 CamAssist</h1>
-    <div class="subtitle">
-      <span class="platform-badge">XModels</span>
-      AI Assistant
+    <div class="logo">🤖</div>
+    <div class="title">CamAssist</div>
+    <div class="platform">XModels</div>
+    <input type="hidden" id="platformId" value="xmodels">
+
+    <a href="https://www.camassist.co/model.html" target="_blank" class="config-link">⚙️ Configurar mi IA</a>
+
+    <div id="updateBanner" class="update-banner">
+      ⚠️ Nueva versión disponible.<br>
+      <a id="downloadLink" href="#" target="_blank">📥 Descargar actualización</a>
     </div>
-    
-    <input type="text" id="token" placeholder="Pega tu token aquí...">
+
+    <div id="status" class="status disconnected">⚠️ No conectado</div>
+
+    <label>Tu token de modelo:</label>
+    <input type="text" id="token" placeholder="mdl_xxxxxx">
+
     <button id="saveBtn">💾 Guardar Token</button>
-    
-    <div id="status" class="status disconnected">⚠️ Sin conectar</div>
-    <div id="modelName"></div>
-    
+
+    <div id="modelName" class="model-name"></div>
+
     <div class="footer">
-      camassist.co
+      <span id="currentVersion">v1.0.0</span> · <a href="https://www.camassist.co" target="_blank">camassist.co</a>
     </div>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
+
 </html>

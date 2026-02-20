@@ -3,6 +3,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   const saveBtn = document.getElementById('saveBtn');
   const status = document.getElementById('status');
   const modelName = document.getElementById('modelName');
+  const updateBanner = document.getElementById('updateBanner');
+
+  // Versión actual de la extensión
+  const manifest = chrome.runtime.getManifest();
+  const currentVersion = manifest.version;
+  const platform = document.getElementById('platformId')?.value || 'unknown';
+
+  // Mostrar versión actual
+  const versionEl = document.getElementById('currentVersion');
+  if (versionEl) versionEl.textContent = `v${currentVersion}`;
 
   // Cargar token guardado
   chrome.storage.local.get(['model_token', 'model_name'], (result) => {
@@ -15,6 +25,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
   });
+
+  // Check versión
+  checkForUpdate(platform, currentVersion);
 
   // Guardar token
   saveBtn.addEventListener('click', async () => {
@@ -31,10 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const verified = await verifyToken(token);
     
     if (verified) {
-      // Guardar en chrome.storage
       chrome.storage.local.set({ model_token: token });
       
-      // Guardar en localStorage de la página activa (XModels)
       chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         if (tabs[0]) {
           chrome.scripting.executeScript({
@@ -45,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       });
       
-      alert('✅ Token guardado! Recarga la página de XModels.');
+      alert('✅ Token guardado! Recarga la página.');
     }
 
     saveBtn.textContent = '💾 Guardar Token';
@@ -73,6 +84,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
       showDisconnected('Error de conexión');
       return false;
+    }
+  }
+
+  async function checkForUpdate(platform, currentVersion) {
+    try {
+      const response = await fetch(`https://www.camassist.co/api/check-version?platform=${platform}&version=${currentVersion}`);
+      const data = await response.json();
+      
+      if (data.update_available && updateBanner) {
+        updateBanner.style.display = 'block';
+        const link = updateBanner.querySelector('a');
+        if (link && data.download_url) {
+          link.href = data.download_url;
+        }
+        // Mostrar changelog si existe
+        if (data.changelog) {
+          const changelogEl = updateBanner.querySelector('.changelog');
+          if (changelogEl) changelogEl.textContent = data.changelog;
+        }
+      }
+    } catch (e) {
+      // Silently fail
     }
   }
 
