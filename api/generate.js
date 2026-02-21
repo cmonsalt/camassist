@@ -599,6 +599,10 @@ Máx ${isPM ? '60' : '18'} palabras. SOLO JSON:
       suggestion = parsed.response;
       translation = (parsed.translation_es && parsed.translation_es !== 'null') ? parsed.translation_es : null;
 
+      // Fix "pa" prohibido → "para"
+      if (suggestion) suggestion = suggestion.replace(/\bpa['']?\s/gi, 'para ');
+      if (translation) translation = translation.replace(/\bpa['']?\s/gi, 'para ');
+
       // Si el mensaje del fan es en español, no mostrar traducción
       const isSpanish = /[áéíóúñ¿¡]/.test(message) || /^(hola|como|que|quiero|amor|rico|bien|donde|eres)/i.test(message);
       if (isSpanish) {
