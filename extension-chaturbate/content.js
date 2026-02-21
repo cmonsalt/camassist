@@ -35,42 +35,6 @@ if (syncBroadcaster) {
   });
 }
 
-// Capturar seguidores si estamos en página de broadcast
-if (window.location.pathname.includes('/b/')) {
-
-  // Función para sincronizar seguidores
-  async function syncFollowers() {
-    const followersEl = Array.from(document.querySelectorAll('a')).find(a => a.href.includes('followers'));
-    const followers = parseInt(followersEl?.textContent?.trim()) || 0;
-
-    if (followers >= 0) {
-      const token = localStorage.getItem('model_token');
-      if (token) {
-        try {
-          const response = await fetch('https://camassist.vercel.app/api/sync-followers', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              token,
-              platform: 'chaturbate',
-              followers
-            })
-          });
-          const data = await response.json();
-          console.log('👥 Followers sync:', data);
-        } catch (error) {
-          console.error('❌ Error syncing followers:', error);
-        }
-      }
-    }
-  }
-
-  // Capturar al cargar la página (después de 5 segundos)
-  setTimeout(syncFollowers, 5000);
-
-  // Capturar cada 1 hora mientras transmite
-  setInterval(syncFollowers, 60 * 60 * 1000);
-}
 
 // Obtener token de chrome.storage si existe
 chrome.storage.local.get(['model_token'], (result) => {
